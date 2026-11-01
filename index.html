@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#ffffff">
+<title>My Amin | Find Your Amin</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<style>
+:root{
+  --bg:#ffffff;
+  --soft:#f7f8f5;
+  --softgreen:#edf6ef;
+  --green:#27764b;
+  --green2:#185a38;
+  --ink:#202a23;
+  --muted:#778179;
+  --line:#e7ece7;
+  --gold:#c89b4b;
+  --shadow:0 12px 36px rgba(35,64,43,.07);
+  --radius:20px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:"DM Sans","Noto Sans Devanagari",sans-serif;
+  line-height:1.55
+}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+a{color:inherit;text-decoration:none}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:3px solid #b3d7bc;outline-offset:3px
+}
+.top-strip{
+  background:#edf6ef;color:var(--green2);text-align:center;
+  padding:8px 12px;font-size:12px;font-weight:600
+}
+header{
+  position:sticky;top:0;z-index:1000;background:rgba(255,255,255,.96);
+  backdrop-filter:blur(14px);border-bottom:1px solid var(--line)
+}
+.nav{
+  max-width:1200px;margin:auto;padding:14px 22px;
+  display:flex;align-items:center;gap:24px;justify-content:space-between
+}
+.brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.brand-icon{
+  width:43px;height:43px;border-radius:15px;background:var(--green);
+  display:grid;place-items:center;color:#fff;font-size:23px;
+  box-shadow:0 5px 14px #27764b28
+}
+.brand-name{font-size:21px;font-weight:800;letter-spacing:-.8px}
+.brand-name span{color:var(--green)}
+.brand-tag{font-size:10px;color:var(--muted);margin-top:-3px}
+.nav-links{display:flex;gap:22px;align-items:center;font-size:13px;font-weight:600}
+.nav-links a:hover{color:var(--green)}
+.nav-actions{display:flex;gap:9px;align-items:center}
+.btn{
+  border:1px solid var(--line);background:#fff;border-radius:12px;
+  padding:11px 15px;font-weight:700;font-size:13px;
+  display:inline-flex;justify-content:center;align-items:center;gap:7px;
+  transition:.2s
+}
+.btn:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+.btn-primary{background:var(--green);border-color:var(--green);color:white}
+.btn-primary:hover{background:var(--green2)}
+.btn-soft{background:var(--softgreen);border-color:#dcebdd;color:var(--green2)}
+.btn-small{padding:8px 11px;font-size:12px}
+.icon-btn{
+  border:1px solid var(--line);background:white;border-radius:12px;
+  width:42px;height:42px;font-size:19px
+}
+.lang-select{border:1px solid var(--line);border-radius:12px;padding:10px;background:white;font-weight:600}
+main{max-width:1200px;margin:auto;padding:0 22px}
+.hero{
+  display:grid;grid-template-columns:1.05fr .95fr;gap:45px;
+  align-items:center;padding:65px 0 55px;min-height:480px
+}
+.eyebrow{
+  display:inline-flex;gap:8px;align-items:center;background:var(--softgreen);
+  color:var(--green2);padding:8px 12px;border-radius:30px;
+  font-size:12px;font-weight:700
+}
+.dot{width:7px;height:7px;background:#48a56b;border-radius:50%}
+h1,h2,h3,p{margin-top:0}
+h1{
+  font-family:"Playfair Display","Noto Sans Devanagari",serif;
+  font-size:clamp(38px,5vw,62px);line-height:1.13;letter-spacing:-1.5px;
+  margin:21px 0 17px
+}
+h1 span{color:var(--green)}
+.hero-copy{color:var(--muted);max-width:490px;font-size:15px}
+.hero-buttons{display:flex;gap:11px;flex-wrap:wrap;margin:25px 0}
+.trust-row{display:flex;gap:18px;flex-wrap:wrap;color:var(--muted);font-size:12px}
+.hero-art{
+  min-height:350px;background:linear-gradient(140deg,#f5faf4,#edf5eb);
+  border:1px solid #e3eee2;border-radius:32px;position:relative;overflow:hidden;
+  display:grid;place-items:center
+}
+.hero-art:before,.hero-art:after{
+  content:"";position:absolute;border-radius:50%;border:1px solid #d9e8d9
+}
+.hero-art:before{width:330px;height:330px}
+.hero-art:after{width:245px;height:245px}
+.hero-orb{
+  width:160px;height:160px;border-radius:50%;
+  background:radial-gradient(circle at 30% 25%,#fff,#d5ead5 50%,#8ebd98);
+  box-shadow:0 25px 65px #3c87532b;display:grid;place-items:center;
+  font-size:69px;z-index:1;animation:float 5s ease-in-out infinite
+}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.float-card{
+  position:absolute;background:white;padding:13px 15px;border:1px solid var(--line);
+  border-radius:15px;box-shadow:var(--shadow);font-size:12px;z-index:2
+}
+.float-card strong{display:block;font-size:14px}
+.float-one{top:32px;left:24px}
+.float-two{right:20px;top:95px}
+.float-three{bottom:28px;left:35px}
+.section{padding:43px 0}
+.section-head{
+  display:flex;justify-content:space-between;gap:18px;align-items:end;margin-bottom:22px
+}
+.kicker{color:var(--green);font-size:11px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase}
+.section h2{
+  font-family:"Playfair Display","Noto Sans Devanagari",serif;
+  font-size:clamp(27px,3vw,37px);letter-spacing:-.6px;margin:8px 0
+}
+.section-desc{color:var(--muted);font-size:13px;margin-bottom:0}
+.search-panel{
+  background:var(--soft);border:1px solid var(--line);padding:18px;
+  border-radius:var(--radius);display:grid;grid-template-columns:1.4fr 1fr 1fr auto;gap:10px
+}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:12px;font-weight:700;color:#59655c}
+.field input,.field select,.field textarea{
+  width:100%;min-width:0;border:1px solid #e0e7e0;border-radius:11px;
+  padding:12px;background:white;color:var(--ink)
+}
+.field textarea{min-height:95px;resize:vertical}
+.search-panel .btn{align-self:end;min-height:45px}
+.stats{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin:24px 0
+}
+.stat{padding:20px;background:#fff;border:1px solid var(--line);border-radius:17px}
+.stat strong{display:block;font-size:25px;color:var(--green)}
+.stat span{font-size:12px;color:var(--muted)}
+.profile-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:17px}
+.profile-card{
+  border:1px solid var(--line);border-radius:20px;padding:18px;background:white;
+  transition:.2s;min-width:0
+}
+.profile-card:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.profile-top{display:flex;gap:13px;align-items:center}
+.avatar{
+  width:59px;height:59px;border-radius:18px;display:grid;place-items:center;
+  background:var(--softgreen);font-size:29px;flex-shrink:0
+}
+.profile-top h3{font-size:15px;margin:0 0 3px}
+.profile-id{font-size:10px;color:var(--muted)}
+.verified{color:var(--green);font-size:11px;font-weight:700}
+.rank{margin-left:auto;background:#fff5dc;color:#8a6420;padding:5px 8px;border-radius:9px;font-size:11px;font-weight:800}
+.profile-meta{display:flex;gap:9px;flex-wrap:wrap;color:var(--muted);font-size:11px;margin:15px 0}
+.profile-bio{font-size:12px;color:#59655c;min-height:40px}
+.tag-row{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.tag{font-size:10px;padding:6px 9px;border-radius:20px;background:#f3f6f2;color:#4b6551}
+.card-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:15px}
+.card-actions .btn{flex:1}
+.empty-state{
+  padding:28px;text-align:center;border:1px dashed #d9e4d9;border-radius:17px;
+  color:var(--muted);grid-column:1/-1
+}
+.map-layout{display:grid;grid-template-columns:1fr 280px;gap:17px}
+#map{height:370px;border:1px solid var(--line);border-radius:22px;z-index:1}
+.map-side{background:var(--soft);border:1px solid var(--line);padding:20px;border-radius:20px}
+.map-side h3{font-size:16px}
+.map-note{font-size:12px;color:var(--muted)}
+.map-key{display:flex;gap:9px;align-items:center;margin:14px 0;font-size:12px}
+.map-pin{width:10px;height:10px;border-radius:50%;background:var(--green)}
+.map-pin.gold{background:var(--gold)}
+.map-pin.gray{background:#999}
+.service-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.service-card{
+  border:1px solid var(--line);border-radius:17px;padding:20px;background:white;
+  cursor:pointer;transition:.2s
+}
+.service-card:hover{background:var(--softgreen);transform:translateY(-2px)}
+.service-icon{
+  width:44px;height:44px;display:grid;place-items:center;border-radius:14px;
+  background:var(--softgreen);font-size:23px;margin-bottom:15px
+}
+.service-card h3{font-size:14px;margin-bottom:5px}
+.service-card p{font-size:11px;color:var(--muted);margin-bottom:0}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.panel{border:1px solid var(--line);border-radius:22px;padding:24px;background:white}
+.panel h3{font-size:19px}
+.panel p{font-size:13px;color:var(--muted)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.full{grid-column:1/-1}
+.check-line{display:flex;gap:9px;align-items:start;font-size:12px;color:var(--muted)}
+.check-line input{margin-top:4px}
+.tool-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px}
+.tool-tab{border:1px solid var(--line);background:white;padding:9px 13px;border-radius:11px;font-size:12px;font-weight:700}
+.tool-tab.active{background:var(--green);color:white;border-color:var(--green)}
+.result-box{margin-top:13px;padding:15px;border-radius:12px;background:var(--softgreen);font-weight:700;color:var(--green2);min-height:47px}
+.ranking-list{display:flex;flex-direction:column;gap:11px}
+.ranking-row{display:flex;gap:12px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:14px}
+.ranking-number{font-size:18px;font-weight:800;color:var(--gold);width:30px}
+.ranking-row strong{font-size:13px;display:block}
+.ranking-row small{font-size:11px;color:var(--muted)}
+footer{margin-top:35px;background:#f7f9f6;border-top:1px solid var(--line)}
+.footer-inner{max-width:1200px;margin:auto;padding:35px 22px;display:grid;grid-template-columns:2fr 1fr 1fr;gap:30px}
+.footer-inner h3{font-size:13px}
+.footer-inner p,.footer-inner a{font-size:12px;color:var(--muted);display:block;margin:7px 0}
+.footer-bottom{border-top:1px solid var(--line);padding:15px 22px;text-align:center;font-size:11px;color:var(--muted)}
+.more-wrap{position:relative}
+.more-menu{
+  display:none;position:absolute;right:0;top:50px;width:240px;background:white;
+  border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);
+  padding:8px;z-index:1100
+}
+.more-menu.open{display:block}
+.more-menu button,.more-menu a{
+  display:block;width:100%;text-align:left;border:0;background:white;padding:11px;
+  border-radius:9px;font-size:13px
+}
+.more-menu button:hover,.more-menu a:hover{background:var(--softgreen)}
+.modal-backdrop{
+  position:fixed;inset:0;background:#14221865;z-index:3000;display:none;
+  align-items:center;justify-content:center;padding:18px
+}
+.modal-backdrop.open{display:flex}
+.modal{
+  width:min(650px,100%);max-height:90vh;overflow:auto;background:white;
+  border-radius:23px;padding:23px;box-shadow:0 20px 80px #0002
+}
+.modal-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.modal-head h2{font-size:23px;margin:0}
+.close-btn{border:0;background:var(--soft);border-radius:10px;width:38px;height:38px;font-size:21px}
+.modal-body{margin-top:20px}
+.notice{padding:13px;border-radius:12px;background:#fff8e8;color:#806221;font-size:12px;margin:12px 0}
+.success-notice{background:var(--softgreen);color:var(--green2)}
+.chat-log{height:240px;overflow:auto;background:var(--soft);border-radius:13px;padding:13px;margin:12px 0}
+.chat-message{max-width:85%;padding:10px 12px;border-radius:12px;background:white;margin:7px 0;font-size:12px}
+.chat-message.mine{margin-left:auto;background:var(--softgreen)}
+.toast{
+  position:fixed;bottom:22px;left:50%;transform:translate(-50%,20px);
+  background:#20372a;color:white;padding:12px 18px;border-radius:13px;
+  box-shadow:var(--shadow);font-size:13px;opacity:0;pointer-events:none;
+  transition:.25s;z-index:5000;max-width:90%;text-align:center
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.hidden{display:none!important}
+hr{border:0;border-top:1px solid var(--line);margin:18px 0}
+@media(max-width:900px){
+ .nav-links{display:none}
+ .hero{gap:20px;padding-top:40px}
+ .profile-grid{grid-template-columns:repeat(2,1fr)}
+ .service-grid{grid-template-columns:repeat(2,1fr)}
+ .search-panel{grid-template-columns:1fr 1fr}
+ .search-panel .btn{align-self:stretch}
+ .map-layout{grid-template-columns:1fr}
+ .map-side{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+}
+@media(max-width:620px){
+ main{padding:0 15px}
+ .nav{padding:11px 14px;gap:8px}
+ .brand-name{font-size:18px}
+ .brand-icon{width:38px;height:38px}
+ .nav-actions{gap:5px}
+ .lang-select{padding:8px;font-size:11px;max-width:90px}
+ .nav-actions .btn{padding:9px;font-size:11px}
+ .hero{grid-template-columns:1fr;padding:36px 0}
+ .hero-art{min-height:275px}
+ .hero-orb{width:130px;height:130px;font-size:55px}
+ .float-card{padding:10px;font-size:10px}
+ .float-card strong{font-size:12px}
+ .section{padding:30px 0}
+ .section-head{align-items:start;flex-direction:column}
+ .search-panel{grid-template-columns:1fr}
+ .stats{grid-template-columns:1fr 1fr}
+ .profile-grid{grid-template-columns:1fr}
+ .service-grid{grid-template-columns:1fr 1fr}
+ .two-col{grid-template-columns:1fr}
+ .form-grid{grid-template-columns:1fr}
+ .full{grid-column:auto}
+ .footer-inner{grid-template-columns:1fr 1fr}
+ .footer-inner>div:first-child{grid-column:1/-1}
+ #map{height:320px}
+ .map-side{display:block}
+}
+</style>
+</head>
+<body>
+
+<div class="top-strip" data-i18n="topStrip">A simpler way to find trusted land measurement professionals.</div>
+
+<header>
+  <div class="nav">
+    <a class="brand" href="#home" aria-label="My Amin home">
+      <div class="brand-icon">⌖</div>
+      <div>
+        <div class="brand-name">My <span>Amin</span></div>
+        <div class="brand-tag" data-i18n="brandTag">Your land, measured with trust</div>
+      </div>
+    </a>
+
+    <nav class="nav-links">
+      <a href="#find" data-i18n="navFind">Find Amin</a>
+      <a href="#mapSection" data-i18n="navMap">Nearby Map</a>
+      <a href="#services" data-i18n="navServices">Services</a>
+      <a href="#calculator" data-i18n="navTools">Tools</a>
+    </nav>
+
+    <div class="nav-actions">
+      <select class="lang-select" id="languageSelect" aria-label="Choose language">
+        <option value="en">English</option>
+        <option value="hi">हिन्दी</option>
+      </select>
+      <button class="btn btn-soft" onclick="openModal('loginModal')" data-i18n="login">Login</button>
+      <div class="more-wrap">
+        <button class="icon-btn" id="moreButton" aria-label="More menu" aria-expanded="false">☰</button>
+        <div class="more-menu" id="moreMenu">
+          <button onclick="scrollToSection('find')" data-i18n="menuFind">🔎 Find Amin</button>
+          <button onclick="openModal('registerModal')" data-i18n="menuRegister">🧑‍🌾 Amin Registration</button>
+          <button onclick="scrollToSection('booking')" data-i18n="menuBooking">📅 Booking</button>
+          <button onclick="scrollToSection('calculator')" data-i18n="menuCalculator">📏 Unit Calculator</button>
+          <button onclick="scrollToSection('ranking')" data-i18n="menuRanking">🏆 Ranking</button>
+          <button onclick="openModal('chatModal')" data-i18n="menuChat">💬 Chat Demo</button>
+          <a href="https://biharbhumi.bihar.gov.in/" target="_blank" rel="noopener">🏛️ Bihar Bhumi ↗</a>
+          <a href="https://bhunaksha.bihar.gov.in/" target="_blank" rel="noopener">🗺️ Bihar Bhunaksha ↗</a>
+          <button onclick="openModal('ownerCodeModal')" data-i18n="menuOwner">🔐 Owner Access</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hero" id="home">
+    <div>
+      <div class="eyebrow"><span class="dot"></span><span data-i18n="heroEyebrow">Amin services, made easier</span></div>
+      <h1 data-i18n="heroTitle">Find the right <span>Amin</span> for your land.</h1>
+      <p class="hero-copy" data-i18n="heroCopy">Discover land measurement professionals, explore service areas, compare ratings and request a booking—all in one place.</p>
+      <div class="hero-buttons">
+        <a href="#find" class="btn btn-primary" data-i18n="findButton">⌕ Find an Amin</a>
+        <button class="btn" onclick="openModal('registerModal')" data-i18n="joinButton">＋ Register as Amin</button>
+      </div>
+      <div class="trust-row">
+        <span data-i18n="trust1">✓ Easy search</span>
+        <span data-i18n="trust2">✓ Local profiles</span>
+        <span data-i18n="trust3">✓ Direct contact</span>
+      </div>
+    </div>
+
+    <div class="hero-art" aria-label="Illustration">
+      <div class="float-card float-one">📍 <strong data-i18n="floatOne">Local professionals</strong><span data-i18n="floatOneSub">Search by your area</span></div>
+      <div class="float-card float-two">⭐ <strong data-i18n="floatTwo">Ratings & ranking</strong><span data-i18n="floatTwoSub">Compare profiles</span></div>
+      <div class="hero-orb">⌖</div>
+      <div class="float-card float-three">📅 <strong data-i18n="floatThree">Booking requests</strong><span data-i18n="floatThreeSub">Ask for a suitable date</span></div>
+    </div>
+  </section>
+
+  <section class="section" id="find">
+    <div class="section-head">
+      <div>
+        <div class="kicker" data-i18n="searchKicker">DISCOVER PROFESSIONALS</div>
+        <h2 data-i18n="searchTitle">Find an Amin near you</h2>
+        <p class="section-desc" data-i18n="searchDesc">Search by name, village, block or district.</p>
+      </div>
+      <button class="btn btn-soft" onclick="showNearby()" data-i18n="nearbyButton">◎ Use my location</button>
+    </div>
+
+    <div class="search-panel">
+      <div class="field">
+        <label for="searchName" data-i18n="nameLabel">Name or service</label>
+        <input id="searchName" type="search" placeholder="Amin name, survey..." data-placeholder="searchPlaceholder">
+      </div>
+      <div class="field">
+        <label for="searchDistrict" data-i18n="districtLabel">District</label>
+        <select id="searchDistrict">
+          <option value="" data-i18n="allDistricts">All districts</option>
+          <option>Patna</option><option>Gaya</option><option>Muzaffarpur</option>
+          <option>Begusarai</option><option>Samastipur</option><option>Darbhanga</option>
+          <option>Bhagalpur</option><option>Purnia</option><option>Ranchi</option>
+          <option>Jamshedpur</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="searchArea" data-i18n="areaLabel">Village / block</label>
+        <input id="searchArea" placeholder="Enter village or block" data-placeholder="areaPlaceholder">
+      </div>
+      <button class="btn btn-primary" onclick="searchAmins()" data-i18n="searchButton">Search ↗</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><strong id="statProfiles">0</strong><span data-i18n="statProfiles">Demo profiles</span></div>
+      <div class="stat"><strong id="statFollowing">0</strong><span data-i18n="statFollowing">Saved / followed</span></div>
+      <div class="stat"><strong id="statBookings">0</strong><span data-i18n="statBookings">Booking requests</span></div>
+      <div class="stat"><strong>2</strong><span data-i18n="statLanguages">Languages</span></div>
+    </div>
+
+    <div class="section-head">
+      <div>
+        <div class="kicker" data-i18n="profilesKicker">AMIN DIRECTORY</div>
+        <h2 data-i18n="profilesTitle">Featured Amin profiles</h2>
+        <p class="section-desc" data-i18n="profilesDesc">Demo profiles only. Register real professionals after connecting a backend.</p>
+      </div>
+      <select class="lang-select" id="sortSelect" aria-label="Sort profiles" onchange="searchAmins()">
+        <option value="rank" data-i18n="sortRank">Top ranked</option>
+        <option value="rating" data-i18n="sortRating">Highest rating</option>
+        <option value="name" data-i18n="sortName">Name A–Z</option>
+      </select>
+    </div>
+
+    <div class="profile-grid" id="profileGrid"></div>
+  </section>
+
+  <section class="section" id="mapSection">
+    <div class="section-head">
+      <div>
+        <div class="kicker" data-i18n="mapKicker">LOCATION EXPLORER</div>
+        <h2 data-i18n="mapTitle">Explore the map</h2>
+        <p class="section-desc" data-i18n="mapDesc">Use the map to explore areas. Markers shown here are sample locations, not live Amin GPS data.</p>
+      </div>
+    </div>
+    <div class="map-layout">
+      <div id="map" aria-label="OpenStreetMap map"></div>
+      <aside class="map-side">
+        <h3 data-i18n="mapSideTitle">Nearby discovery</h3>
+        <p class="map-note" data-i18n="mapSideDesc">Allow location access only when you choose to. This demo does not track people in the background.</p>
+        <div class="map-key"><span class="map-pin"></span><span data-i18n="mapKeyOne">Sample area marker</span></div>
+        <div class="map-key"><span class="map-pin gold"></span><span data-i18n="mapKeyTwo">Demo featured area</span></div>
+        <div class="map-key"><span class="map-pin gray"></span><span data-i18n="mapKeyThree">Your location, if shared</span></div>
+        <button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="showNearby()" data-i18n="locateButton">Locate me</button>
+        <p class="map-note" id="locationStatus" style="margin-top:12px" data-i18n="locationStatus">Location not shared.</p>
+      </aside>
+    </div>
+  </section>
+
+  <section class="section" id="services">
+    <div class="section-head">
+      <div>
+        <div class="kicker" data-i18n="servicesKicker">ONE PLACE, MANY TOOLS</div>
+        <h2 data-i18n="servicesTitle">Services & useful links</h2>
+        <p class="section-desc" data-i18n="servicesDesc">Explore common land-related services and tools.</p>
+      </div>
+    </div>
+    <div class="service-grid">
+      <a class="service-card" href="#booking" onclick="setBookingService('Land measurement')">
+        <div class="service-icon">📐</div><h3 data-i18n="service1">Land measurement</h3><p data-i18n="service1Desc">Request a land survey visit.</p>
+      </a>
+      <a class="service-card" href="#booking" onclick="setBookingService('Boundary marking')">
+        <div class="service-icon">📍</div><h3 data-i18n="service2">Boundary marking</h3><p data-i18n="service2Desc">Discuss land boundaries.</p>
+      </a>
+      <a class="service-card" href="#booking" onclick="setBookingService('Map consultation')">
+        <div class="service-icon">🗺️</div><h3 data-i18n="service3">Map consultation</h3><p data-i18n="service3Desc">Get help understanding maps.</p>
+      </a>
+      <a class="service-card" href="#calculator">
+        <div class="service-icon">🧮</div><h3 data-i18n="service4">Measurement calculator</h3><p data-i18n="service4Desc">Convert common measurement units.</p>
+      </a>
+      <a class="service-card" href="https://biharbhumi.bihar.gov.in/" target="_blank" rel="noopener">
+        <div class="service-icon">🏛️</div><h3 data-i18n="service5">Bihar Bhumi</h3><p data-i18n="service5Desc">Open the official Bihar land portal.</p>
+      </a>
+      <a class="service-card" href="https://bhunaksha.bihar.gov.in/" target="_blank" rel="noopener">
+        <div class="service-icon">🌐</div><h3 data-i18n="service6">Bhu-Naksha</h3><p data-i18n="service6Desc">Open the official cadastral map portal.</p>
+      </a>
+      <button class="service-card" onclick="openModal('registerModal')" style="text-align:left">
+        <div class="service-icon">🧑‍🌾</div><h3 data-i18n="service7">Join as an Amin</h3><p data-i18n="service7Desc">Submit a professional profile request.</p>
+      </button>
+      <button class="service-card" onclick="openModal('chatModal')" style="text-align:left">
+        <div class="service-icon">💬</div><h3 data-i18n="service8">Chat & contact</h3><p data-i18n="service8Desc">Try the local chat demo.</p>
+      </button>
+    </div>
+  </section>
+
+  <section class="section" id="booking">
+    <div class="section-head">
+      <div>
+        <div class="kicker" data-i18n="bookingKicker">PLAN YOUR VISIT</div>
+        <h2 data-i18n="bookingTitle">Request an Amin booking</h2>
+        <p class="section-desc" data-i18n="bookingDesc">Choose a professional and preferred date. This demo stores requests only in this browser.</p>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="panel">
+        <h3 data-i18n="bookingFormTitle">Booking details</h3>
+        <form id="bookingForm">
+          <div class="form-grid">
+            <div class="field full">
+              <label for="bookingAmin" data-i18n="chooseAmin">Choose Amin</label>
+              <select id="bookingAmin" required></select>
+            </div>
+            <div class="field">
+              <label for="customerName" data-i18n="customerName">Your name</label>
+              <input id="customerName" required maxlength="100" autocomplete="name">
+            </div>
+            <div class="field">
+              <label for="customerPhone" data-i18n="customerPhone">Phone number</label>
+              <input id="customerPhone" type="tel" required maxlength="20" autocomplete="tel">
+            </div>
+            <div class="field">
+              <label for="bookingDate" data-i18n="preferredDate">Preferred date</label>
+              <input id="bookingDate" type="date" required>
+            </div>
+            <div class="field">
+              <label for="bookingTime" data-i18n="preferredTime">Preferred time</label>
+              <select id="bookingTime" required>
+                <option value="Morning" data-i18n="morning">Morning</option>
+                <option value="Afternoon" data-i18n="afternoon">Afternoon</option>
+                <option value="Evening" data-i18n="evening">Evening</option>
+              </select>
+            </div>
+            <div class="field full">
+              <label for="bookingService" data-i18n="bookingService">Required service</label>
+              <select id="bookingService">
+                <option>Land measurement</option><option>Boundary marking</option>
+                <option>Map consultation</option><option>Other</option>
+              </select>
+            </div>
+            <div class="field full">
+              <label for="bookingAddress" data-i18n="landLocation">Land location / village</label>
+              <input id="bookingAddress" required maxlength="200">
+            </div>
+            <div class="field full">
+              <label for="bookingNotes" data-i18n="bookingNotes">Additional details</label>
+              <textarea id="bookingNotes" maxlength="1000"></textarea>
+            </div>
+            <div class="full">
+              <button class="btn btn-primary" type="submit" style="width:100%" data-i18n="submitBooking">Send booking request</button>
+            </div>
+          </div>
+        </form>
+        <div class="notice" data-i18n="paymentNotice">Payment is arranged directly with the Amin after you contact and confirm with them. No payment is collected here.</div>
+      </div>
+
+      <div class="panel">
+        <h3 data-i18n="bookingRequestsTitle">Your demo requests</h3>
+        <p data-i18n="bookingRequestsDesc">Requests saved on this device appear here. The real version needs a server for Amin confirmations and multi-device access.</p>
+        <div id="bookingList" class="ranking-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="ranking">
+    <div class="section-head">
+      <div>
+        <div class="kicker" data-i18n="rankingKicker">COMMUNITY HIGHLIGHTS</div>
+        <h2 data-i18n="rankingTitle">Top Amin ranking</h2>
+        <p class="section-desc" data-i18n="rankingDesc">Demo ranking based on sample ratings and customer counts—not official rankings.</p>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="ranking-list" id="rankingList"></div>
+    </div>
+  </section>
+
+  <section class="section" id="calculator">
+    <div class="section-head">
+      <div>
+        <div class="kicker" data-i18n="toolsKicker">PRACTICAL TOOLS</div>
+        <h2 data-i18n="toolsTitle">Measurement calculator</h2>
+        <p class="section-desc" data-i18n="toolsDesc">Useful unit conversions for reference. Confirm legal land measurements with a qualified professional.</p>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="tool-tabs">
+        <button class="tool-tab active" onclick="setCalcMode('length',this)" data-i18n="lengthTab">Length</button>
+        <button class="tool-tab" onclick="setCalcMode('area',this)" data-i18n="areaTab">Area</button>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="calcValue" data-i18n="enterValue">Enter value</label>
+          <input id="calcValue" type="number" min="0" step="any" placeholder="Enter a number">
+        </div>
+        <div class="field">
+          <label for="calcUnit" data-i18n="unit">Unit</label>
+          <select id="calcUnit"></select>
+        </div>
+        <div class="full">
+          <button class="btn btn-primary" onclick="calculateUnits()" data-i18n="convertButton">Convert units</button>
+          <div class="result-box" id="calcResult" aria-live="polite">Your result will appear here.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="aminRegistration">
+    <div class="section-head">
+      <div>
+        <div class="kicker" data-i18n="joinKicker">GROW YOUR WORK</div>
+        <h2 data-i18n="joinTitle">Are you an Amin?</h2>
+        <p class="section-desc" data-i18n="joinDesc">Create a professional profile request and let customers discover your services.</p>
+      </div>
+      <button class="btn btn-primary" onclick="openModal('registerModal')" data-i18n="registerNow">Register now ↗</button>
+    </div>
+    <div class="two-col">
+      <div class="panel">
+        <div class="service-icon">👤</div>
+        <h3 data-i18n="profileTitle">Your own professional profile</h3>
+        <p data-i18n="profileDesc">A future live version can include your profile photo, service description, work area, WhatsApp, followers, reviews, and booking calendar.</p>
+      </div>
+      <div class="panel">
+        <div class="service-icon">🛡️</div>
+        <h3 data-i18n="approvalTitle">Approval and trust</h3>
+        <p data-i18n="approvalDesc">Registration requests should be reviewed before profiles become public. This demo does not send email or verify identities.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <div>
+      <a class="brand" href="#home">
+        <div class="brand-icon">⌖</div>
+        <div><div class="brand-name">My <span>Amin</span></div><div class="brand-tag" data-i18n="brandTag">Your land, measured with trust</div></div>
+      </a>
+      <p data-i18n="footerDesc">A demo concept to help customers find land measurement professionals. Real services require verified profiles and a secure backend.</p>
+    </div>
+    <div>
+      <h3 data-i18n="footerExplore">Explore</h3>
+      <a href="#find" data-i18n="navFind">Find Amin</a>
+      <a href="#mapSection" data-i18n="navMap">Nearby Map</a>
+      <a href="#booking" data-i18n="navBooking">Booking</a>
+      <a href="#calculator" data-i18n="navTools">Tools</a>
+    </div>
+    <div>
+      <h3 data-i18n="footerLinks">Official links</h3>
+      <a href="https://biharbhumi.bihar.gov.in/" target="_blank" rel="noopener">Bihar Bhumi ↗</a>
+      <a href="https://bhunaksha.bihar.gov.in/" target="_blank" rel="noopener">Bihar Bhunaksha ↗</a>
+      <button class="btn btn-small" onclick="openModal('ownerCodeModal')" data-i18n="ownerAccess">Owner access</button>
+    </div>
+  </div>
+  <div class="footer-bottom">© <span id="year"></span> My Amin · <span data-i18n="footerDemo">Front-end demonstration</span></div>
+</footer>
+
+<!-- LOGIN MODAL -->
+<div class="modal-backdrop" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginHeading">
+  <div class="modal">
+    <div class="modal-head"><h2 id="loginHeading" data-i18n="loginTitle">Login / Sign up</h2><button class="close-btn" onclick="closeModal('loginModal')" aria-label="Close">×</button></div>
+    <div class="modal-body">
+      <div class="notice" data-i18n="loginDemoNotice">Demo only: this form does not create a secure account or authenticate anyone.</div>
+      <form id="loginForm">
+        <div class="form-grid">
+          <div class="field full"><label for="loginPhone" data-i18n="loginPhone">Phone or email</label><input id="loginPhone" required autocomplete="username"></div>
+          <div class="field full"><label for="loginPassword" data-i18n="password">Password</label><input id="loginPassword" type="password" required autocomplete="current-password"></div>
+          <div class="field full"><label for="loginRole" data-i18n="accountType">Account type</label><select id="loginRole"><option value="customer" data-i18n="customer">Customer</option><option value="amin" data-i18n="amin">Amin</option></select></div>
+          <div class="full"><button class="btn btn-primary" type="submit" style="width:100%" data-i18n="loginContinue">Continue demo</button></div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- AMIN REGISTRATION MODAL -->
+<div class="modal-backdrop" id="registerModal" role="dialog" aria-modal="true" aria-labelledby="registerHeading">
+  <div class="modal">
+    <div class="modal-head"><h2 id="registerHeading" data-i18n="registerTitle">Amin registration</h2><button class="close-btn" onclick="closeModal('registerModal')" aria-label="Close">×</button></div>
+    <div class="modal-body">
+      <p class="section-desc" data-i18n="registerDesc">Fill out this demo form. Your request will be saved only in this browser and will not be sent to the website owner.</p>
+      <form id="registerForm">
+        <div class="form-grid">
+          <div class="field"><label for="regName" data-i18n="fullName">Full name</label><input id="regName" required maxlength="100"></div>
+          <div class="field"><label for="regPhone" data-i18n="phone">Phone number</label><input id="regPhone" type="tel" required maxlength="20"></div>
+          <div class="field"><label for="regWhatsapp" data-i18n="whatsapp">WhatsApp number</label><input id="regWhatsapp" type="tel" maxlength="20"></div>
+          <div class="field"><label for="regBusinessId" data-i18n="businessId">Professional / business ID (if any)</label><input id="regBusinessId" maxlength="100"></div>
+          <div class="field"><label for="regDistrict" data-i18n="district">District</label><input id="regDistrict" required maxlength="100"></div>
+          <div class="field"><label for="regVillage" data-i18n="village">Village / block</label><input id="regVillage" required maxlength="150"></div>
+          <div class="field full"><label for="regServices" data-i18n="yourServices">Services offered</label><input id="regServices" placeholder="Land measurement, boundary marking..." maxlength="300"></div>
+          <div class="field full"><label for="regBio" data-i18n="description">Profile description</label><textarea id="regBio" maxlength="1000"></textarea></div>
+          <div class="field full"><label for="regPhoto" data-i18n="photo">Profile photo (demo only)</label><input id="regPhoto" type="file" accept="image/*"></div>
+          <div class="full"><label class="check-line"><input id="regConsent" type="checkbox" required><span data-i18n="consent">I confirm that I have permission to share these details for a profile request.</span></label></div>
+          <div class="full"><button class="btn btn-primary" type="submit" style="width:100%" data-i18n="submitRegistration">Submit registration request</button></div>
+        </div>
+      </form>
+      <div id="registrationResult"></div>
+    </div>
+  </div>
+</div>
+
+<!-- OWNER ACCESS MODAL -->
+<div class="modal-backdrop" id="ownerCodeModal" role="dialog" aria-modal="true" aria-labelledby="ownerCodeHeading">
+  <div class="modal">
+    <div class="modal-head"><h2 id="ownerCodeHeading" data-i18n="ownerHeading">Owner access</h2><button class="close-btn" onclick="closeModal('ownerCodeModal')" aria-label="Close">×</button></div>
+    <div class="modal-body">
+      <div class="notice" data-i18n="ownerNotice">This is only a front-end demonstration. Never use a browser-side code as real security. A production owner dashboard must use server-side authentication.</div>
+      <form id="ownerCodeForm">
+        <div class="field"><label for="ownerCode" data-i18n="ownerCodeLabel">Demo owner code</label><input id="ownerCode" type="password" autocomplete="off" required></div>
+        <button class="btn btn-primary" type="submit" style="width:100%;margin-top:15px" data-i18n="openOwner">Open owner demo</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- OWNER DASHBOARD -->
+<div class="modal-backdrop" id="ownerModal" role="dialog" aria-modal="true" aria-labelledby="ownerHeading2">
+  <div class="modal">
+    <div class="modal-head"><h2 id="ownerHeading2" data-i18n="ownerDashboard">Owner dashboard demo</h2><button class="close-btn" onclick="closeModal('ownerModal')" aria-label="Close">×</button></div>
+    <div class="modal-body">
+      <div class="notice" data-i18n="ownerDashboardNotice">Local demo only. These requests are not sent to you by email or stored on a server.</div>
+      <h3 data-i18n="pendingRequests">Pending Amin registration requests</h3>
+      <div id="ownerRegistrations" class="ranking-list"></div>
+      <hr>
+      <h3 data-i18n="savedBookings">Saved booking requests</h3>
+      <div id="ownerBookings" class="ranking-list"></div>
+      <button class="btn" style="margin-top:15px" onclick="closeModal('ownerModal')" data-i18n="closeDashboard">Close dashboard</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHAT DEMO -->
+<div class="modal-backdrop" id="chatModal" role="dialog" aria-modal="true" aria-labelledby="chatHeading">
+  <div class="modal">
+    <div class="modal-head"><h2 id="chatHeading" data-i18n="chatHeading">My Amin chat demo</h2><button class="close-btn" onclick="closeModal('chatModal')" aria-label="Close">×</button></div>
+    <div class="modal-body">
+      <div class="notice" data-i18n="chatNotice">This is a local chat demonstration. Messages are not delivered to an Amin or another device.</div>
+      <div class="field"><label for="chatAminSelect" data-i18n="chatWith">Chat with</label><select id="chatAminSelect"></select></div>
+      <div class="chat-log" id="chatLog" aria-live="polite">
+        <div class="chat-message" data-i18n="chatWelcome">Hello! Please describe the service you need.</div>
+      </div>
+      <form id="chatForm" style="display:flex;gap:8px">
+        <input id="chatInput" maxlength="500" required placeholder="Write a message..." data-placeholder="chatPlaceholder" style="flex:1;min-width:0;border:1px solid var(--line);border-radius:12px;padding:12px">
+        <button class="btn btn-primary" type="submit" data-i18n="send">Send</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+"use strict";
+
+/*
+  MY AMIN — FRONT-END DEMO
+  Owner demo code: MYAMIN-OWNER-2026
+  This code is NOT secure authentication.
+  Real production features require a secure backend and database.
+*/
+
+const DEMO_OWNER_CODE = "MYAMIN-OWNER-2026";
+let currentLanguage = "en";
+let calcMode = "length";
+let mapInstance = null;
+let userLocationMarker = null;
+let toastTimer = null;
+
+const translations = {
+  en: {
+    topStrip:"A simpler way to find trusted land measurement professionals.",
+    brandTag:"Your land, measured with trust",
+    navFind:"Find Amin",navMap:"Nearby Map",navServices:"Services",navTools:"Tools",navBooking:"Booking",
+    login:"Login",menuFind:"🔎 Find Amin",menuRegister:"🧑‍🌾 Amin Registration",menuBooking:"📅 Booking",
+    menuCalculator:"📏 Unit Calculator",menuRanking:"🏆 Ranking",menuChat:"💬 Chat Demo",menuOwner:"🔐 Owner Access",
+    heroEyebrow:"Amin services, made easier",heroTitle:'Find the right <span>Amin</span> for your land.',
+    heroCopy:"Discover land measurement professionals, explore service areas, compare ratings and request a booking—all in one place.",
+    findButton:"⌕ Find an Amin",joinButton:"＋ Register as Amin",trust1:"✓ Easy search",trust2:"✓ Local profiles",trust3:"✓ Direct contact",
+    floatOne:"Local professionals",floatOneSub:"Search by your area",floatTwo:"Ratings & ranking",floatTwoSub:"Compare profiles",
+    floatThree:"Booking requests",floatThreeSub:"Ask for a suitable date",
+    searchKicker:"DISCOVER PROFESSIONALS",searchTitle:"Find an Amin near you",searchDesc:"Search by name, village, block or district.",
+    nearbyButton:"◎ Use my location",nameLabel:"Name or service",districtLabel:"District",areaLabel:"Village / block",
+    searchPlaceholder:"Amin name, survey...",areaPlaceholder:"Enter village or block",allDistricts:"All districts",searchButton:"Search ↗",
+    statProfiles:"Demo profiles",statFollowing:"Saved / followed",statBookings:"Booking requests",statLanguages:"Languages",
+    profilesKicker:"AMIN DIRECTORY",profilesTitle:"Featured Amin profiles",
+    profilesDesc:"Demo profiles only. Register real professionals after connecting a backend.",
+    sortRank:"Top ranked",sortRating:"Highest rating",sortName:"Name A–Z",
+    mapKicker:"LOCATION EXPLORER",mapTitle:"Explore the map",
+    mapDesc:"Use the map to explore areas. Markers shown here are sample locations, not live Amin GPS data.",
+    mapSideTitle:"Nearby discovery",mapSideDesc:"Allow location access only when you choose to. This demo does not track people in the background.",
+    mapKeyOne:"Sample area marker",mapKeyTwo:"Demo featured area",mapKeyThree:"Your location, if shared",
+    locateButton:"Locate me",locationStatus:"Location not shared.",
+    servicesKicker:"ONE PLACE, MANY TOOLS",servicesTitle:"Services & useful links",servicesDesc:"Explore common land-related services and tools.",
+    service1:"Land measurement",service1Desc:"Request a land survey visit.",service2:"Boundary marking",service2Desc:"Discuss land boundaries.",
+    service3:"Map consultation",service3Desc:"Get help understanding maps.",service4:"Measurement calculator",service4Desc:"Convert common measurement units.",
+    service5:"Bihar Bhumi",service5Desc:"Open the official Bihar land portal.",service6:"Bhu-Naksha",service6Desc:"Open the official cadastral map portal.",
+    service7:"Join as an Amin",service7Desc:"Submit a professional profile request.",service8:"Chat & contact",service8Desc:"Try the local chat demo.",
+    bookingKicker:"PLAN YOUR VISIT",bookingTitle:"Request an Amin booking",
+    bookingDesc:"Choose a professional and preferred date. This demo stores requests only in this browser.",
+    bookingFormTitle:"Booking details",chooseAmin:"Choose Amin",customerName:"Your name",customerPhone:"Phone number",
+    preferredDate:"Preferred date",preferredTime:"Preferred time",morning:"Morning",afternoon:"Afternoon",evening:"Evening",
+    bookingService:"Required service",landLocation:"Land location / village",bookingNotes:"Additional details",
+    submitBooking:"Send booking request",paymentNotice:"Payment is arranged directly with the Amin after you contact and confirm with them. No payment is collected here.",
+    bookingRequestsTitle:"Your demo requests",bookingRequestsDesc:"Requests saved on this device appear here. The real version needs a server for Amin confirmations and multi-device access.",
+    rankingKicker:"COMMUNITY HIGHLIGHTS",rankingTitle:"Top Amin ranking",
+    rankingDesc:"Demo ranking based on sample ratings and customer counts—not official rankings.",
+    toolsKicker:"PRACTICAL TOOLS",toolsTitle:"Measurement calculator",
+    toolsDesc:"Useful unit conversions for reference. Confirm legal land measurements with a qualified professional.",
+    lengthTab:"Length",areaTab:"Area",enterValue:"Enter value",unit:"Unit",convertButton:"Convert units",
+    joinKicker:"GROW YOUR WORK",joinTitle:"Are you an Amin?",
+    joinDesc:"Create a professional profile request and let customers discover your services.",registerNow:"Register now ↗",
+    profileTitle:"Your own professional profile",
+    profileDesc:"A future live version can include your profile photo, service description, work area, WhatsApp, followers, reviews, and booking calendar.",
+    approvalTitle:"Approval and trust",
+    approvalDesc:"Registration requests should be reviewed before profiles become public. This demo does not send email or verify identities.",
+    footerDesc:"A demo concept to help customers find land measurement professionals. Real services require verified profiles and a secure backend.",
+    footerExplore:"Explore",footerLinks:"Official links",ownerAccess:"Owner access",footerDemo:"Front-end demonstration",
+    loginTitle:"Login / Sign up",loginDemoNotice:"Demo only: this form does not create a secure account or authenticate anyone.",
+    loginPhone:"Phone or email",password:"Password",accountType:"Account type",customer:"Customer",amin:"Amin",loginContinue:"Continue demo",
+    registerTitle:"Amin registration",registerDesc:"Fill out this demo form. Your request will be saved only in this browser and will not be sent to the website owner.",
+    fullName:"Full name",phone:"Phone number",whatsapp:"WhatsApp number",businessId:"Professional / business ID (if any)",
+    district:"District",village:"Village / block",yourServices:"Services offered",description:"Profile description",
+    photo:"Profile photo (demo only)",consent:"I confirm that I have permission to share these details for a profile request.",
+    submitRegistration:"Submit registration request",ownerHeading:"Owner access",
+    ownerNotice:"This is only a front-end demonstration. Never use a browser-side code as real security. A production owner dashboard must use server-side authentication.",
+    ownerCodeLabel:"Demo owner code",openOwner:"Open owner demo",ownerDashboard:"Owner dashboard demo",
+    ownerDashboardNotice:"Local demo only. These requests are not sent to you by email or stored on a server.",
+    pendingRequests:"Pending Amin registration requests",savedBookings:"Saved booking requests",closeDashboard:"Close dashboard",
+    chatHeading:"My Amin chat demo",chatNotice:"This is a local chat demonstration. Messages are not delivered to an Amin or another device.",
+    chatWith:"Chat with",chatWelcome:"Hello! Please describe the service you need.",chatPlaceholder:"Write a message...",send:"Send",
+    rankLabel:"Rank",ratingLabel:"Rating",customersLabel:"customers",areaUnknown:"Area not specified",
+    follow:"＋ Follow",following:"✓ Following",save:"♡ Save",saved:"♥ Saved",viewProfile:"View profile",
+    book:"Book",chat:"Chat",call:"Call",whatsappButton:"WhatsApp",profileDetails:"Amin profile",
+    contactUnavailable:"Contact information is not published in this demo.",noProfiles:"No demo profiles match your search. Clear the filters or register a real Amin after backend setup.",
+    searchDone:"Search updated.",locationUnsupported:"Location is unavailable or blocked by your browser.",
+    locationFound:"Your location was shared with this page only.",locationDenied:"Location permission was denied or unavailable.",
+    locationUnavailable:"Map library could not load. Check your internet connection.",
+    calcResult:"Your result will appear here.",enterValid:"Please enter a valid number.",
+    registrationSaved:"Registration request saved on this device only.",bookingSaved:"Booking request saved on this device only.",
+    loginDemo:"Demo login submitted. No real account was created.",ownerWrong:"That demo code is incorrect.",
+    chatDemoReply:"Thanks for your message. This is a demo; the Amin has not received it.",
+    bookingStatus:"Waiting for Amin confirmation",requestNumber:"Request",noBookings:"No booking requests yet.",
+    noRegistrations:"No registration requests yet.",registrationRequest:"Registration request",bookingItem:"Booking",
+    approve:"Approve (demo)",remove:"Remove",approved:"Approved in this browser demo.",removed:"Removed from this browser demo.",
+    photoTooLarge:"Please choose an image under 2 MB.",photoSaved:"Photo selected for this form only; uploading requires a backend.",
+    externalMapNote:"Map tiles are supplied by OpenStreetMap.",distanceUnknown:"Distance unavailable",
+    areaLength:"Length",areaArea:"Area",conversionLabel:"Conversion",
+    footerPrivacy:"Demo only: avoid entering sensitive personal information."
+  },
+  hi: {
+    topStrip:"भरोसेमंद जमीन मापने वाले अमीन को ढूँढने का आसान तरीका।",
+    brandTag:"आपकी जमीन, भरोसे के साथ",
+    navFind:"अमीन खोजें",navMap:"नज़दीकी मैप",navServices:"सेवाएँ",navTools:"टूल",navBooking:"बुकिंग",
+    login:"लॉगिन",menuFind:"🔎 अमीन खोजें",menuRegister:"🧑‍🌾 अमीन रजिस्ट्रेशन",menuBooking:"📅 बुकिंग",
+    menuCalculator:"📏 माप कैलकुलेटर",menuRanking:"🏆 रैंकिंग",menuChat:"💬 चैट डेमो",menuOwner:"🔐 ओनर एक्सेस",
+    heroEyebrow:"अमीन सेवाएँ, अब आसान",heroTitle:'अपनी जमीन के लिए सही <span>अमीन</span> खोजें।',
+    heroCopy:"जमीन मापने वाले प्रोफेशनल खोजें, उनके काम का क्षेत्र देखें, रेटिंग की तुलना करें और बुकिंग का अनुरोध भेजें।",
+    findButton:"⌕ अमीन खोजें",joinButton:"＋ अमीन रजिस्टर करें",trust1:"✓ आसान खोज",trust2:"✓ अलग प्रोफाइल",trust3:"✓ सीधे संपर्क",
+    floatOne:"स्थानीय प्रोफेशनल",floatOneSub:"अपने क्षेत्र में खोजें",floatTwo:"रेटिंग और रैंकिंग",floatTwoSub:"प्रोफाइल की तुलना करें",
+    floatThree:"बुकिंग अनुरोध",floatThreeSub:"सुविधाजनक तारीख पूछें",
+    searchKicker:"प्रोफेशनल खोजें",searchTitle:"अपने नज़दीक अमीन खोजें",searchDesc:"नाम, गाँव, ब्लॉक या जिले से खोजें।",
+    nearbyButton:"◎ मेरी लोकेशन",nameLabel:"नाम या सेवा",districtLabel:"जिला",areaLabel:"गाँव / ब्लॉक",
+    searchPlaceholder:"अमीन का नाम, सर्वे...",areaPlaceholder:"गाँव या ब्लॉक लिखें",allDistricts:"सभी जिले",searchButton:"खोजें ↗",
+    statProfiles:"डेमो प्रोफाइल",statFollowing:"फॉलो / सेव",statBookings:"बुकिंग अनुरोध",statLanguages:"भाषाएँ",
+    profilesKicker:"अमीन डायरेक्टरी",profilesTitle:"प्रमुख अमीन प्रोफाइल",
+    profilesDesc:"ये केवल डेमो प्रोफाइल हैं। असली प्रोफाइल के लिए बैकएंड जोड़ना होगा।",
+    sortRank:"टॉप रैंक",sortRating:"सबसे अच्छी रेटिंग",sortName:"नाम A–Z",
+    mapKicker:"लोकेशन एक्सप्लोरर",mapTitle:"मैप पर क्षेत्र देखें",
+    mapDesc:"मैप पर क्षेत्र देखें। यहाँ के मार्कर उदाहरण हैं, अमीन की लाइव GPS लोकेशन नहीं।",
+    mapSideTitle:"नज़दीकी खोज",mapSideDesc:"लोकेशन की अनुमति तभी दें जब आप चाहें। यह डेमो बैकग्राउंड में किसी को ट्रैक नहीं करता।",
+    mapKeyOne:"उदाहरण क्षेत्र",mapKeyTwo:"प्रमुख डेमो क्षेत्र",mapKeyThree:"आपकी लोकेशन, यदि साझा की",
+    locateButton:"मेरी लोकेशन देखें",locationStatus:"लोकेशन साझा नहीं की गई।",
+    servicesKicker:"एक जगह, कई टूल",servicesTitle:"सेवाएँ और उपयोगी लिंक",servicesDesc:"जमीन से जुड़ी सामान्य सेवाएँ और टूल देखें।",
+    service1:"जमीन की माप",service1Desc:"जमीन मापने के लिए अनुरोध करें।",service2:"सीमा की निशानदेही",service2Desc:"जमीन की सीमा के बारे में बात करें।",
+    service3:"नक्शा सलाह",service3Desc:"नक्शा समझने में सहायता लें।",service4:"माप कैलकुलेटर",service4Desc:"माप की इकाइयाँ बदलें।",
+    service5:"बिहार भूमि",service5Desc:"सरकारी बिहार भूमि पोर्टल खोलें।",service6:"भू-नक्शा",service6Desc:"सरकारी भू-नक्शा पोर्टल खोलें।",
+    service7:"अमीन बनकर जुड़ें",service7Desc:"प्रोफाइल के लिए अनुरोध भेजें।",service8:"चैट और संपर्क",service8Desc:"स्थानीय चैट डेमो आज़माएँ।",
+    bookingKicker:"अपनी विज़िट तय करें",bookingTitle:"अमीन की बुकिंग का अनुरोध",
+    bookingDesc:"अमीन और पसंदीदा तारीख चुनें। यह डेमो अनुरोध सिर्फ इसी ब्राउज़र में सेव करता है।",
+    bookingFormTitle:"बुकिंग की जानकारी",chooseAmin:"अमीन चुनें",customerName:"आपका नाम",customerPhone:"फोन नंबर",
+    preferredDate:"पसंदीदा तारीख",preferredTime:"पसंदीदा समय",morning:"सुबह",afternoon:"दोपहर",evening:"शाम",
+    bookingService:"कौन-सी सेवा चाहिए",landLocation:"जमीन का स्थान / गाँव",bookingNotes:"अतिरिक्त जानकारी",
+    submitBooking:"बुकिंग अनुरोध भेजें",paymentNotice:"अमीन से संपर्क और तारीख तय करने के बाद भुगतान सीधे अमीन को करें। यहाँ कोई भुगतान नहीं लिया जाता।",
+    bookingRequestsTitle:"आपके डेमो अनुरोध",bookingRequestsDesc:"इस डिवाइस पर सेव अनुरोध यहाँ दिखेंगे। असली पुष्टि और दूसरे डिवाइस के लिए सर्वर चाहिए।",
+    rankingKicker:"समुदाय की झलक",rankingTitle:"टॉप अमीन रैंकिंग",
+    rankingDesc:"यह नमूना रेटिंग और ग्राहक संख्या पर आधारित डेमो रैंकिंग है, आधिकारिक रैंकिंग नहीं।",
+    toolsKicker:"उपयोगी टूल",toolsTitle:"माप कैलकुलेटर",
+    toolsDesc:"ये इकाई रूपांतरण संदर्भ के लिए हैं। कानूनी जमीन माप की पुष्टि योग्य प्रोफेशनल से करें।",
+    lengthTab:"लंबाई",areaTab:"क्षेत्रफल",enterValue:"संख्या लिखें",unit:"इकाई",convertButton:"रूपांतरण करें",
+    joinKicker:"अपना काम बढ़ाएँ",joinTitle:"क्या आप अमीन हैं?",
+    joinDesc:"प्रोफाइल अनुरोध बनाएँ, ताकि ग्राहक आपकी सेवाएँ खोज सकें।",registerNow:"अभी रजिस्टर करें ↗",
+    profileTitle:"आपकी अपनी प्रोफेशनल प्रोफाइल",
+    profileDesc:"भविष्य में फोटो, सेवा विवरण, कार्यक्षेत्र, WhatsApp, फॉलोअर्स, रिव्यू और बुकिंग कैलेंडर जोड़े जा सकते हैं।",
+    approvalTitle:"जाँच और भरोसा",
+    approvalDesc:"पब्लिक होने से पहले रजिस्ट्रेशन अनुरोध की जाँच होनी चाहिए। यह डेमो ईमेल नहीं भेजता और पहचान सत्यापित नहीं करता।",
+    footerDesc:"जमीन मापने वाले प्रोफेशनल खोजने के लिए डेमो। असली सेवा के लिए सत्यापित प्रोफाइल और सुरक्षित बैकएंड चाहिए।",
+    footerExplore:"एक्सप्लोर",footerLinks:"सरकारी लिंक",ownerAccess:"ओनर एक्सेस",footerDemo:"फ्रंट-एंड डेमो",
+    loginTitle:"लॉगिन / साइन अप",loginDemoNotice:"सिर्फ डेमो: यह फॉर्म सुरक्षित अकाउंट नहीं बनाता और पहचान सत्यापित नहीं करता।",
+    loginPhone:"फोन या ईमेल",password:"पासवर्ड",accountType:"अकाउंट का प्रकार",customer:"ग्राहक",amin:"अमीन",loginContinue:"डेमो जारी रखें",
+    registerTitle:"अमीन रजिस्ट्रेशन",registerDesc:"यह डेमो फॉर्म भरें। अनुरोध केवल इसी ब्राउज़र में सेव होगा, ओनर को नहीं भेजा जाएगा।",
+    fullName:"पूरा नाम",phone:"फोन नंबर",whatsapp:"WhatsApp नंबर",businessId:"प्रोफेशनल / बिज़नेस ID (यदि हो)",
+    district:"जिला",village:"गाँव / ब्लॉक",yourServices:"आपकी सेवाएँ",description:"प्रोफाइल का विवरण",
+    photo:"प्रोफाइल फोटो (सिर्फ डेमो)",consent:"मैं पुष्टि करता/करती हूँ कि प्रोफाइल अनुरोध के लिए ये जानकारी साझा करने की अनुमति है।",
+    submitRegistration:"रजिस्ट्रेशन अनुरोध भेजें",ownerHeading:"ओनर एक्सेस",
+    ownerNotice:"यह केवल फ्रंट-एंड डेमो है। ब्राउज़र में रखे कोड को असली सुरक्षा न मानें। असली ओनर डैशबोर्ड के लिए सर्वर-साइड लॉगिन चाहिए।",
+    ownerCodeLabel:"डेमो ओनर कोड",openOwner:"ओनर डेमो खोलें",ownerDashboard:"ओनर डैशबोर्ड डेमो",
+    ownerDashboardNotice:"स्थानीय डेमो। ये अनुरोध ईमेल से नहीं भेजे जाते और सर्वर पर सेव नहीं हैं।",
+    pendingRequests:"अमीन रजिस्ट्रेशन के अनुरोध",savedBookings:"सेव बुकिंग अनुरोध",closeDashboard:"डैशबोर्ड बंद करें",
+    chatHeading:"My Amin चैट डेमो",chatNotice:"यह स्थानीय चैट डेमो है। संदेश अमीन या दूसरे डिवाइस तक नहीं पहुँचते।",
+    chatWith:"किससे चैट करें",chatWelcome:"नमस्ते! बताइए आपको कौन-सी सेवा चाहिए।",chatPlaceholder:"संदेश लिखें...",send:"भेजें",
+    rankLabel:"रैंक",ratingLabel:"रेटिंग",customersLabel:"ग्राहक",areaUnknown:"क्षेत्र नहीं दिया गया",
+    follow:"＋ फॉलो",following:"✓ फॉलो कर रहे",save:"♡ सेव",saved:"♥ सेव है",viewProfile:"प्रोफाइल देखें",
+    book:"बुक करें",chat:"चैट",call:"कॉल",whatsappButton:"WhatsApp",profileDetails:"अमीन प्रोफाइल",
+    contactUnavailable:"इस डेमो में संपर्क जानकारी प्रकाशित नहीं है।",noProfiles:"आपकी खोज से कोई डेमो प्रोफाइल नहीं मिली। फिल्टर हटाएँ या बैकएंड बनने पर असली अमीन रजिस्टर करें।",
+    searchDone:"खोज अपडेट हो गई।",locationUnsupported:"लोकेशन उपलब्ध नहीं है या ब्राउज़र ने रोक दी है।",
+    locationFound:"आपकी लोकेशन सिर्फ इसी पेज के साथ साझा हुई।",locationDenied:"लोकेशन की अनुमति नहीं मिली या लोकेशन उपलब्ध नहीं है।",
+    locationUnavailable:"मैप लोड नहीं हुआ। इंटरनेट कनेक्शन जाँचें।",calcResult:"परिणाम यहाँ दिखेगा।",enterValid:"कृपया सही संख्या लिखें।",
+    registrationSaved:"रजिस्ट्रेशन अनुरोध केवल इस डिवाइस पर सेव हुआ।",bookingSaved:"बुकिंग अनुरोध केवल इस डिवाइस पर सेव हुआ।",
+    loginDemo:"डेमो लॉगिन भेजा गया। असली अकाउंट नहीं बना।",ownerWrong:"डेमो कोड सही नहीं है।",
+    chatDemoReply:"संदेश के लिए धन्यवाद। यह डेमो है; अमीन को संदेश नहीं मिला।",
+    bookingStatus:"अमीन की पुष्टि का इंतज़ार",requestNumber:"अनुरोध",noBookings:"अभी कोई बुकिंग अनुरोध नहीं।",
+    noRegistrations:"अभी कोई रजिस्ट्रेशन अनुरोध नहीं।",registrationRequest:"रजिस्ट्रेशन अनुरोध",bookingItem:"बुकिंग",
+    approve:"स्वीकृत करें (डेमो)",remove:"हटाएँ",approved:"इस ब्राउज़र डेमो में स्वीकृत हुआ।",removed:"इस ब्राउज़र डेमो से हटाया गया।",
+    photoTooLarge:"कृपया 2 MB से छोटी फोटो चुनें।",photoSaved:"फोटो सिर्फ इस फॉर्म के लिए चुनी गई; अपलोड करने के लिए बैकएंड चाहिए।",
+    externalMapNote:"मैप टाइल OpenStreetMap से आती हैं।",distanceUnknown:"दूरी उपलब्ध नहीं",
+    areaLength:"लंबाई",areaArea:"क्षेत्रफल",conversionLabel:"रूपांतरण",
+    footerPrivacy:"सिर्फ डेमो: संवेदनशील निजी जानकारी न भरें।"
+  }
+};
+
+const demoAmins = [
+  {
+    id:"MA-DEMO-001",name:"Ramesh Kumar",hiName:"रमेश कुमार",
+    district:"Begusarai",area:"Barauni",state:"Bihar",emoji:"👨‍🌾",
+    rating:4.9,customers:128,reviews:42,rank:1,verified:true,
+    services:["Land measurement","Boundary marking"],
+    bio:"Experienced in local land measurement and boundary marking. Contact details are sample data.",
+    hiBio:"स्थानीय जमीन माप और सीमा की निशानदेही का अनुभव। संपर्क विवरण केवल उदाहरण हैं।",
+    lat:25.47,lng:86.02,phone:"",whatsapp:"",demo:true
+  },
+  {
+    id:"MA-DEMO-002",name:"Sanjay Prasad",hiName:"संजय प्रसाद",
+    district:"Patna",area:"Danapur",state:"Bihar",emoji:"🧑‍💼",
+    rating:4.8,customers:96,reviews:31,rank:2,verified:true,
+    services:["Land measurement","Map consultation"],
+    bio:"Sample profile for the Amin directory. Please do not treat this as a real listing.",
+    hiBio:"अमीन डायरेक्टरी के लिए नमूना प्रोफाइल। इसे असली लिस्टिंग न मानें।",
+    lat:25.62,lng:85.04,phone:"",whatsapp:"",demo:true
+  },
+  {
+    id:"MA-DEMO-003",name:"Anil Sharma",hiName:"अनिल शर्मा",
+    district:"Muzaffarpur",area:"Muzaffarpur",state:"Bihar",emoji:"👨‍💼",
+    rating:4.7,customers:82,reviews:26,rank:3,verified:true,
+    services:["Boundary marking","Map consultation"],
+    bio:"Demo profile illustrating service descriptions, rankings and customer reviews.",
+    hiBio:"सेवा विवरण, रैंकिंग और ग्राहक रिव्यू दिखाने वाली नमूना प्रोफाइल।",
+    lat:26.12,lng:85.38,phone:"",whatsapp:"",demo:true
+  },
+  {
+    id:"MA-DEMO-004",name:"Amit Kumar",hiName:"अमित कुमार",
+    district:"Gaya",area:"Gaya",state:"Bihar",emoji:"🧑‍🌾",
+    rating:4.6,customers:64,reviews:18,rank:4,verified:false,
+    services:["Land measurement"],
+    bio:"Sample listing. A real profile would be visible only after review and approval.",
+    hiBio:"नमूना लिस्टिंग। असली प्रोफाइल जाँच और स्वीकृति के बाद दिखाई जाएगी।",
+    lat:24.79,lng:85.00,phone:"",whatsapp:"",demo:true
+  },
+  {
+    id:"MA-DEMO-005",name:"Vikash Singh",hiName:"विकास सिंह",
+    district:"Darbhanga",area:"Darbhanga",state:"Bihar",emoji:"👨‍🔧",
+    rating:4.5,customers:53,reviews:15,rank:5,verified:false,
+    services:["Land measurement","Map consultation"],
+    bio:"Sample profile for the location and booking interface.",
+    hiBio:"लोकेशन और बुकिंग इंटरफेस के लिए नमूना प्रोफाइल।",
+    lat:26.15,lng:85.89,phone:"",whatsapp:"",demo:true
+  },
+  {
+    id:"MA-DEMO-006",name:"Pankaj Kumar",hiName:"पंकज कुमार",
+    district:"Samastipur",area:"Samastipur",state:"Bihar",emoji:"🧑‍💼",
+    rating:4.4,customers:41,reviews:12,rank:6,verified:false,
+    services:["Boundary marking"],
+    bio:"Example profile only; no real-time availability or contact details are connected.",
+    hiBio:"केवल उदाहरण प्रोफाइल; लाइव उपलब्धता या संपर्क विवरण जुड़े नहीं हैं।",
+    lat:25.86,lng:85.78,phone:"",whatsapp:"",demo:true
+  }
+];
+
+function readStore(key,fallback){
+  try{
+    const raw=localStorage.getItem(key);
+    return raw===null?fallback:JSON.parse(raw);
+  }catch(e){return fallback}
+}
+function writeStore(key,value){
+  try{localStorage.setItem(key,JSON.stringify(value));return true}
+  catch(e){showToast("Browser storage is unavailable.");return false}
+}
+function t(key){
+  return (translations[currentLanguage]&&translations[currentLanguage][key])
+    || translations.en[key] || key;
+}
+function displayName(amin){
+  return currentLanguage==="hi" && amin.hiName ? amin.hiName : amin.name;
+}
+function displayBio(amin){
+  return currentLanguage==="hi" && amin.hiBio ? amin.hiBio : amin.bio;
+}
+function escapeHTML(value){
+  return String(value??"").replace(/[&<>"']/g,c=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+function showToast(message){
+  const toast=document.getElementById("toast");
+  toast.textContent=message;
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>toast.classList.remove("show"),2900);
+}
+function openModal(id){
+  document.getElementById(id).classList.add("open");
+  document.getElementById("moreMenu").classList.remove("open");
+  document.getElementById("moreButton").setAttribute("aria-expanded","false");
+}
+function closeModal(id){document.getElementById(id).classList.remove("open")}
+function scrollToSection(id){
+  document.getElementById("moreMenu").classList.remove("open");
+  document.getElementById("moreButton").setAttribute("aria-expanded","false");
+  document.getElementById(id)?.scrollIntoView({behavior:"smooth"});
+}
+function getSaved(){return readStore("myamin_saved",[])}
+function getFollowing(){return readStore("myamin_following",[])}
+function getBookings(){return readStore("myamin_bookings",[])}
+function getRegistrations(){return readStore("myamin_registrations",[])}
+function allAmins(){return demoAmins.slice()}
+
+function updateStats(){
+  document.getElementById("statProfiles").textContent=allAmins().length;
+  document.getElementById("statFollowing").textContent=getFollowing().length+getSaved().length;
+  document.getElementById("statBookings").textContent=getBookings().length;
+}
+function populateAminSelects(){
+  const options=allAmins().map(a=>`<option value="${escapeHTML(a.id)}">${escapeHTML(displayName(a))} — ${escapeHTML(a.area)}</option>`).join("");
+  document.getElementById("bookingAmin").innerHTML=options;
+  document.getElementById("chatAminSelect").innerHTML=options;
+}
+function renderProfiles(list=allAmins()){
+  const grid=document.getElementById("profileGrid");
+  const followed=getFollowing(),saved=getSaved();
+  if(!list.length){
+    grid.innerHTML=`<div class="empty-state">${escapeHTML(t("noProfiles"))}</div>`;
+    return;
+  }
+  grid.innerHTML=list.map(a=>{
+    const services=a.services||[];
+    return `
+      <article class="profile-card">
+        <div class="profile-top">
+          <div class="avatar">${escapeHTML(a.emoji||"👤")}</div>
+          <div style="min-width:0;flex:1">
+            <h3>${escapeHTML(displayName(a))}</h3>
+            <div class="profile-id">${escapeHTML(a.id)}</div>
+            <div class="verified">${a.verified?"✓ "+(currentLanguage==="hi"?"डेमो सत्यापित":"Demo verified"):"○ "+(currentLanguage==="hi"?"जाँच बाकी":"Not verified")}</div>
+          </div>
+          <span class="rank">#${a.rank||"—"}</span>
+        </div>
+        <div class="profile-meta">
+          <span>📍 ${escapeHTML(a.area||t("areaUnknown"))}, ${escapeHTML(a.district||"")}</span>
+          <span>⭐ ${Number(a.rating||0).toFixed(1)} (${a.reviews||0})</span>
+        </div>
+        <p class="profile-bio">${escapeHTML(displayBio(a))}</p>
+        <div class="tag-row">${services.map(s=>`<span class="tag">${escapeHTML(s)}</span>`).join("")}</div>
+        <div style="font-size:11px;color:var(--muted)">👥 ${a.customers||0} ${escapeHTML(t("customersLabel"))}</div>
+        <div class="card-actions">
+          <button class="btn btn-small ${followed.includes(a.id)?"btn-soft":""}" onclick="toggleFollow('${a.id}')">${followed.includes(a.id)?escapeHTML(t("following")):escapeHTML(t("follow"))}</button>
+          <button class="btn btn-small ${saved.includes(a.id)?"btn-soft":""}" onclick="toggleSave('${a.id}')">${saved.includes(a.id)?escapeHTML(t("saved")):escapeHTML(t("save"))}</button>
+          <button class="btn btn-small" onclick="viewProfile('${a.id}')">${escapeHTML(t("viewProfile"))}</button>
+        </div>
+        <div class="card-actions">
+          <button class="btn btn-small btn-primary" onclick="bookAmin('${a.id}')">${escapeHTML(t("book"))}</button>
+          <button class="btn btn-small" onclick="chatWithAmin('${a.id}')">${escapeHTML(t("chat"))}</button>
+        </div>
+      </article>`;
+  }).join("");
+}
+function searchAmins(){
+  const query=document.getElementById("searchName").value.trim().toLowerCase();
+  const district=document.getElementById("searchDistrict").value.toLowerCase();
+  const area=document.getElementById("searchArea").value.trim().toLowerCase();
+  let list=allAmins().filter(a=>{
+    const hay=[a.name,a.hiName,a.id,a.district,a.area,...(a.services||[]),a.bio,a.hiBio].join(" ").toLowerCase();
+    return (!query||hay.includes(query))
+      &&(!district||String(a.district).toLowerCase()===district)
+      &&(!area||String(a.area+" "+a.district).toLowerCase().includes(area));
+  });
+  const sort=document.getElementById("sortSelect").value;
+  if(sort==="rating")list.sort((a,b)=>b.rating-a.rating);
+  else if(sort==="name")list.sort((a,b)=>displayName(a).localeCompare(displayName(b)));
+  else list.sort((a,b)=>(a.rank||999)-(b.rank||999));
+  renderProfiles(list);
+  showToast(t("searchDone"));
+}
+function toggleFollow(id){
+  let arr=getFollowing();
+  arr=arr.includes(id)?arr.filter(x=>x!==id):[...arr,id];
+  writeStore("myamin_following",arr);
+  renderProfiles();updateStats();
+  showToast(currentLanguage==="hi"?"फॉलो सूची अपडेट हुई।":"Following list updated.");
+}
+function toggleSave(id){
+  let arr=getSaved();
+  arr=arr.includes(id)?arr.filter(x=>x!==id):[...arr,id];
+  writeStore("myamin_saved",arr);
+  renderProfiles();updateStats();
+  showToast(currentLanguage==="hi"?"सेव सूची अपडेट हुई।":"Saved list updated.");
+}
+function viewProfile(id){
+  const a=allAmins().find(x=>x.id===id);
+  if(!a)return;
+  const services=(a.services||[]).join(", ");
+  const html=`
+    <div class="profile-top">
+      <div class="avatar">${escapeHTML(a.emoji)}</div>
+      <div><h3>${escapeHTML(displayName(a))}</h3><div class="profile-id">${escapeHTML(a.id)}</div>
+      <div class="verified">⭐ ${a.rating} · ${a.customers} ${escapeHTML(t("customersLabel"))}</div></div>
+    </div>
+    <hr>
+    <p><strong>${escapeHTML(t("district"))}:</strong> ${escapeHTML(a.district)}</p>
+    <p><strong>${escapeHTML(t("village"))}:</strong> ${escapeHTML(a.area)}</p>
+    <p><strong>${escapeHTML(t("yourServices"))}:</strong> ${escapeHTML(services)}</p>
+    <p>${escapeHTML(displayBio(a))}</p>
+    <div class="notice">${escapeHTML(t("contactUnavailable"))}</div>
+    <div class="card-actions">
+      <button class="btn btn-primary" onclick="closeModal('profileModal');bookAmin('${a.id}')">${escapeHTML(t("book"))}</button>
+      <button class="btn" onclick="closeModal('profileModal');chatWithAmin('${a.id}')">${escapeHTML(t("chat"))}</button>
+    </div>`;
+  let modal=document.getElementById("profileModal");
+  if(!modal){
+    modal=document.createElement("div");
+    modal.id="profileModal";modal.className="modal-backdrop";
+    modal.setAttribute("role","dialog");modal.setAttribute("aria-modal","true");
+    modal.innerHTML=`<div class="modal"><div class="modal-head"><h2>${escapeHTML(t("profileDetails"))}</h2><button class="close-btn" onclick="closeModal('profileModal')">×</button></div><div class="modal-body" id="profileModalBody"></div></div>`;
+    document.body.appendChild(modal);
+  }
+  document.getElementById("profileModalBody").innerHTML=html;
+  openModal("profileModal");
+}
+function bookAmin(id){
+  document.getElementById("bookingAmin").value=id;
+  closeModal("profileModal");
+  scrollToSection("booking");
+}
+function chatWithAmin(id){
+  document.getElementById("chatAminSelect").value=id;
+  openModal("chatModal");
+}
+function setBookingService(service){
+  document.getElementById("bookingService").value=service;
+}
+function renderBookings(){
+  const bookings=getBookings();
+  const target=document.getElementById("bookingList");
+  if(!bookings.length){target.innerHTML=`<div class="empty-state">${escapeHTML(t("noBookings"))}</div>`;return}
+  target.innerHTML=bookings.slice().reverse().map((b,i)=>`
+    <div class="ranking-row">
+      <div class="ranking-number">#${bookings.length-i}</div>
+      <div style="flex:1;min-width:0"><strong>${escapeHTML(b.aminName)}</strong>
+        <small>${escapeHTML(b.date)} · ${escapeHTML(b.service)} · ${escapeHTML(t("bookingStatus"))}</small>
+      </div>
+    </div>`).join("");
+}
+function renderRankings(){
+  const list=allAmins().slice().sort((a,b)=>b.rating-a.rating||b.customers-a.customers);
+  document.getElementById("rankingList").innerHTML=list.map((a,i)=>`
+    <div class="ranking-row">
+      <div class="ranking-number">${i===0?"🥇":i===1?"🥈":i===2?"🥉":"#"+(i+1)}</div>
+      <div class="avatar" style="width:43px;height:43px;border-radius:13px;font-size:21px">${escapeHTML(a.emoji)}</div>
+      <div style="flex:1;min-width:0"><strong>${escapeHTML(displayName(a))}</strong><small>${escapeHTML(a.district)} · ${a.customers} ${escapeHTML(t("customersLabel"))}</small></div>
+      <div style="font-size:12px;font-weight:800;color:var(--green)">⭐ ${a.rating.toFixed(1)}</div>
+    </div>`).join("");
+}
+function showNearby(){
+  if(!navigator.geolocation){showToast(t("locationUnsupported"));return}
+  const status=document.getElementById("locationStatus");
+  status.textContent=currentLanguage==="hi"?"लोकेशन की अनुमति माँगी जा रही है…":"Requesting location permission…";
+  navigator.geolocation.getCurrentPosition(position=>{
+    const lat=position.coords.latitude,lng=position.coords.longitude;
+    if(mapInstance){
+      if(userLocationMarker)mapInstance.removeLayer(userLocationMarker);
+      userLocationMarker=L.circleMarker([lat,lng],{
+        radius:8,color:"#fff",weight:3,fillColor:"#777",fillOpacity:1
+      }).addTo(mapInstance).bindPopup(escapeHTML(t("mapKeyThree")));
+      mapInstance.setView([lat,lng],12);
+    }
+    status.textContent=t("locationFound");
+    showToast(t("locationFound"));
+  },()=>{
+    status.textContent=t("locationDenied");
+    showToast(t("locationDenied"));
+  },{enableHighAccuracy:false,timeout:10000,maximumAge:60000});
+}
+function initMap(){
+  if(!window.L){
+    document.getElementById("map").innerHTML=`<div style="padding:25px;color:#778179">${escapeHTML(t("locationUnavailable"))}</div>`;
+    return;
+  }
+  mapInstance=L.map("map").setView([25.75,85.6],7);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+    maxZoom:18,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'
+  }).addTo(mapInstance);
+  const points=[
+    {lat:25.47,lng:86.02,name:"Barauni area — sample marker"},
+    {lat:25.62,lng:85.04,name:"Danapur area — sample marker"},
+    {lat:26.12,lng:85.38,name:"Muzaffarpur area — sample marker"},
+    {lat:24.79,lng:85.00,name:"Gaya area — sample marker"},
+    {lat:26.15,lng:85.89,name:"Darbhanga area — sample marker"}
+  ];
+  points.forEach((p,i)=>{
+    L.circleMarker([p.lat,p.lng],{
+      radius:7,color:"#fff",weight:2,
+      fillColor:i===0?"#c89b4b":"#27764b",fillOpacity:.9
+    }).addTo(mapInstance).bindPopup(escapeHTML(p.name));
+  });
+}
+function setCalcMode(mode,button){
+  calcMode=mode;
+  document.querySelectorAll(".tool-tab").forEach(b=>b.classList.remove("active"));
+  button.classList.add("active");
+  populateCalcUnits();
+  document.getElementById("calcResult").textContent=t("calcResult");
+}
+const units={
+  length:{
+    "feet":{factor:0.3048,label:"Feet (ft)"},
+    "meter":{factor:1,label:"Meters (m)"},
+    "kilometer":{factor:1000,label:"Kilometers (km)"},
+    "inch":{factor:0.0254,label:"Inches (in)"},
+    "yard":{factor:0.9144,label:"Yards (yd)"},
+    "centimeter":{factor:0.01,label:"Centimeters (cm)"}
+  },
+  area:{
+    "sqft":{factor:0.09290304,label:"Square feet (ft²)"},
+    "sqm":{factor:1,label:"Square meters (m²)"},
+    "acre":{factor:4046.8564224,label:"Acres"},
+    "hectare":{factor:10000,label:"Hectares"},
+    "sqyard":{factor:0.83612736,label:"Square yards (yd²)"},
+    "sqkm":{factor:1000000,label:"Square kilometers (km²)"}
+  }
+};
+function populateCalcUnits(){
+  const select=document.getElementById("calcUnit");
+  select.innerHTML=Object.entries(units[calcMode]).map(([key,u])=>
+    `<option value="${key}">${escapeHTML(u.label)}</option>`).join("");
+}
+function calculateUnits(){
+  const raw=document.getElementById("calcValue").value;
+  const value=Number(raw);
+  const result=document.getElementById("calcResult");
+  if(raw.trim()===""||!Number.isFinite(value)||value<0){
+    result.textContent=t("enterValid");return;
+  }
+  const selected=document.getElementById("calcUnit").value;
+  const base=value*units[calcMode][selected].factor;
+  const output=Object.entries(units[calcMode]).map(([key,u])=>{
+    const converted=base/u.factor;
+    return `${u.label}: ${converted.toLocaleString(undefined,{maximumFractionDigits:6})}`;
+  });
+  result.innerHTML=output.map(x=>`<div>${escapeHTML(x)}</div>`).join("");
+}
+function renderOwnerData(){
+  const regs=getRegistrations(),bookings=getBookings();
+  const regTarget=document.getElementById("ownerRegistrations");
+  const bookingTarget=document.getElementById("ownerBookings");
+  regTarget.innerHTML=regs.length?regs.map((r,i)=>`
+    <div class="ranking-row">
+      <div style="flex:1;min-width:0"><strong>${escapeHTML(r.name)}</strong><small>${escapeHTML(r.district)} · ${escapeHTML(r.village)} · ${escapeHTML(r.phone)}</small><small>${escapeHTML(r.services||"")}</small></div>
+      <button class="btn btn-small" onclick="approveRegistration('${r.id}')">${escapeHTML(t("approve"))}</button>
+      <button class="btn btn-small" onclick="removeRegistration('${r.id}')">${escapeHTML(t("remove"))}</button>
+    </div>`).join(""):`<div class="empty-state">${escapeHTML(t("noRegistrations"))}</div>`;
+  bookingTarget.innerHTML=bookings.length?bookings.map((b,i)=>`
+    <div class="ranking-row"><div style="flex:1;min-width:0"><strong>${escapeHTML(b.customer)} — ${escapeHTML(b.aminName)}</strong><small>${escapeHTML(b.date)} · ${escapeHTML(b.phone)} · ${escapeHTML(b.location)}</small></div>
+    <button class="btn btn-small" onclick="removeBooking('${b.id}')">${escapeHTML(t("remove"))}</button></div>`).join(""):`<div class="empty-state">${escapeHTML(t("noBookings"))}</div>`;
+}
+function approveRegistration(id){
+  let regs=getRegistrations();const r=regs.find(x=>x.id===id);
+  if(!r)return;
+  r.status="Approved (demo)";writeStore("myamin_registrations",regs);
+  renderOwnerData();showToast(t("approved"));
+}
+function removeRegistration(id){
+  writeStore("myamin_registrations",getRegistrations().filter(x=>x.id!==id));
+  renderOwnerData();showToast(t("removed"));
+}
+function removeBooking(id){
+  writeStore("myamin_bookings",getBookings().filter(x=>x.id!==id));
+  renderBookings();renderOwnerData();updateStats();showToast(t("removed"));
+}
+function applyLanguage(lang){
+  currentLanguage=lang==="hi"?"hi":"en";
+  document.documentElement.lang=currentLanguage;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const key=el.getAttribute("data-i18n");
+    const value=t(key);
+    if(el.tagName==="OPTION"||el.tagName==="BUTTON"||el.tagName==="A"||
+       el.tagName==="LABEL"||el.tagName==="P"||el.tagName==="SPAN"||
+       el.tagName==="H2"||el.tagName==="H3"||el.tagName==="DIV"||
+       el.tagName==="STRONG"){
+      if(value.includes("<span>")||value.includes("<span")){
+        el.innerHTML=value;
+      }else{
+        el.textContent=value;
+      }
+    }else{
+      el.textContent=value;
+    }
+  });
+  document.querySelectorAll("[data-placeholder]").forEach(el=>{
+    el.placeholder=t(el.getAttribute("data-placeholder"));
+  });
+  document.getElementById("languageSelect").value=currentLanguage;
+  renderProfiles();
+  renderRankings();
+  populateAminSelects();
+  renderBookings();
+  updateStats();
+  if(mapInstance){
+    setTimeout(()=>mapInstance.invalidateSize(),100);
+  }
+}
+document.getElementById("languageSelect").addEventListener("change",e=>applyLanguage(e.target.value));
+
+document.getElementById("moreButton").addEventListener("click",()=>{
+  const menu=document.getElementById("moreMenu");
+  menu.classList.toggle("open");
+  document.getElementById("moreButton").setAttribute("aria-expanded",menu.classList.contains("open")?"true":"false");
+});
+document.addEventListener("click",e=>{
+  const wrap=document.querySelector(".more-wrap");
+  if(wrap&&!wrap.contains(e.target)){
+    document.getElementById("moreMenu").classList.remove("open");
+    document.getElementById("moreButton").setAttribute("aria-expanded","false");
+  }
+});
+document.querySelectorAll(".modal-backdrop").forEach(backdrop=>{
+  backdrop.addEventListener("click",e=>{
+    if(e.target===backdrop)backdrop.classList.remove("open");
+  });
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){
+    document.querySelectorAll(".modal-backdrop.open").forEach(m=>m.classList.remove("open"));
+    document.getElementById("moreMenu").classList.remove("open");
+  }
+});
+
+document.getElementById("bookingForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const amin=allAmins().find(a=>a.id===document.getElementById("bookingAmin").value);
+  if(!amin){showToast(t("noProfiles"));return}
+  const booking={
+    id:"BK-"+Date.now(),
+    aminId:amin.id,
+    aminName:displayName(amin),
+    customer:document.getElementById("customerName").value.trim(),
+    phone:document.getElementById("customerPhone").value.trim(),
+    date:document.getElementById("bookingDate").value,
+    time:document.getElementById("bookingTime").value,
+    service:document.getElementById("bookingService").value,
+    location:document.getElementById("bookingAddress").value.trim(),
+    notes:document.getElementById("bookingNotes").value.trim(),
+    status:"Pending"
+  };
+  if(!booking.customer||!booking.phone||!booking.date||!booking.location){
+    showToast(t("enterValid"));return;
+  }
+  const bookings=getBookings();bookings.push(booking);
+  if(writeStore("myamin_bookings",bookings)){
+    renderBookings();updateStats();e.target.reset();
+    showToast(t("bookingSaved"));
+  }
+});
+document.getElementById("registerForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const file=document.getElementById("regPhoto").files[0];
+  if(file&&file.size>2*1024*1024){showToast(t("photoTooLarge"));return}
+  const request={
+    id:"REG-"+Date.now(),
+    name:document.getElementById("regName").value.trim(),
+    phone:document.getElementById("regPhone").value.trim(),
+    whatsapp:document.getElementById("regWhatsapp").value.trim(),
+    businessId:document.getElementById("regBusinessId").value.trim(),
+    district:document.getElementById("regDistrict").value.trim(),
+    village:document.getElementById("regVillage").value.trim(),
+    services:document.getElementById("regServices").value.trim(),
+    bio:document.getElementById("regBio").value.trim(),
+    status:"Pending"
+  };
+  const regs=getRegistrations();regs.push(request);
+  if(writeStore("myamin_registrations",regs)){
+    document.getElementById("registrationResult").innerHTML=`<div class="notice success-notice">${escapeHTML(t("registrationSaved"))}</div>`;
+    e.target.reset();
+    if(file)showToast(t("photoSaved"));
+  }
+});
+document.getElementById("loginForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  e.target.reset();closeModal("loginModal");showToast(t("loginDemo"));
+});
+document.getElementById("ownerCodeForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const code=document.getElementById("ownerCode").value;
+  if(code===DEMO_OWNER_CODE){
+    e.target.reset();closeModal("ownerCodeModal");renderOwnerData();openModal("ownerModal");
+  }else{
+    showToast(t("ownerWrong"));
+  }
+});
+document.getElementById("chatForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const input=document.getElementById("chatInput");
+  const message=input.value.trim();
+  if(!message)return;
+  const log=document.getElementById("chatLog");
+  const mine=document.createElement("div");
+  mine.className="chat-message mine";mine.textContent=message;log.appendChild(mine);
+  const reply=document.createElement("div");
+  reply.className="chat-message";reply.textContent=t("chatDemoReply");log.appendChild(reply);
+  input.value="";log.scrollTop=log.scrollHeight;
+});
+document.getElementById("regPhoto").addEventListener("change",e=>{
+  const file=e.target.files[0];
+  if(file&&file.size>2*1024*1024){e.target.value="";showToast(t("photoTooLarge"))}
+});
+document.getElementById("searchName").addEventListener("keydown",e=>{if(e.key==="Enter")searchAmins()});
+document.getElementById("searchArea").addEventListener("keydown",e=>{if(e.key==="Enter")searchAmins()});
+
+document.getElementById("year").textContent=new Date().getFullYear();
+document.getElementById("bookingDate").min=new Date().toISOString().slice(0,10);
+populateCalcUnits();
+populateAminSelects();
+renderProfiles();
+renderRankings();
+renderBookings();
+updateStats();
+initMap();
+</script>
+</body>
+</html>
