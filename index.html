@@ -1241,6 +1241,8 @@ function applyLanguage(lang){
   const portalSearch=$("portalSearch");
   if(portalSearch) portalSearch.placeholder=lang==="en"?"Search state or portal…":"राज्य या पोर्टल खोजें…";
   $("languageBtn").textContent=lang==="en"?"हिंदी | English":"English | हिंदी";
+  $("siteSearch").placeholder=lang==="en"?"Search services or Profile ID…":"सेवाएँ या प्रोफ़ाइल ID खोजें…";
+  renderSmartSearch();
   $("navLoginBtn").textContent=lang==="en"?"Login":"लॉगिन";
   renderPortals();
   loadAmins();
