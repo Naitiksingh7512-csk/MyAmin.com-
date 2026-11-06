@@ -1548,7 +1548,7 @@ $("aminForm").addEventListener("submit",e=>{
 function searchAmins() {
   const query=$("aminSearch").value.trim().toLowerCase();
   const state=$("aminState").value.toLowerCase();
-  const records=read(DB.amins,[]).filter(a=>a.approved);
+  const records=read(DB.amins,[]).filter(a=>a.approved&&a.workAllowed!==false);
   const filtered=records.filter(a=>{
     const combined=[a.name,a.profileId,a.id,a.state,a.district,a.place,a.description].join(" ").toLowerCase();
     return (!query||combined.includes(query))&&(!state||(a.state||"").toLowerCase()===state);
@@ -1556,7 +1556,7 @@ function searchAmins() {
   renderAmins(filtered);
 }
 function loadAmins() {
-  const records=read(DB.amins,[]).filter(a=>a.approved);
+  const records=read(DB.amins,[]).filter(a=>a.approved&&a.workAllowed!==false);
   renderAmins(records);
 }
 function renderAmins(records) {
