@@ -560,6 +560,7 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
 @media(max-width:700px){.logo-image{width:165px!important;height:46px!important;max-width:165px!important;max-height:46px!important;flex:0 0 165px!important}.footer-brand .logo-image{width:190px!important;height:52px!important;max-width:190px!important;flex:0 1 190px!important}}
 @media(max-width:420px){.logo-image{width:145px!important;height:42px!important;max-width:145px!important;max-height:42px!important;flex-basis:145px!important}}}
 
+.nearby-panel.active{display:block}.nearby-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}.nearby-head h2{margin:6px 0}.nearby-head p{color:var(--muted);max-width:650px}.nearby-legend{display:flex;gap:18px;flex-wrap:wrap;margin:14px 0;color:#53675e;font-size:13px}.nearby-legend span{display:flex;align-items:center;gap:7px}.legend-dot{display:inline-block;width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #8ba99a}.customer-dot{background:#1677ff}.amin-dot{background:#e53935}#nearbyMap{width:100%;height:min(62vh,560px);min-height:330px;border:1px solid #dce8e0;border-radius:18px;z-index:1;overflow:hidden;background:#e8efe9}.nearby-actions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.nearby-pin{background:#e53935;border:2px solid white;border-radius:50% 50% 50% 0;width:18px;height:18px;transform:rotate(-45deg);box-shadow:0 2px 8px #0004}.nearby-customer-pin{background:#1677ff;border:3px solid white;border-radius:50%;width:20px;height:20px;box-shadow:0 0 0 7px #1677ff33}.nearby-card{padding:12px 14px;border:1px solid #e1ebe4;border-radius:14px;background:#fff;margin-top:9px}.nearby-card strong{display:block}.nearby-card small{color:#718078}@media(max-width:600px){#nearbyMap{height:55vh;min-height:300px}.nearby-head .btn{width:100%}}
 </style>
 <style>.account-stat{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px;cursor:pointer;color:inherit;display:grid;gap:5px}.account-stat strong{font-size:22px}.account-stat small{font-size:12px}.account-detail-grid>div{position:relative;padding:10px 42px 10px 10px}.account-edit-field{position:absolute;right:7px;top:8px;border:0;background:transparent;cursor:pointer;font-size:17px}</style>
 <style>
@@ -605,6 +606,7 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
 #searchDialog .search-description{color:#687b71;font-size:13px}
 @media(max-width:520px){#searchDialog .dialog-box{width:calc(100% - 22px);margin:11px;border-radius:20px}.search-suggestions{grid-template-columns:1fr}}
 </style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
 </head>
 
 <body>
@@ -688,6 +690,7 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
     </div>
     <div class="quick-grid">
       <button class="quick" onclick="go('find')"><span>🧭</span><span data-en="Find an Amin" data-hi="अमीन खोजें">Find an Amin</span></button>
+      <button class="quick" onclick="go('nearby')"><span>📍</span><span data-en="Find Nearby Amin" data-hi="आस-पास के अमीन">Find Nearby Amin</span></button>
       <button class="quick" onclick="go('booking')"><span>📅</span><span data-en="Book Appointment" data-hi="अपॉइंटमेंट बुक करें">Book Appointment</span></button>
       <button class="quick" onclick="go('idmaker')"><span>🪪</span><span data-en="ID Card Maker" data-hi="आईडी कार्ड बनाएँ">ID Card Maker</span></button>
       <button class="quick" onclick="go('portals')"><span>🏛️</span><span data-en="Land Portals" data-hi="सरकारी पोर्टल">Land Portals</span></button>
@@ -724,6 +727,7 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
     <div id="aminResults" class="list"></div>
   </section>
 
+<section id="nearby" class="panel nearby-panel"><div class="nearby-head"><div><span class="search-kicker">GPS · LIVE MAP</span><h2>Find Nearby Amin | आस-पास के अमीन</h2><p>Allow location access to see your live position and approved Amin profiles around you.</p></div><button class="btn btn-outline" type="button" onclick="go('home')">← Back</button></div><div class="nearby-legend"><span><i class="legend-dot customer-dot"></i> Your live location</span><span><i class="legend-dot amin-dot"></i> Amin location (approx.)</span></div><div id="nearbyMap" role="application" aria-label="Map showing your live location and nearby approved Amin profiles"></div><div class="nearby-actions"><button class="btn btn-green" type="button" onclick="startNearbyMap()">⌖ Use my live location</button><button class="btn btn-outline" type="button" onclick="refreshNearbyAmins()">Refresh Amin locations</button></div><p id="nearbyStatus" class="notice" aria-live="polite">Your location is only used after you allow GPS access. Amin pins are approximate area locations based on their registered village/city.</p><div id="nearbyAminList" class="list"></div></section>
   <!-- NORMAL CUSTOMER LOGIN -->
   <section id="login" class="panel">
     <h2>👤 Customer Login / ग्राहक लॉगिन</h2>
@@ -973,6 +977,7 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
 
 <div id="toast" role="status" aria-live="polite"></div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script>
 "use strict";
 
@@ -1110,7 +1115,7 @@ $("siteSearch").addEventListener("keydown",e=>{
 const smartSearchItems=[
   {label:"Find an Amin",hiLabel:"अमीन खोजें",hint:"नाम, गाँव या जिला",hiHint:"नाम, गाँव या जिला खोजें",terms:["amin","अमीन","nearby","पास में"],route:"find",icon:"👷"},
   {label:"Search by Profile UID",hiLabel:"प्रोफ़ाइल UID से खोजें",hint:"UID जैसे kumar@12345678",hiHint:"अमीन की प्रोफ़ाइल ID डालें",terms:["uid","profile id","आईडी"],route:"find",icon:"🪪"},
-  {label:"Nearby Amin",hiLabel:"आस-पास के अमीन",hint:"अपने आसपास के Amin खोजें",hiHint:"अपने आसपास अमीन खोजें",terms:["nearby amin","near me","नजदीक","आसपास"],route:"find",icon:"📍"},
+  {label:"Find Nearby Amin",hiLabel:"आस-पास के अमीन",hint:"Live GPS map with nearby approved Amin profiles",hiHint:"लाइव GPS मैप पर आसपास के स्वीकृत अमीन देखें",terms:["nearby amin","near me","नजदीक","आसपास","gps","location"],route:"nearby",icon:"📍"},
   {label:"New Booking",hiLabel:"नई बुकिंग",hint:"अपॉइंटमेंट अनुरोध भेजें",hiHint:"अपॉइंटमेंट का अनुरोध करें",terms:["booking","appointment","बुकिंग"],route:"booking",icon:"📅"},
   {label:"Amin Registration",hiLabel:"अमीन पंजीकरण",hint:"Amin बनने के लिए आवेदन",hiHint:"अमीन के रूप में पंजीकरण करें",terms:["register","registration","जुड़ें"],route:"registerAmin",icon:"📝"},
   {label:"Amin ID Card",hiLabel:"अमीन पहचान पत्र",hint:"अपना ID card बनाएँ",hiHint:"अपना ID कार्ड बनाएँ या डाउनलोड करें",terms:["id card","idcard","कार्ड"],route:"idmaker",icon:"🎫"},
