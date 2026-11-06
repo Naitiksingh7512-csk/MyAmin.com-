@@ -1091,7 +1091,6 @@ $("changeAccountPhoto").addEventListener("click",()=>$("accountPhotoInput").clic
 $("saveAccountPayment").addEventListener("click",()=>{const a=read(DB.aminProfile,null);if(!a)return;a.upiId=$("accountUpiId").value.trim();a.upiQr=window.accountUpiQrData||a.upiQr||"";save(DB.aminProfile,a);save(DB.amins,read(DB.amins,[]).map(x=>x.profileId===a.profileId?{...x,upiId:a.upiId,upiQr:a.upiQr}:x));toast("UPI details saved on this device.");});
 window.accountUpiQrData="";$("accountUpiQrFile").addEventListener("change",e=>{const file=e.target.files&&e.target.files[0];if(!file)return;if(!["image/jpeg"].includes(file.type)||file.size>3*1024*1024){toast("Choose a JPG/JPEG QR image under 3 MB.");e.target.value="";return;}const reader=new FileReader();reader.onload=()=>{window.accountUpiQrData=String(reader.result||"");$("accountUpiQrPreview").src=window.accountUpiQrData;$("accountUpiQrPreview").hidden=false;};reader.readAsDataURL(file);});
 $("accountAvatar").addEventListener("click",()=>$("accountPhotoInput").click());
-$("accountAvatar").addEventListener("click",()=>{$("accountPhotoInput").click();});
 $("accountPhotoInput").addEventListener("change",async e=>{
  const file=e.target.files&&e.target.files[0];if(!file)return;
  if(!file.type.startsWith("image/")){toast("Please choose an image.");return;}
