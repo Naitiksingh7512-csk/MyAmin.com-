@@ -874,6 +874,22 @@ function collectStaticText(){
     ["placeholder","aria-label"].forEach(attr=>{if(el.hasAttribute(attr))staticAttrs.push({el,attr,original:el.getAttribute(attr)});});
   });
 }
+function translateDynamic(root){
+  if(!root)return;
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+  let node;
+  while((node=walker.nextNode())){
+    const key=node.nodeValue.trim();
+    const value=phraseMap[currentLang][key];
+    if(value) node.nodeValue=node.nodeValue.replace(key,value);
+  }
+  root.querySelectorAll("[placeholder],[aria-label]").forEach(el=>{
+    ["placeholder","aria-label"].forEach(attr=>{
+      const value=phraseMap[currentLang][el.getAttribute(attr)];
+      if(value)el.setAttribute(attr,value);
+    });
+  });
+}
 function applyLanguage(lang){
   currentLang=lang;
   document.documentElement.lang=lang;
@@ -1180,6 +1196,7 @@ function closeOwner() {
 updateBookingUser();
 renderPortals();
 calculate();
+applyLanguage("en");
 </script>
 </body>
 </html>
