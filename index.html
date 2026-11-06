@@ -614,7 +614,14 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
 @media(max-width:520px){#searchDialog .dialog-box{width:calc(100% - 22px);margin:11px;border-radius:20px}.search-suggestions{grid-template-columns:1fr}}
 </style>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
-</head>
+<style>
+.quick-grid .quick{animation:quickGlow 8s ease-in-out infinite;position:relative}.quick-grid .quick:nth-child(3n+2){animation-delay:-2.5s}.quick-grid .quick:nth-child(3n){animation-delay:-5s}
+@keyframes quickGlow{0%,100%{border-color:#cfe4d6;box-shadow:0 5px 15px #164b3510}50%{border-color:#9bcbb0;box-shadow:0 8px 22px #16845b20}}
+#services .card{animation:cardRise .65s both}#services .card:nth-child(2){animation-delay:.06s}#services .card:nth-child(3){animation-delay:.12s}#services .card:nth-child(4){animation-delay:.18s}#services .card:nth-child(5){animation-delay:.24s}#services .card:nth-child(6){animation-delay:.3s}
+@keyframes cardRise{from{opacity:.55;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.amin-social-row,.amin-action-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}.amin-social-row a{font-size:12px;font-weight:800;color:var(--green);text-decoration:underline}
+@media(prefers-reduced-motion:reduce){.quick-grid .quick,#services .card{animation:none!important}}
+</style></head>
 
 <body>
 <div class="topline"></div>
@@ -722,6 +729,7 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
     </div>
   </section>
 
+  <section class="section" id="adminHighlights"><div class="section-head"><div><h2 data-en="Updates from My Amin" data-hi="My Amin की नई जानकारी">Updates from My Amin</h2><p data-en="Videos, useful links and announcements." data-hi="वीडियो, उपयोगी लिंक और घोषणाएँ।">Videos, useful links and announcements.</p></div></div><div id="adminContentFeed" class="grid"><article class="card"><div class="card-icon">▶️</div><h3>Coming soon</h3><p>Admin updates will appear here.</p></article></div></section>
   <!-- FIND AMIN -->
   <section id="find" class="panel">
     <h2>🔎 Find an Amin | अमीन खोजें</h2>
@@ -787,7 +795,7 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
         <div class="field"><label for="regDistrict">जिला *</label><input id="regDistrict" maxlength="80" required></div>
         <div class="field"><label for="regPlace">गाँव / शहर *</label><input id="regPlace" maxlength="100" required></div><div class="field"><label for="regUpiId">UPI ID (वैकल्पिक / Optional)</label><input id="regUpiId" maxlength="120" placeholder="name@bank"></div><div class="field"><label for="regUpiQr">Enter your UPI QR code (वैकल्पिक)</label><input id="regUpiQr" type="file" accept="image/*"><small>अपना payment QR image चुनें। इसे खाली छोड़ सकते हैं।</small><img id="regUpiQrPreview" alt="UPI QR preview" hidden style="width:110px;height:110px;object-fit:contain;background:white;padding:6px;border:1px solid #ddd;border-radius:8px"></div>
         <div class="field"><label for="regPhoto">Profile photo / DP</label><input id="regPhoto" type="file" accept="image/*"><div class="reg-photo-preview"><img id="regPhotoPreview" alt="Profile photo preview" hidden><span id="regPhotoPlaceholder">👤</span></div><small>Clear face photo. Currently saved only in this browser on this device.</small></div>
-        <div class="field full"><label for="regDescription">अनुभव और सेवाएँ</label><textarea id="regDescription" placeholder="अपने अनुभव और सेवाओं का विवरण लिखें।"></textarea></div>
+        <div class="field"><label for="regInstagram">Instagram profile link (Optional)</label><input id="regInstagram" type="url" placeholder="https://instagram.com/yourprofile"></div><div class="field"><label for="regFacebook">Facebook profile link (Optional)</label><input id="regFacebook" type="url" placeholder="https://facebook.com/yourprofile"></div><div class="field"><label for="regYouTube">YouTube channel link (Optional)</label><input id="regYouTube" type="url" placeholder="https://youtube.com/@yourchannel"></div><div class="field full"><label for="regDescription">अनुभव और सेवाएँ</label><textarea id="regDescription" placeholder="अपने अनुभव और सेवाओं का विवरण लिखें।"></textarea></div>
       </div>
       <div class="notice" data-en="This form is an application and does not verify professional identity or credentials. Do not upload sensitive identity documents. Your request is currently stored only in this browser on this device; secure online submission is not connected yet." data-hi="यह आवेदन फॉर्म पेशेवर पहचान या प्रमाण-पत्र का सत्यापन नहीं करता। संवेदनशील पहचान दस्तावेज़ अपलोड न करें। सुरक्षित ऑनलाइन सबमिशन जुड़ने तक आवेदन इसी डिवाइस के ब्राउज़र में रहेगा।">This form is an application and does not verify professional identity or credentials. Do not upload sensitive identity documents. Your request is currently stored only in this browser on this device; secure online submission is not connected yet.</div>
       <div class="form-actions"><button class="btn btn-green" type="submit">रजिस्ट्रेशन भेजें</button></div>
@@ -1132,7 +1140,7 @@ document.querySelectorAll(".account-detail-grid>div").forEach((el,index)=>{
  });el.appendChild(b);
 });
 $("aminMenuProfile").addEventListener("click",openAminAccount);$("openAminAccount").addEventListener("click",openAminAccount);$("closeAminAccount").addEventListener("click",()=>$("aminAccountDialog").classList.remove("show"));$("aminAccountDialog").addEventListener("click",e=>{if(e.target===$("aminAccountDialog"))$("aminAccountDialog").classList.remove("show");});
-$("editAminProfile").addEventListener("click",()=>{const a=read(DB.aminProfile,null);if(!a)return;$("aminAccountDialog").classList.remove("show");go("registerAmin");$("regName").value=a.name||"";$("regPhone").value=a.phone||"";$("regWhatsApp").value=a.whatsapp||"";$("regBusinessId").value=a.businessId||"";$("regState").value=a.state||"Bihar";$("regDistrict").value=a.district||"";$("regPlace").value=a.place||"";$("regDescription").value=a.description||"";});
+$("editAminProfile").addEventListener("click",()=>{const a=read(DB.aminProfile,null);if(!a)return;$("aminAccountDialog").classList.remove("show");go("registerAmin");$("regName").value=a.name||"";$("regPhone").value=a.phone||"";$("regWhatsApp").value=a.whatsapp||"";$("regBusinessId").value=a.businessId||"";$("regState").value=a.state||"Bihar";$("regDistrict").value=a.district||"";$("regPlace").value=a.place||"";$("regDescription").value=a.description||"";$("regInstagram").value=a.instagram||"";$("regFacebook").value=a.facebook||"";$("regYouTube").value=a.youtube||"";});
 
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape") { closeMenu();closeSearch(); }
@@ -1509,7 +1517,7 @@ $("aminForm").addEventListener("submit",e=>{
     state:$("regState").value.trim(),
     district:$("regDistrict").value.trim(),
     place:$("regPlace").value.trim(),
-    description:$("regDescription").value.trim(),
+    description:$("regDescription").value.trim(),instagram:$("regInstagram").value.trim(),facebook:$("regFacebook").value.trim(),youtube:$("regYouTube").value.trim(),
     approved:false,
     createdAt:new Date().toISOString()
   };
@@ -1861,6 +1869,14 @@ $("downloadAminCard").addEventListener("click",downloadAminIdCard);
 
 /* Initialize saved language after all page features are ready */
 applyLanguage(currentLang);
+
+function renderAmins(records){const box=$("aminResults");if(!records.length){box.innerHTML='<div class="list-item"><strong>No approved Amin profiles found yet.</strong><p>You can submit an Amin registration.</p></div>';return}box.innerHTML=records.map(a=>{const id=safe(a.profileId||a.id||""),phone=safe(a.phone||""),wa=safe(String(a.whatsapp||a.phone||"").replace(/\D/g,"")),name=safe(a.name||"Amin");return '<div class="list-item"><span class="pill">Approved profile</span><h3>'+name+'</h3><p><strong>Profile ID:</strong> '+id+'<br>📍 '+safe(a.place)+', '+safe(a.district)+', '+safe(a.state)+'<br>📞 '+phone+'<br>'+safe(a.description||"भूमि मापी सेवाएँ")+'</p><div class="amin-social-row">'+(a.instagram?'<a href="'+safe(a.instagram)+'" target="_blank" rel="noopener">Instagram</a>':'')+(a.facebook?'<a href="'+safe(a.facebook)+'" target="_blank" rel="noopener">Facebook</a>':'')+(a.youtube?'<a href="'+safe(a.youtube)+'" target="_blank" rel="noopener">YouTube</a>':'')+'</div><div class="amin-action-row"><button class="btn btn-light btn-small" onclick="toggleAminFollow(\''+id+'\')">'+(isAminFollowed(id)?"♥ Following":"♡ Follow")+'</button><a class="btn btn-outline btn-small" href="tel:'+phone+'">Call</a><a class="btn btn-outline btn-small" href="https://wa.me/'+wa+'" target="_blank" rel="noopener">Chat</a><button class="btn btn-green btn-small" onclick="prefillBooking(\''+name.replace(/'/g,"&#39;")+'\')">अपॉइंटमेंट माँगें</button></div></div>'}).join("");translateDynamic(box)}
+const MYAMIN_FOLLOWS_KEY="myamin_followed_amins_v1";
+function getFollowedAmins(){try{return JSON.parse(localStorage.getItem(MYAMIN_FOLLOWS_KEY)||"[]")}catch(e){return []}}
+function isAminFollowed(id){return getFollowedAmins().includes(String(id||""))}
+function toggleAminFollow(id){const key=String(id||"");let list=getFollowedAmins();list=list.includes(key)?list.filter(x=>x!==key):[...list,key];try{localStorage.setItem(MYAMIN_FOLLOWS_KEY,JSON.stringify(list))}catch(e){}toast(list.includes(key)?"You are now following this Amin.":"Amin unfollowed.");if($("aminResults"))searchAmins()}
+function renderAdminContentFeed(){const box=$("adminContentFeed");if(!box)return;let items=[];try{items=JSON.parse(localStorage.getItem("myamin_admin_content_v1")||"[]")}catch(e){}if(items.length)box.innerHTML=items.filter(x=>x.active!==false).map(x=>'<article class="card"><div class="card-icon">'+(x.type==="video"?"▶️":"🔗")+'</div><h3>'+safe(x.title)+'</h3><p>'+safe(x.description||"")+'</p><a class="btn btn-light btn-small" href="'+safe(x.url)+'" target="_blank" rel="noopener">'+(x.type==="video"?"Watch video":"Open link")+' →</a></article>').join("")}
+window.addEventListener("storage",e=>{if(e.key==="myamin_admin_content_v1")renderAdminContentFeed()});renderAdminContentFeed();
 </script>
 
 <style>
