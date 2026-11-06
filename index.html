@@ -1052,6 +1052,7 @@ function refreshBookings() {
     <div class="list-item"><strong>${safe(b.service)}</strong>
     <p>Booking ID: ${safe(b.id)}<br>स्थान: ${safe(b.place)}, ${safe(b.district)}, ${safe(b.state)}<br>तारीख: ${safe(b.date)}<br>स्थिति: ${safe(b.status)}</p></div>
   `).join(""):"<p>इस ग्राहक की कोई डेमो बुकिंग नहीं मिली।</p>";
+  translateDynamic($("myBookings"));
 }
 
 /* ID Card Maker */
@@ -1145,6 +1146,7 @@ function renderPortals() {
       <small>${safe(p[1])}</small>
       <a target="_blank" rel="noopener" href="${safe(p[2])}">Open official portal / directory ↗</a>
     </div>`).join("")||"<p>कोई राज्य नहीं मिला।</p>";
+  translateDynamic($("statePortals"));
 }
 $("portalSearch").addEventListener("input",renderPortals);
 
