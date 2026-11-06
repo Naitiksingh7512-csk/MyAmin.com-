@@ -577,7 +577,7 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
 .search-submit{font-weight:600!important;font-size:14px!important}
 @media(max-width:480px){.search-suggestions{grid-template-columns:1fr}.search-result{min-height:59px}}
 </style>
-</head>
+\n<style>.search-nav-btn{display:grid;place-items:center}.search-nav-btn svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.search-nav-btn:hover svg{transform:scale(1.04)}.search-nav-btn svg{transition:transform .18s ease}</style>\n</head>
 
 <body>
 <div class="topline"></div>
@@ -614,7 +614,7 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
       <button class="iconbtn mobile-menu-btn" id="menuBtn" type="button"
         aria-label="Open menu" aria-expanded="false">☰</button>
       <button class="btn btn-green btn-small" id="navLoginBtn" type="button" onclick="openLogin()">Login</button>
-      <button class="iconbtn" id="searchBtn" type="button" aria-label="Search">⌕</button>
+      <button class="iconbtn search-nav-btn" id="searchBtn" type="button" aria-label="Search" title="Search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.7"></circle><path d="m16 16 4.2 4.2"></path></svg></button>
       <button class="lang" id="languageBtn" type="button">हिंदी | English</button>
     </div>
   </nav>
