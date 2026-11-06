@@ -1692,7 +1692,7 @@ function calculate() {
   }
   $("unitResult").textContent=result.toLocaleString(currentLang==="hi"?"hi-IN":"en-IN",{maximumFractionDigits:5})+" "+unit;
 }
-["unitValue","unitFrom","unitTo"].forEach(id=>$(id).addEventListener("input",calculate));
+["unitValue","unitFrom","unitTo"].forEach(id=>{ $(id).addEventListener("input",calculate); $(id).addEventListener("change",calculate); });
 
 /* Reports */
 $("reportForm").addEventListener("submit",e=>{
