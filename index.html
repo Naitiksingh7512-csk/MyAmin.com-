@@ -894,6 +894,11 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
     <button class="menu-link" data-go="help"><span>💬</span>Help & Support</button>
 
     <div class="drawer-group">Account</div>
+    <button class="menu-link" id="aminMenuProfile" data-action="amin-profile" style="display:none">
+      <span>👤</span><span style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0">
+        <strong id="aminMenuProfileName">My Profile</strong><small id="aminMenuProfileId" style="opacity:.72;overflow-wrap:anywhere"></small>
+      </span>
+    </button>
     <button class="menu-link" data-action="logout"><span>↪</span>Logout</button>
     <p style="font-size:11px;color:#859189;line-height:1.6;padding:10px">
     </p>
@@ -920,7 +925,8 @@ const DB = {
   amins:"myamin_demo_amins_v1",
   bookings:"myamin_demo_bookings_v1",
   reports:"myamin_demo_reports_v1",
-  user:"myamin_demo_user_v1"
+  user:"myamin_demo_user_v1",
+  aminProfile:"myamin_demo_logged_in_amin_v1"
 };
 const $ = id => document.getElementById(id);
 
@@ -986,6 +992,25 @@ document.querySelectorAll("[data-go]").forEach(button=>{
 document.querySelectorAll("[data-action='logout']").forEach(button=>{
   button.addEventListener("click",()=>{logout();closeMenu();});
 });
+$("aminMenuProfile").addEventListener("click",()=>{
+  const profile=read(DB.aminProfile,null);
+  if(!profile)return;
+  closeMenu();
+  alert((currentLang==="hi"?"आपकी Amin Profile\\nनाम: ":"Your Amin Profile\\nName: ")+profile.name+
+    "\\nProfile ID: "+profile.profileId+
+    "\\n"+(currentLang==="hi"?"स्थिति: अप्रूवल लंबित":"Status: Pending approval")+
+    "\\n"+(currentLang==="hi"?"मोबाइल: ":"Phone: ")+profile.phone);
+});
+function refreshAminMenuProfile(){
+  const profile=read(DB.aminProfile,null);
+  const button=$("aminMenuProfile");
+  if(!button)return;
+  button.style.display=profile?"flex":"none";
+  if(profile){
+    $("aminMenuProfileName").textContent=profile.name;
+    $("aminMenuProfileId").textContent=profile.profileId;
+  }
+}
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape") { closeMenu();closeSearch(); }
 });
@@ -1134,6 +1159,7 @@ function applyLanguage(lang){
   loadAmins();
   refreshBookings();
   updateBookingUser();
+  refreshAminMenuProfile();
   translateDynamic(document.getElementById("statePortals"));
   translateDynamic(document.getElementById("aminResults"));
 }
@@ -1145,6 +1171,7 @@ $("languageBtn").onclick=window.toggleMyAminLanguage;
 $("languageBtn").setAttribute("aria-label","Change website language");
 $("languageBtn").setAttribute("aria-live","polite");
 collectStaticText();
+refreshAminMenuProfile();
 
 /* Customer login */
 $("loginForm").addEventListener("submit",e=>{
@@ -1228,7 +1255,9 @@ $("aminForm").addEventListener("submit",e=>{
   };
   amins.push(record);
   if(!save(DB.amins,amins)) return;
-  $("aminRegMessage").textContent=currentLang==="hi"?"आवेदन सेव हुआ। आपकी My Amin Profile ID: "+profileId+" — इसे संभालकर रखें।":"Your request was saved. My Amin Profile ID: "+profileId+" — keep it safe.";
+  if(!save(DB.aminProfile,record)) return;
+  refreshAminMenuProfile();
+  $("aminRegMessage").textContent=currentLang==="hi"?"आवेदन सेव हुआ। आपकी My Amin Profile ID: "+profileId+" — अब आपका प्रोफाइल Menu में दिखेगा।":"Your request was saved. My Amin Profile ID: "+profileId+" — your profile now appears in the menu.";
   $("aminRegMessage").style.display="block";
   $("idName").value=name;
   $("idNumber").value=profileId;
