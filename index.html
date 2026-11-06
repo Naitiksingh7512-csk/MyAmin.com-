@@ -855,7 +855,8 @@ const phrasePairs=[
 ["संख्या","Number"],["किस इकाई से","From unit"],["किस इकाई में","To unit"],["Report a Bug / Issue / Suggestion","समस्या / सुझाव दर्ज करें"],["रिपोर्ट का प्रकार *","Report type *"],["संपर्क (वैकल्पिक)","Contact (optional)"],["शीर्षक *","Title *"],["समस्या कहाँ है?","Where is the problem?"],["पूरी जानकारी *","Full details *"],["क्या हुआ, किस पेज पर हुआ, और क्या करने पर समस्या आई?","What happened, on which page, and what action caused it?"],["रिपोर्ट सेव करें","Submit report"],
 ["Help & Support | सहायता","Help & Support"],["Booking Help","बुकिंग सहायता"],["Amin Help","अमीन सहायता"],["Report a Problem","समस्या बताएँ"],["Booking खोलें","Open booking"],["Register","पंजीकरण"],["Report","रिपोर्ट"],
 ["Main Menu","मुख्य मेन्यू"],["Home / होम","होम"],["Find an Amin / अमीन खोजें","अमीन खोजें"],["Booking & Appointments","बुकिंग और अपॉइंटमेंट"],["Customer Login / ग्राहक लॉगिन","ग्राहक लॉगिन"],["Tools & Features","टूल्स और सुविधाएँ"],["Land Unit Calculator","भूमि इकाई कैलकुलेटर"],["Bihar Bhumi Service Portal","बिहार भूमि सेवा पोर्टल"],["Services for Other States","अन्य राज्यों की सेवाएँ"],["Report a Bug / Issue","समस्या दर्ज करें"],["Account","खाता"],["My Amin Menu","My Amin मेन्यू"],["Search My Amin","My Amin खोजें"],["सेवा खोजें या Owner Code डालें।","Search for a service or enter the Owner Code."],["जैसे: ID Card, Booking, Bihar Bhumi…","e.g. ID Card, Booking, Bihar Bhumi…"],["Search / खोलें","खोजें / खोलें"],
-["भारत सरकार — State/UT Land Records Directory","Government of India — State/UT Land Records Directory"],["दूसरे राज्यों की सेवाएँ","Services for other states"]
+["भारत सरकार — State/UT Land Records Directory","Government of India — State/UT Land Records Directory"],["दूसरे राज्यों की सेवाएँ","Services for other states"],
+["Approved demo profile","स्वीकृत डेमो प्रोफ़ाइल"],["अभी कोई अप्रूव्ड अमीन प्रोफ़ाइल नहीं मिली।","No approved Amin profiles found yet."],["आप अमीन रजिस्ट्रेशन कर सकते हैं। Owner Dashboard के डेमो में आवेदन अप्रूव करें।","You can register as an Amin. Approve applications in the demo Owner Dashboard."],["अपॉइंटमेंट माँगें","Request appointment"],["इस ग्राहक की कोई डेमो बुकिंग नहीं मिली।","No demo bookings found for this customer."],["लॉगिन: ","Logged in: "],["बुकिंग से पहले ग्राहक लॉगिन करना ज़रूरी है।","Customer login is required before booking."],["सेवा चुनें","Choose a service"],["अभी कोई राज्य नहीं मिला।","No state found."]
 ];
 const phraseMap={};
 phrasePairs.forEach(([en,hi])=>{phraseMap.en??={};phraseMap.hi??={};phraseMap.en[en]=hi;phraseMap.hi[hi]=en;});
@@ -912,6 +913,8 @@ function applyLanguage(lang){
   $("navLoginBtn").textContent=lang==="en"?"Login":"लॉगिन";
   renderPortals();
   loadAmins();
+  translateDynamic(document.getElementById("statePortals"));
+  translateDynamic(document.getElementById("aminResults"));
 }
 $("languageBtn").addEventListener("click",()=>applyLanguage(currentLang==="en"?"hi":"en"));
 collectStaticText();
