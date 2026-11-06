@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 260" role="img" aria-labelledby="t d">
 <title id="t">MyAmin.com</title><desc id="d">House, field and location pin logo with Hindi tagline</desc>
-<rect width="1000" height="260" fill="#fff"/>
+
 <path d="M18 118 L170 15 L315 118 L278 118 L170 43 L55 118Z" fill="#123f7b"/>
 <rect x="103" y="84" width="23" height="23" rx="3" fill="#123f7b"/><rect x="135" y="84" width="23" height="23" rx="3" fill="#123f7b"/><rect x="103" y="116" width="23" height="23" rx="3" fill="#123f7b"/><rect x="135" y="116" width="23" height="23" rx="3" fill="#123f7b"/>
 <path d="M210 127h62v62h-62z" fill="#fff" stroke="#123f7b" stroke-width="7" rx="8"/><path d="M225 145h32M225 160h32M225 175h23" stroke="#123f7b" stroke-width="6" stroke-linecap="round"/>
