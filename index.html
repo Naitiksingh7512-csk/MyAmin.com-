@@ -1079,7 +1079,7 @@ function setAminBookingStatus(id,status){
  const amin=read(DB.aminProfile,null);if(!amin)return;
  const list=read(DB.bookings,[]),booking=list.find(x=>String(x.id)===String(id)&&(x.aminId===amin.profileId||x.profileId===amin.profileId||String(x.amin||"").trim().toLowerCase()===String(amin.name||"").trim().toLowerCase()));
  if(!booking){toast("This booking is not linked to your profile.");return;}
- booking.status=status;booking.updatedAt=new Date().toISOString();
+ booking.status=status;booking.completedAt=status==="Completed"?(booking.completedAt||new Date().toISOString()):"";booking.updatedAt=new Date().toISOString();
  if(save(DB.bookings,list)){toast(currentLang==="hi"?"बुकिंग की स्थिति अपडेट हुई।":"Booking status updated.");openAminAccount();refreshBookings();}
 }
 function confirmAminBooking(id){
@@ -1095,7 +1095,7 @@ function confirmAminBooking(id){
 function refreshAminAccount(){if($("aminAccountDialog").classList.contains("show"))openAminAccount();}
 function showAccountList(kind){
  const a=read(DB.aminProfile,null);if(!a)return;
- const bs=read(DB.bookings,[]).filter(x=>x.aminId===a.profileId||x.profileId===a.profileId);
+ const bs=read(DB.bookings,[]).filter(x=>x.aminId===a.profileId||x.profileId===a.profileId||String(x.amin||"").trim().toLowerCase()===String(a.name||"").trim().toLowerCase());
  if(kind==="messages"){ $("accountMessages").scrollIntoView({behavior:"smooth"});return; }
  const st=x=>String(x.status||"pending").toLowerCase();const list=kind==="completed"?bs.filter(x=>["completed","complete","done"].includes(st(x))):kind==="active"?bs.filter(x=>["confirmed","accepted","in progress","ongoing","started"].includes(st(x))):kind==="pending"?bs.filter(x=>!["completed","complete","done","confirmed","accepted","in progress","ongoing","started","cancelled"].includes(st(x))):bs;
  renderAminBookingList(a,list);
@@ -1614,11 +1614,11 @@ function refreshBookings() {
   const user=read(DB.user,null);
   const list=read(DB.bookings,[]);
   const mine=user?list.filter(b=>b.phone===user.phone):[];
+  const hi=currentLang==="hi";
   $("myBookings").innerHTML=mine.length?mine.map(b=>`
     <div class="list-item"><strong>${safe(b.service)}</strong>
-    <p>Booking ID: ${safe(b.id)}<br>स्थान: ${safe(b.place)}, ${safe(b.district)}, ${safe(b.state)}<br>पसंदीदा तारीख/समय: ${safe(b.date)} · ${safe(b.preferredTime||"कोई भी समय")}<br>${b.confirmedDate?"अमीन द्वारा पुष्टि: "+safe(b.confirmedDate)+" · "+safe(b.confirmedTime||""):"अमीन की पुष्टि बाकी"}<br>स्थिति: ${safe(b.status)}</p></div>
-  `).join(""):"<p>इस ग्राहक की कोई बुकिंग नहीं मिली।</p>";
-  translateDynamic($("myBookings"));
+    <p>${hi?"बुकिंग ID":"Booking ID"}: ${safe(b.id)}<br>${hi?"स्थान":"Location"}: ${safe(b.place)}, ${safe(b.district)}, ${safe(b.state)}<br>${hi?"पसंदीदा तारीख/समय":"Preferred date/time"}: ${safe(b.date)} · ${safe(b.preferredTime||(hi?"कोई भी समय":"Any time"))}<br>${b.confirmedDate?(hi?"अमीन द्वारा पुष्टि":"Confirmed by Amin")+": "+safe(b.confirmedDate)+" · "+safe(b.confirmedTime||""):(hi?"अमीन की पुष्टि बाकी":"Waiting for Amin confirmation")}<br>${hi?"स्थिति":"Status"}: ${safe(b.status)}</p></div>
+  `).join(""):(hi?"<p>इस ग्राहक की कोई बुकिंग नहीं मिली।</p>":"<p>No bookings found for this customer.</p>");
 }
 
 /* Auto-suggest a profile ID in the card maker when a name is entered manually. */
