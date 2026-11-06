@@ -859,7 +859,7 @@ const phrasePairs=[
 ["Approved demo profile","स्वीकृत डेमो प्रोफ़ाइल"],["अभी कोई अप्रूव्ड अमीन प्रोफ़ाइल नहीं मिली।","No approved Amin profiles found yet."],["आप अमीन रजिस्ट्रेशन कर सकते हैं। Owner Dashboard के डेमो में आवेदन अप्रूव करें।","You can register as an Amin. Approve applications in the demo Owner Dashboard."],["अपॉइंटमेंट माँगें","Request appointment"],["इस ग्राहक की कोई डेमो बुकिंग नहीं मिली।","No demo bookings found for this customer."],["लॉगिन: ","Logged in: "],["बुकिंग से पहले ग्राहक लॉगिन करना ज़रूरी है।","Customer login is required before booking."],["सेवा चुनें","Choose a service"],["अभी कोई राज्य नहीं मिला।","No state found."]
 ];
 const phraseMap={};
-phrasePairs.forEach(([en,hi])=>{phraseMap.en??={};phraseMap.hi??={};phraseMap.en[en]=hi;phraseMap.hi[hi]=en;});
+phrasePairs.forEach(([en,hi])=>{phraseMap.en??={};phraseMap.hi??={};phraseMap.en[hi]=en;phraseMap.hi[en]=hi;});
 const staticTextNodes=[];
 const staticAttrs=[];
 function collectStaticText(){
