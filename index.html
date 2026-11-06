@@ -551,7 +551,7 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
 @keyframes surveyPin{0%{r:5;opacity:1}75%{r:13;opacity:.25}100%{r:5;opacity:1}}
 @keyframes floatSurvey{0%,100%{translate:0 0}50%{translate:0 -7px}}
 @media(prefers-reduced-motion:reduce){.map-card:after,.map-art .plot svg path,.map-art .plot svg g text,.map-art .plot svg circle,.float-one,.float-two{animation:none!important}}
-</style>
+.account-menu-card{margin:14px 10px;padding:20px 14px;border:1px solid #d9e9dc;border-radius:20px;background:linear-gradient(145deg,#fffdf6,#e6f3eb);display:flex;flex-direction:column;align-items:center;gap:9px;text-align:center;box-shadow:0 12px 28px #123b3218}.account-menu-card>small{font-size:11px;overflow-wrap:anywhere}.account-avatar,.account-detail-avatar{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:#145b46;color:white;font-size:30px;border:4px solid white;box-shadow:0 0 0 2px #e9b95b}.account-avatar img,.account-detail-avatar img{width:100%;height:100%;object-fit:cover}.account-open-btn{border:0;border-radius:999px;background:#145b46;color:white;font-weight:800;padding:10px 20px}.amin-dashboard{width:min(760px,calc(100vw - 28px));max-height:88vh;overflow:auto}.dashboard-identity{display:flex;align-items:center;gap:16px;padding:16px 0}.dashboard-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0 20px}.dashboard-stats>div{padding:14px;border-radius:15px;background:#edf6ef;text-align:center}.dashboard-stats strong,.dashboard-stats small{display:block}.dashboard-stats strong{font-size:24px;color:#145b46}.account-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}.account-detail-grid>div{padding:12px;border:1px solid #e1ebe4;border-radius:13px;min-width:0}.account-detail-grid small,.account-detail-grid strong{display:block}.account-detail-grid strong{font-size:13px;overflow-wrap:anywhere}.reg-photo-preview{width:84px;height:84px;border-radius:50%;overflow:hidden;border:3px solid #e6c16d;background:#edf6ef;display:grid;place-items:center;font-size:30px}.reg-photo-preview img{width:100%;height:100%;object-fit:cover}@media(max-width:600px){.account-detail-grid{grid-template-columns:1fr}.amin-dashboard{padding:16px}}</style>
 </head>
 
 <body>
@@ -737,7 +737,7 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
         <div class="field"><label for="regState">राज्य *</label><input id="regState" value="Bihar" required></div>
         <div class="field"><label for="regDistrict">जिला *</label><input id="regDistrict" maxlength="80" required></div>
         <div class="field"><label for="regPlace">गाँव / शहर *</label><input id="regPlace" maxlength="100" required></div>
-        <div class="field"><label for="regPhotoNote" data-en="Profile photo" data-hi="प्रोफ़ाइल फोटो">Profile photo</label><p id="regPhotoNote" class="notice" data-en="Photo upload will be enabled after secure file storage is added." data-hi="सुरक्षित फ़ाइल स्टोरेज जुड़ने के बाद फोटो अपलोड चालू होगा।">Photo upload will be enabled after secure file storage is added.</p></div>
+        <div class="field"><label for="regPhoto">Profile photo / DP</label><input id="regPhoto" type="file" accept="image/*"><div class="reg-photo-preview"><img id="regPhotoPreview" alt="Profile photo preview" hidden><span id="regPhotoPlaceholder">👤</span></div><small>Clear face photo; saved only in this browser demo.</small></div>
         <div class="field full"><label for="regDescription">अनुभव और सेवाएँ</label><textarea id="regDescription" placeholder="अपने अनुभव और सेवाओं का विवरण लिखें।"></textarea></div>
       </div>
       <div class="notice" data-en="This is a demo application, not identity verification. Do not upload sensitive identity documents. Your request stays in this browser until a secure backend is added." data-hi="यह केवल डेमो आवेदन है, पहचान का सत्यापन नहीं। संवेदनशील पहचान दस्तावेज़ अपलोड न करें। सुरक्षित बैकएंड बनने तक आवेदन इसी ब्राउज़र में रहेगा।">This is a demo application, not identity verification. Do not upload sensitive identity documents. Your request stays in this browser until a secure backend is added.</div>
@@ -913,17 +913,14 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
     <button class="menu-link" data-go="help"><span>💬</span>Help & Support</button>
 
     <div class="drawer-group">Account</div>
-    <button class="menu-link" id="aminMenuProfile" data-action="amin-profile" style="display:none">
-      <span>👤</span><span style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0">
-        <strong id="aminMenuProfileName">My Profile</strong><small id="aminMenuProfileId" style="opacity:.72;overflow-wrap:anywhere"></small>
-      </span>
-    </button>
+    <section class="account-menu-card" id="aminMenuProfile" style="display:none"><div class="account-avatar"><img id="aminMenuAvatar" alt="" hidden><span id="aminMenuAvatarFallback">👤</span></div><strong id="aminMenuProfileName">My Profile</strong><small id="aminMenuProfileId"></small><button type="button" class="account-open-btn" id="openAminAccount">Account / खाता खोलें</button></section>
     <button class="menu-link" data-action="logout"><span>↪</span>Logout</button>
     <p style="font-size:11px;color:#859189;line-height:1.6;padding:10px">
     </p>
   </aside>
 </div>
 
+<div class="dialog" id="aminAccountDialog" role="dialog" aria-modal="true"><div class="dialog-box amin-dashboard"><div class="dialog-head"><h3>My Amin Account</h3><button class="closebtn" id="closeAminAccount" type="button">✕</button></div><div class="dashboard-identity"><div class="account-detail-avatar"><img id="accountAvatar" alt="" hidden><span id="accountAvatarFallback">👤</span></div><div><h2 id="accountFullName"></h2><p id="accountProfileId"></p><span class="pill" id="accountApproval">Pending approval</span></div></div><div class="dashboard-stats"><div><strong id="accountBookingCount">0</strong><small>Bookings</small></div><div><strong id="accountPendingCount">0</strong><small>Pending</small></div><div><strong id="accountMessageCount">0</strong><small>Messages</small></div></div><div class="account-detail-grid"><div><small>Mobile</small><strong id="accountPhone"></strong></div><div><small>WhatsApp</small><strong id="accountWhatsApp"></strong></div><div><small>District</small><strong id="accountDistrict"></strong></div><div><small>State</small><strong id="accountState"></strong></div><div><small>Village / City</small><strong id="accountPlace"></strong></div><div><small>Business reference</small><strong id="accountBusiness"></strong></div></div><h4>Booking requests</h4><div id="accountBookings" class="list"></div><h4>Messages</h4><div id="accountMessages" class="list"><p>No messages yet.</p></div><div class="form-actions"><button class="btn btn-outline" id="editAminProfile" type="button">Edit profile</button><button class="btn btn-outline" id="demoApproveAmin" type="button">Demo: approve</button></div><p class="notice">Demo only: browser-local data, not a secure account. Do not store bank details or identity documents.</p></div></div>
 <!-- SEARCH DIALOG -->
 <div class="dialog" id="searchDialog" role="dialog" aria-modal="true" aria-label="Website Search">
   <div class="dialog-box">
@@ -1011,25 +1008,11 @@ document.querySelectorAll("[data-go]").forEach(button=>{
 document.querySelectorAll("[data-action='logout']").forEach(button=>{
   button.addEventListener("click",()=>{logout();closeMenu();});
 });
-$("aminMenuProfile").addEventListener("click",()=>{
-  const profile=read(DB.aminProfile,null);
-  if(!profile)return;
-  closeMenu();
-  alert((currentLang==="hi"?"आपकी Amin Profile\\nनाम: ":"Your Amin Profile\\nName: ")+profile.name+
-    "\\nProfile ID: "+profile.profileId+
-    "\\n"+(currentLang==="hi"?"स्थिति: अप्रूवल लंबित":"Status: Pending approval")+
-    "\\n"+(currentLang==="hi"?"मोबाइल: ":"Phone: ")+profile.phone);
-});
-function refreshAminMenuProfile(){
-  const profile=read(DB.aminProfile,null);
-  const button=$("aminMenuProfile");
-  if(!button)return;
-  button.style.display=profile?"flex":"none";
-  if(profile){
-    $("aminMenuProfileName").textContent=profile.name;
-    $("aminMenuProfileId").textContent=profile.profileId;
-  }
-}
+function refreshAminMenuProfile(){const a=read(DB.aminProfile,null),b=$("aminMenuProfile");if(!b)return;b.style.display=a?"flex":"none";if(a){$("aminMenuProfileName").textContent=a.name;$("aminMenuProfileId").textContent=a.profileId;$("aminMenuAvatar").src=a.photo||"";$("aminMenuAvatar").hidden=!a.photo;$("aminMenuAvatarFallback").hidden=!!a.photo;}}
+function openAminAccount(){const a=read(DB.aminProfile,null);if(!a)return;closeMenu();$("accountFullName").textContent=a.name||"";$("accountProfileId").textContent=a.profileId||"";$("accountPhone").textContent=a.phone||"—";$("accountWhatsApp").textContent=a.whatsapp||"—";$("accountDistrict").textContent=a.district||"—";$("accountState").textContent=a.state||"—";$("accountPlace").textContent=a.place||"—";$("accountBusiness").textContent=a.businessId||"—";$("accountApproval").textContent=a.approved?"Approved (demo)":"Pending approval";$("accountAvatar").src=a.photo||"";$("accountAvatar").hidden=!a.photo;$("accountAvatarFallback").hidden=!!a.photo;const bs=read(DB.bookings,[]).filter(x=>x.aminId===a.profileId||x.profileId===a.profileId);$("accountBookingCount").textContent=bs.length;$("accountPendingCount").textContent=bs.filter(x=>!["confirmed","completed"].includes(String(x.status||"").toLowerCase())).length;$("accountMessageCount").textContent=0;$("accountBookings").innerHTML=bs.length?bs.map(x=>'<div class="list-item"><strong>'+safe(x.date||"Booking")+'</strong><p>'+safe(x.details||x.service||"Request")+'</p></div>').join(""):"<p>No bookings yet.</p>";$("accountMessages").innerHTML="<p>Messaging will work after backend connection.</p>";$("aminAccountDialog").classList.add("show");}
+$("aminMenuProfile").addEventListener("click",openAminAccount);$("openAminAccount").addEventListener("click",openAminAccount);$("closeAminAccount").addEventListener("click",()=>$("aminAccountDialog").classList.remove("show"));$("aminAccountDialog").addEventListener("click",e=>{if(e.target===$("aminAccountDialog"))$("aminAccountDialog").classList.remove("show");});
+$("editAminProfile").addEventListener("click",()=>{const a=read(DB.aminProfile,null);if(!a)return;$("aminAccountDialog").classList.remove("show");go("registerAmin");$("regName").value=a.name||"";$("regPhone").value=a.phone||"";$("regWhatsApp").value=a.whatsapp||"";$("regBusinessId").value=a.businessId||"";$("regState").value=a.state||"Bihar";$("regDistrict").value=a.district||"";$("regPlace").value=a.place||"";$("regDescription").value=a.description||"";});
+$("demoApproveAmin").addEventListener("click",()=>{const a=read(DB.aminProfile,null);if(!a)return;a.approved=true;save(DB.aminProfile,a);save(DB.amins,read(DB.amins,[]).map(x=>x.profileId===a.profileId?{...x,approved:true}:x));$("accountApproval").textContent="Approved (demo only)";toast("Demo approval saved in this browser only.");});
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape") { closeMenu();closeSearch(); }
 });
@@ -1251,6 +1234,9 @@ function refreshRegistrationProfileId() {
 }
 $("regName").addEventListener("input",refreshRegistrationProfileId);
 
+/* Local demo photo upload */
+window.regPhotoData="";
+$("regPhoto").addEventListener("change",e=>{const file=e.target.files&&e.target.files[0];if(!file)return;if(!file.type.startsWith("image/")||file.size>5*1024*1024){toast("Choose an image under 5 MB.");e.target.value="";return;}const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{const c=document.createElement("canvas"),z=Math.min(1,420/Math.max(img.width,img.height));c.width=Math.round(img.width*z);c.height=Math.round(img.height*z);c.getContext("2d").drawImage(img,0,0,c.width,c.height);window.regPhotoData=c.toDataURL("image/jpeg",.78);$("regPhotoPreview").src=window.regPhotoData;$("regPhotoPreview").hidden=false;$("regPhotoPlaceholder").hidden=true;URL.revokeObjectURL(url);};img.src=url;});
 /* Amin registration */
 $("aminForm").addEventListener("submit",e=>{
   e.preventDefault();
@@ -1259,6 +1245,7 @@ $("aminForm").addEventListener("submit",e=>{
   refreshRegistrationProfileId();
   const profileId=regGeneratedProfileId||createProfileId(name,amins);
   const record={
+    photo:window.regPhotoData||"",
     id:profileId,
     profileId,
     name,
@@ -1282,9 +1269,10 @@ $("aminForm").addEventListener("submit",e=>{
   $("idNumber").value=profileId;
   $("idPhone").value=record.phone;
   $("idDistrict").value=record.district+", "+record.state;
+  if(record.photo){$("cardPhoto").src=record.photo;$("cardPhoto").style.display="block";$("cardPhotoPlaceholder").style.display="none";}
   $("idRole").value="Land Measurement Service";
   e.target.reset();
-  regGeneratedProfileId="";
+  regGeneratedProfileId="";window.regPhotoData="";$("regPhoto").value="";$("regPhotoPreview").hidden=true;$("regPhotoPlaceholder").hidden=false;
   refreshRegistrationProfileId();
   toast(currentLang==="hi"?"अमीन रजिस्ट्रेशन अनुरोध सेव हुआ और ID Card Maker भर दिया गया।":"Amin registration saved and ID Card Maker prefilled.");
 });
