@@ -1007,6 +1007,19 @@ function runSearch() {
   const query=$("siteSearch").value.trim();
   if(!query) {toast("पहले कुछ लिखें।");return;}
   const q=query.toLowerCase();
+  /* Profile ID lookup: show only approved Amin profiles publicly. */
+  if(/^[\\p{L}\\p{N}._-]+@\\d{8}$/u.test(query)) {
+    const matches=read(DB.amins,[]).filter(a=>String(a.profileId||a.id||"").toLowerCase()===q);
+    if(!matches.length) {toast("इस Profile ID का कोई Amin इस browser के demo records में नहीं मिला।");return;}
+    const approved=matches.filter(a=>a.approved);
+    if(!approved.length) {toast("यह Amin registration अभी approval के इंतज़ार में है।");return;}
+    closeSearch();
+    go("find");
+    $("aminSearch").value=query;
+    $("aminState").value="";
+    searchAmins();
+    return;
+  }
   const routes=[
     [["id card","idcard","id-card","आईडी","पहचान कार्ड","card maker"],"idmaker"],
     [["amin","अमीन","अमीन खोज"],"find"],
@@ -1225,7 +1238,7 @@ function searchAmins() {
   const state=$("aminState").value.toLowerCase();
   const records=read(DB.amins,[]).filter(a=>a.approved);
   const filtered=records.filter(a=>{
-    const combined=[a.name,a.state,a.district,a.place,a.description].join(" ").toLowerCase();
+    const combined=[a.name,a.profileId,a.id,a.state,a.district,a.place,a.description].join(" ").toLowerCase();
     return (!query||combined.includes(query))&&(!state||(a.state||"").toLowerCase()===state);
   });
   renderAmins(filtered);
@@ -1245,7 +1258,7 @@ function renderAmins(records) {
     <div class="list-item">
       <span class="pill">Approved demo profile</span>
       <h3>${safe(a.name)}</h3>
-      <p>📍 ${safe(a.place)}, ${safe(a.district)}, ${safe(a.state)}<br>
+      <p><strong>Profile ID:</strong> ${safe(a.profileId||a.id||"Not assigned")}<br>📍 ${safe(a.place)}, ${safe(a.district)}, ${safe(a.state)}<br>
       📞 ${safe(a.phone)}<br>${safe(a.description||"भूमि मापी सेवाएँ")}</p>
       <button class="btn btn-green btn-small" onclick="prefillBooking('${safe(a.name).replace(/'/g,"&#39;")}')">अपॉइंटमेंट माँगें</button>
     </div>`).join("");
