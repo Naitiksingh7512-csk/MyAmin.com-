@@ -553,12 +553,12 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
 @keyframes floatSurvey{0%,100%{translate:0 0}50%{translate:0 -7px}}
 @media(prefers-reduced-motion:reduce){.map-card:after,.map-art .plot svg path,.map-art .plot svg g text,.map-art .plot svg circle,.float-one,.float-two{animation:none!important}}
 .account-menu-card{margin:14px 10px;padding:20px 14px;border:1px solid #d9e9dc;border-radius:20px;background:linear-gradient(145deg,#fffdf6,#e6f3eb);display:flex;flex-direction:column;align-items:center;gap:9px;text-align:center;box-shadow:0 12px 28px #123b3218}.account-menu-card>small{font-size:11px;overflow-wrap:anywhere}.account-avatar,.account-detail-avatar{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:#145b46;color:white;font-size:30px;border:4px solid white;box-shadow:0 0 0 2px #e9b95b}.account-avatar img,.account-detail-avatar img{width:100%;height:100%;object-fit:cover}.account-open-btn{border:0;border-radius:999px;background:#145b46;color:white;font-weight:800;padding:10px 20px}.amin-dashboard{width:min(760px,calc(100vw - 28px));max-height:88vh;overflow:auto}.dashboard-identity{display:flex;align-items:center;gap:16px;padding:16px 0}.dashboard-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0 20px}.dashboard-stats>div{padding:14px;border-radius:15px;background:#edf6ef;text-align:center}.dashboard-stats strong,.dashboard-stats small{display:block}.dashboard-stats strong{font-size:24px;color:#145b46}.account-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}.account-detail-grid>div{padding:12px;border:1px solid #e1ebe4;border-radius:13px;min-width:0}.account-detail-grid small,.account-detail-grid strong{display:block}.account-detail-grid strong{font-size:13px;overflow-wrap:anywhere}.reg-photo-preview{width:84px;height:84px;border-radius:50%;overflow:hidden;border:3px solid #e6c16d;background:#edf6ef;display:grid;place-items:center;font-size:30px}.reg-photo-preview img{width:100%;height:100%;object-fit:cover}@media(max-width:600px){.account-detail-grid{grid-template-columns:1fr}.amin-dashboard{padding:16px}}
-/* Clear, undistorted logo sizing */
-.logo-image{display:block!important;width:180px!important;height:auto!important;max-width:180px!important;max-height:58px!important;flex:0 0 180px!important;object-fit:contain!important;visibility:visible!important;opacity:1!important}
-.footer-brand .logo-image{width:220px!important;max-width:220px!important;height:auto!important;max-height:64px!important;flex:0 1 220px!important;object-fit:contain!important}
+/* Reliable local logo sizing — no external image host */
+.logo-image{display:block!important;width:200px!important;height:54px!important;max-width:200px!important;max-height:54px!important;flex:0 0 200px!important;object-fit:contain!important;visibility:visible!important;opacity:1!important;background:transparent!important}
+.footer-brand .logo-image{width:220px!important;height:58px!important;max-width:220px!important;max-height:58px!important;flex:0 1 220px!important;object-fit:contain!important}
 .footer-brand .logo{display:inline-flex!important;width:auto!important;height:auto!important;max-width:100%!important;overflow:visible!important}
-@media(max-width:700px){.logo-image{width:148px!important;max-width:148px!important;max-height:48px!important;flex:0 0 148px!important}.footer-brand .logo-image{width:190px!important;max-width:190px!important;flex:0 1 190px!important}}
-@media(max-width:420px){.logo-image{width:132px!important;max-width:132px!important;max-height:44px!important;flex-basis:132px!important}}
+@media(max-width:700px){.logo-image{width:165px!important;height:46px!important;max-width:165px!important;max-height:46px!important;flex:0 0 165px!important}.footer-brand .logo-image{width:190px!important;height:52px!important;max-width:190px!important;flex:0 1 190px!important}}
+@media(max-width:420px){.logo-image{width:145px!important;height:42px!important;max-width:145px!important;max-height:42px!important;flex-basis:145px!important}}}
 
 </style>
 <style>.account-stat{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px;cursor:pointer;color:inherit;display:grid;gap:5px}.account-stat strong{font-size:22px}.account-stat small{font-size:12px}.account-detail-grid>div{position:relative;padding:10px 42px 10px 10px}.account-edit-field{position:absolute;right:7px;top:8px;border:0;background:transparent;cursor:pointer;font-size:17px}</style>
@@ -613,7 +613,7 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
 <header>
   <nav class="nav">
     <a class="logo" href="#home" aria-label="My Amin Home">
-      <img class="logo-image" src="https://raw.githubusercontent.com/Naitiksingh7512-csk/MyAmin.com-/main/assets/myamin-logo.jpg?v=20261106-2" alt="MyAmin.com — आपकी जमीन, आपकी जानकारी">
+      <img class="logo-image" src="assets/myamin-logo.svg?v=20261106-3" alt="MyAmin.com — आपकी जमीन, आपकी जानकारी">
     </a>
 
     <div class="navlinks">
@@ -921,7 +921,7 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
 
 <footer>
   <div class="footer-inner">
-    <div class="footer-brand"><a class="logo" href="#home" aria-label="My Amin Home"><img class="logo-image" src="https://raw.githubusercontent.com/Naitiksingh7512-csk/MyAmin.com-/main/assets/myamin-logo.jpg?v=20261106-2" alt="MyAmin.com — आपकी जमीन, आपकी जानकारी"></a><p>आपकी जमीन, आपकी जानकारी।<br>एक आसान भूमि सेवा डेमो।</p></div>
+    <div class="footer-brand"><a class="logo" href="#home" aria-label="My Amin Home"><img class="logo-image" src="assets/myamin-logo.svg?v=20261106-3" alt="MyAmin.com — आपकी जमीन, आपकी जानकारी"></a><p>आपकी जमीन, आपकी जानकारी।<br>एक आसान भूमि सेवा डेमो।</p></div>
     <div><strong data-en="Quick Links" data-hi="त्वरित लिंक">Quick Links</strong><p><a href="#find" data-en="Find an Amin" data-hi="अमीन खोजें">Find an Amin</a><br><a href="#portals" data-en="Government Portals" data-hi="सरकारी पोर्टल">Government Portals</a><br><a href="#idmaker" data-en="ID Card Maker" data-hi="आईडी कार्ड निर्माता">ID Card Maker</a><br><a href="#report" data-en="Report a Bug" data-hi="समस्या बताएँ">Report a Bug</a></p></div>
     <div><strong data-en="Important" data-hi="महत्वपूर्ण">Important</strong><p data-en="My Amin is not a government department. Use official websites for government services. Created by Naitik Singh." data-hi="My Amin सरकारी विभाग नहीं है। सरकारी सेवाओं के लिए आधिकारिक वेबसाइट देखें। Created by Naitik Singh.">My Amin is not a government department. Use official websites for government services. Created by Naitik Singh.</p></div>
   </div>
