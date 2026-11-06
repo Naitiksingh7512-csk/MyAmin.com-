@@ -1296,6 +1296,19 @@ function refreshBookings() {
   translateDynamic($("myBookings"));
 }
 
+/* Auto-suggest a profile ID in the card maker when a name is entered manually. */
+let cardSuggestedProfileId="";
+$("idName").addEventListener("input",()=>{
+  const name=$("idName").value.trim();
+  if(!$("idNumber").value.trim()||cardSuggestedProfileId===$("idNumber").value.trim()){
+    if(!name){$("idNumber").value="";cardSuggestedProfileId="";return;}
+    const first=firstNameFrom(name);
+    if(!cardSuggestedProfileId||!cardSuggestedProfileId.toLowerCase().startsWith(first.toLowerCase()+"@")){
+      cardSuggestedProfileId=createProfileId(name,read(DB.amins,[]));
+      $("idNumber").value=cardSuggestedProfileId;
+    }
+  }
+});
 /* ID Card Maker — local photo preview; QR points to the public website */
 let idPhotoData="";
 $("idPhoto").addEventListener("change",e=>{
