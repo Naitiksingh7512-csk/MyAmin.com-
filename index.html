@@ -415,6 +415,80 @@ footer:before {content:"";position:absolute;width:260px;height:260px;border:1px 
   *,*::before,*::after {scroll-behavior:auto!important;transition:none!important;animation:none!important}
 }
 
+
+/* MY AMIN — premium trust-first visual theme (CSS-only; functionality untouched) */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap');
+:root{
+  --green:#08785b;--dark:#123b32;--light:#f1f7f2;--gold:#d99a32;
+  --text:#243b34;--muted:#687b72;--white:#fff;--border:#dce8df;
+  --shadow:0 18px 48px rgba(18,59,50,.09);
+}
+html{scroll-padding-top:90px}
+body{
+  font-family:'Manrope','Noto Sans Devanagari',system-ui,sans-serif;
+  background:#f6f8f5;color:var(--text);letter-spacing:0;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+button,input,select,textarea{font-family:inherit}
+header{background:rgba(255,255,255,.94);border-bottom:1px solid #e5ece6;box-shadow:0 5px 24px rgba(18,59,50,.045)}
+.nav{min-height:76px}
+.logo{color:var(--dark)}
+.logo-art{filter:drop-shadow(0 3px 7px rgba(18,59,50,.10))}
+.navlinks{font-size:13px;gap:22px}
+.navlinks a{transition:color .2s ease}
+.btn{border-radius:13px;font-weight:800;letter-spacing:.05px;transition:transform .2s ease,box-shadow .2s ease,background .2s ease}
+.btn-green{background:linear-gradient(135deg,#0b8965,#075b46);box-shadow:0 7px 18px rgba(8,120,91,.18)}
+.btn-green:hover{background:linear-gradient(135deg,#08785b,#064d3c);box-shadow:0 10px 23px rgba(8,120,91,.23)}
+.btn-light{background:#eaf4ed;color:#164536}
+.btn-outline,.lang,.iconbtn{border-color:#dce8df}
+main{padding-top:30px}
+.hero{
+  background:linear-gradient(118deg,#eaf4ec 0%,#fff 57%,#f8f5ec 100%);
+  border:1px solid #dce9de;box-shadow:0 20px 55px rgba(18,59,50,.085);
+}
+.eyebrow{background:#e4f1e7;color:#087454;border:1px solid #d1e6d7;font-weight:800}
+h1{font-weight:800;letter-spacing:-1.9px;line-height:1.12}
+h1 span{color:#08785b}
+.hero p{color:#61746a;line-height:1.85}
+.map-art{background:radial-gradient(circle,#dceee0 0,#f2f7ef 48%,transparent 73%)}
+.map-card{border-radius:25px;box-shadow:0 22px 55px rgba(18,59,50,.13)}
+.plot{border-radius:18px}
+.section h2,.panel h2{font-weight:800;letter-spacing:-.65px}
+.card,.panel,.portal,.list-item{
+  border-color:#e1eae3;box-shadow:0 7px 24px rgba(18,59,50,.045);
+}
+.card{border-radius:20px}
+.card h3{font-weight:800}
+.card-icon{background:linear-gradient(145deg,#e6f2e8,#dceee1);color:#08785b}
+.quick{
+  border:1px solid #dce8df;border-radius:16px;
+  background:linear-gradient(145deg,#fff,#f7faf7);
+  animation:none;box-shadow:0 5px 15px rgba(18,59,50,.04);
+}
+.quick:hover{border-color:#a9d2b8;background:#f4faf5}
+input,select,textarea{border-color:#d9e5dc;border-radius:12px;background:#fff}
+input:focus,select:focus,textarea:focus{border-color:#168765;box-shadow:0 0 0 4px rgba(8,120,91,.10)}
+.pill{background:#e6f3e9;color:#087454;border:1px solid #d4e9da}
+.notice{background:#fff8e9;border-color:#f0dfb8;color:#73551e}
+.success{background:#eaf6ed;color:#17613f;border:1px solid #d1ead8}
+.portal{border-radius:16px}
+.portal a{color:#08785b}
+footer{background:linear-gradient(115deg,#102f29,#145541)}
+.drawer,.dialog-box{border-color:#e2ebe4}
+.menu-link:hover,.menu-link:focus{background:#edf6ef}
+#toast{background:#123b32}
+@media(max-width:600px){
+  .nav{min-height:62px}
+  main{padding-top:18px}
+  .hero{background:linear-gradient(145deg,#eaf4ec,#fff 70%);padding:24px 18px}
+  h1{font-size:clamp(34px,9vw,41px);letter-spacing:-1.3px}
+  .hero p{font-size:14px}
+  .section h2{font-size:22px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}
+}
+
 </style>
 </head>
 
