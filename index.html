@@ -711,7 +711,7 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
     <p data-en="Submit your details for review. This demo stores the request only in this browser; public profile approval is not available yet." data-hi="जाँच के लिए अपनी जानकारी भेजें। इस डेमो में आवेदन केवल इसी ब्राउज़र में सेव होता है; सार्वजनिक प्रोफ़ाइल अप्रूवल अभी उपलब्ध नहीं है।">Submit your details for review. This demo stores the request only in this browser; public profile approval is not available yet.</p>
     <form id="aminForm">
       <div class="form-grid">
-        <div class="field"><label for="regName">पूरा नाम *</label><input id="regName" autocomplete="name" maxlength="80" required></div>
+        <div class="field"><label for="regName">पूरा नाम *</label><input id="regName" autocomplete="name" maxlength="80" required><small>आपकी Profile ID: <strong id="regProfileIdPreview">पहला नाम@12345678</strong></small></div>
         <div class="field"><label for="regPhone">मोबाइल नंबर *</label><input id="regPhone" type="tel" inputmode="tel" autocomplete="tel" minlength="10" maxlength="18" required pattern="[0-9+() -]{10,18}" title="Enter a valid phone number."></div>
         <div class="field"><label for="regWhatsApp">WhatsApp नंबर</label><input id="regWhatsApp" type="tel" inputmode="tel" maxlength="18" pattern="[0-9+() -]{10,18}" title="Enter a valid WhatsApp number or leave blank."></div>
         <div class="field"><label for="regBusinessId">व्यवसाय / पहचान संदर्भ</label><input id="regBusinessId"></div>
@@ -1155,13 +1155,45 @@ function updateBookingUser() {
 }
 function openLogin() {go("login");}
 
+/* Amin profile IDs: first-name@8-random-digits (unique within this browser demo) */
+function firstNameFrom(fullName) {
+  return String(fullName||"").trim().split(/\s+/)[0].replace(/[^\p{L}\p{N}._-]/gu,"")||"amin";
+}
+function createProfileId(fullName,existing=[]) {
+  const prefix=firstNameFrom(fullName).toLowerCase();
+  const used=new Set(existing.map(a=>String(a.profileId||a.id||"").toLowerCase()));
+  let candidate="",attempts=0;
+  do {
+    const bytes=new Uint32Array(1);
+    if(window.crypto&&crypto.getRandomValues) crypto.getRandomValues(bytes);
+    else bytes[0]=Math.floor(Math.random()*4294967296);
+    candidate=prefix+"@"+String(bytes[0]%100000000).padStart(8,"0");
+    attempts++;
+  } while(used.has(candidate.toLowerCase())&&attempts<100);
+  return candidate;
+}
+let regGeneratedProfileId="";
+function refreshRegistrationProfileId() {
+  const name=$("regName").value.trim();
+  const first=firstNameFrom(name);
+  if(!name){regGeneratedProfileId="";$("regProfileIdPreview").textContent="पहला नाम@12345678";return;}
+  if(!regGeneratedProfileId||!regGeneratedProfileId.toLowerCase().startsWith(first.toLowerCase()+"@"))
+    regGeneratedProfileId=createProfileId(name,read(DB.amins,[]));
+  $("regProfileIdPreview").textContent=regGeneratedProfileId;
+}
+$("regName").addEventListener("input",refreshRegistrationProfileId);
+
 /* Amin registration */
 $("aminForm").addEventListener("submit",e=>{
   e.preventDefault();
   const amins=read(DB.amins,[]);
+  const name=$("regName").value.trim();
+  refreshRegistrationProfileId();
+  const profileId=regGeneratedProfileId||createProfileId(name,amins);
   const record={
-    id:"MA-"+Date.now().toString().slice(-8),
-    name:$("regName").value.trim(),
+    id:profileId,
+    profileId,
+    name,
     phone:$("regPhone").value.trim(),
     whatsapp:$("regWhatsApp").value.trim(),
     businessId:$("regBusinessId").value.trim(),
@@ -1173,11 +1205,18 @@ $("aminForm").addEventListener("submit",e=>{
     createdAt:new Date().toISOString()
   };
   amins.push(record);
-  save(DB.amins,amins);
-  $("aminRegMessage").textContent=currentLang==="hi"?"आवेदन इसी डिवाइस के डेमो में सेव हुआ। सार्वजनिक प्रोफ़ाइल अप्रूवल अभी उपलब्ध नहीं है।":"Your request was saved in this device demo. Public profile approval is not available yet.";
+  if(!save(DB.amins,amins)) return;
+  $("aminRegMessage").textContent=currentLang==="hi"?"आवेदन सेव हुआ। आपकी My Amin Profile ID: "+profileId+" — इसे संभालकर रखें।":"Your request was saved. My Amin Profile ID: "+profileId+" — keep it safe.";
   $("aminRegMessage").style.display="block";
+  $("idName").value=name;
+  $("idNumber").value=profileId;
+  $("idPhone").value=record.phone;
+  $("idDistrict").value=record.district+", "+record.state;
+  $("idRole").value="Land Measurement Service";
   e.target.reset();
-  toast(currentLang==="hi"?"अमीन रजिस्ट्रेशन अनुरोध इसी डिवाइस में सेव हुआ।":"Amin registration request saved on this device.");
+  regGeneratedProfileId="";
+  refreshRegistrationProfileId();
+  toast(currentLang==="hi"?"अमीन रजिस्ट्रेशन अनुरोध सेव हुआ और ID Card Maker भर दिया गया।":"Amin registration saved and ID Card Maker prefilled.");
 });
 
 /* Amin search/list */
@@ -1271,7 +1310,7 @@ $("idPhoto").addEventListener("change",e=>{
 $("idForm").addEventListener("submit",e=>{
   e.preventDefault();
   $("cardName").textContent=$("idName").value.trim();
-  $("cardNumber").textContent=$("idNumber").value.trim()||"MA-"+Date.now().toString().slice(-8);
+  $("cardNumber").textContent=$("idNumber").value.trim()||createProfileId($("idName").value,read(DB.amins,[]));
   $("cardPhone").textContent=$("idPhone").value.trim()||"Not provided";
   $("cardDistrict").textContent=$("idDistrict").value.trim()||"Not provided";
   $("cardRole").textContent=$("idRole").value.trim()||"Land Service Profile";
