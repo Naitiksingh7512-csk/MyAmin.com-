@@ -997,6 +997,7 @@ function renderAmins(records) {
   const box=$("aminResults");
   if(!records.length) {
     box.innerHTML='<div class="list-item"><strong>अभी कोई अप्रूव्ड अमीन प्रोफ़ाइल नहीं मिली।</strong><p>आप अमीन रजिस्ट्रेशन कर सकते हैं। Owner Dashboard के डेमो में आवेदन अप्रूव करें।</p></div>';
+    translateDynamic(box);
     return;
   }
   box.innerHTML=records.map(a=>`
@@ -1007,6 +1008,7 @@ function renderAmins(records) {
       📞 ${safe(a.phone)}<br>${safe(a.description||"भूमि मापी सेवाएँ")}</p>
       <button class="btn btn-green btn-small" onclick="prefillBooking('${safe(a.name).replace(/'/g,"&#39;")}')">अपॉइंटमेंट माँगें</button>
     </div>`).join("");
+  translateDynamic(box);
 }
 function prefillBooking(name) {
   $("bookingAmin").value=name;
