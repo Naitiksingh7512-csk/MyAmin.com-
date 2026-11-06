@@ -45,16 +45,27 @@ header {
   display:flex;align-items:center;gap:17px;
 }
 .logo {
-  display:flex;align-items:center;gap:10px;
-  font-size:22px;font-weight:850;color:var(--dark);
+  display:flex !important;
+  align-items:center;
+  flex:0 0 auto;
+  min-width:0;
+  gap:10px;
+  font-size:22px;
+  font-weight:850;
+  color:var(--dark);
   white-space:nowrap;
+  visibility:visible;
+  opacity:1;
 }
 .logo-art {
-  display:block;
-  width:clamp(190px, 29vw, 310px);
-  height:auto;
-  max-width:100%;
-  flex:0 1 auto;
+  display:block !important;
+  width:280px;
+  height:71px;
+  min-width:280px;
+  max-width:none;
+  flex:0 0 280px;
+  visibility:visible;
+  opacity:1;
 }
 .logo-icon {
   width:43px;height:43px;border-radius:14px;
@@ -285,7 +296,7 @@ footer a {text-decoration:underline}
 }
 @media(max-width:600px) {
   .nav {padding:10px 12px;gap:8px}
-  .logo-art {width:clamp(150px, 42vw, 205px)}
+  .logo-art {width:160px;height:auto;min-width:160px;max-width:160px;flex:0 0 160px}
   .logo {font-size:18px;gap:7px}
   .logo-icon {width:37px;height:37px}
   .logo small {font-size:9px}
