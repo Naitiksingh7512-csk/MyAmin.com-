@@ -489,6 +489,49 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
   *,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}
 }
 
+
+/* Professional two-sided Amin profile card */
+.id-card-set{display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;padding:0;border:0;background:transparent;box-shadow:none}
+.id-card-front,.id-card-back{position:relative;isolation:isolate;overflow:hidden;min-height:245px;border-radius:19px;padding:19px;color:#173b32;border:1px solid #d8e7dc;box-shadow:0 16px 38px rgba(18,59,50,.14);background:linear-gradient(135deg,#fff 0%,#f3f8f3 62%,#e8f2e8 100%)}
+.id-card-front:after{content:"";position:absolute;z-index:-1;inset:0;background:radial-gradient(circle at 90% 8%,rgba(217,154,50,.16),transparent 34%),linear-gradient(115deg,transparent 55%,rgba(8,120,91,.06))}
+.id-card-watermark{position:absolute;z-index:-1;right:8px;top:65px;font-size:48px;font-weight:900;letter-spacing:4px;color:rgba(8,120,91,.075);transform:rotate(-18deg);pointer-events:none}
+.id-card-top{display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(18,59,50,.13);padding-bottom:12px}
+.id-brand-mark{width:35px;height:35px;display:grid;place-items:center;border-radius:11px;background:#123b32;color:#fff;font-size:23px}
+.id-card-top strong{display:block;font-size:18px;font-weight:900;letter-spacing:-.5px}
+.id-card-top small{display:block;font-size:8px;letter-spacing:1.3px;color:#718078;font-weight:800;margin-top:2px}
+.id-demo-tag{margin-left:auto;border:1px solid #e6d4a8;color:#94661d;border-radius:20px;padding:5px 9px;font-size:9px;font-weight:900;letter-spacing:1px}
+.id-card-main{display:flex;align-items:center;gap:16px;padding:18px 0 13px}
+.id-photo-wrap{width:88px;height:88px;flex:0 0 88px;border-radius:50%;overflow:hidden;display:grid;place-items:center;border:4px solid #fff;outline:2px solid #b7d6c1;background:linear-gradient(145deg,#dceee1,#f6f8f3);box-shadow:0 5px 15px rgba(18,59,50,.12)}
+.id-photo-wrap img{width:100%;height:100%;object-fit:cover;display:none}
+.id-photo-wrap span{font-size:22px;font-weight:900;color:#08785b}
+.id-person{min-width:0}
+.id-kicker{font-size:8px;letter-spacing:1.1px;font-weight:900;color:#9a762e}
+.id-person h3{font-size:20px;line-height:1.2;margin:5px 0 7px;color:#123b32;overflow-wrap:anywhere}
+.id-profile-id{font-size:9px;color:#65776d;letter-spacing:.4px}
+.id-profile-id strong{color:#08785b}
+.id-role{font-size:10px;font-weight:800;color:#405d50;margin-top:7px;overflow-wrap:anywhere}
+.id-card-bottom{display:flex;justify-content:space-between;gap:8px;border-top:1px solid rgba(18,59,50,.13);padding-top:10px;font-size:9px;color:#52675c}
+.id-card-bottom span{min-width:0;overflow-wrap:anywhere}
+.id-card-bottom b{font-weight:800}
+.id-card-disclaimer{font-size:7px;letter-spacing:.45px;color:#96743b;text-align:center;margin-top:11px;font-weight:800}
+.id-card-back{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:linear-gradient(145deg,#123b32,#17624b);color:#fff;border-color:#164b3b}
+.id-card-back:before{content:"";position:absolute;inset:9px;border:1px solid rgba(255,255,255,.18);border-radius:13px;pointer-events:none}
+.id-back-brand{font-size:19px;font-weight:900;letter-spacing:-.5px}
+.id-back-brand span{display:block;font-size:7px;letter-spacing:1.5px;color:#c4dacf;margin-top:3px}
+.id-qr-frame{width:112px;height:112px;padding:7px;margin:12px auto 8px;background:#fff;border-radius:11px;display:grid;place-items:center}
+.id-qr-frame img{width:100%;height:100%;object-fit:contain}
+.id-card-back>strong{font-size:11px}
+.id-site-url{font-size:7px;color:#d5e9dd;overflow-wrap:anywhere;margin-top:4px}
+.id-card-back p{font-size:8px;line-height:1.4;color:#d5e9dd;margin:7px 0 0;max-width:230px}
+.id-back-footer{font-size:7px;color:#b8d4c5;margin-top:10px}
+@media(max-width:700px){.id-card-set{grid-template-columns:1fr}.id-card-front,.id-card-back{min-height:230px}.id-card-front{max-width:420px;width:100%;margin:auto}.id-card-back{max-width:420px;width:100%;margin:auto}}
+@media print{
+  body *{visibility:hidden!important}
+  #idPreview,#idPreview *{visibility:visible!important}
+  #idPreview{display:grid!important;position:absolute;left:0;top:0;width:100%;grid-template-columns:1fr 1fr;gap:10px;padding:0;margin:0}
+  .id-card-front,.id-card-back{box-shadow:none;break-inside:avoid;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+}
+
 </style>
 </head>
 
@@ -694,20 +737,30 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
         <div class="field"><label for="idNumber">My Amin Profile ID</label><input id="idNumber" placeholder="उदाहरण: MA-1001"></div>
         <div class="field"><label for="idPhone">संपर्क नंबर</label><input id="idPhone" type="tel" inputmode="tel" maxlength="18" pattern="[0-9+() -]{10,18}" title="Enter a valid contact number or leave blank."></div>
         <div class="field"><label for="idDistrict">जिला और राज्य</label><input id="idDistrict" placeholder="जिला, राज्य"></div>
-        <div class="field full"><label for="idRole">काम / भूमिका</label><input id="idRole" value="Land Measurement Service"></div>
+        <div class="field"><label for="idRole">काम / भूमिका</label><input id="idRole" value="Land Measurement Service"></div>
+        <div class="field"><label for="idPhoto">Profile Photo / DP</label><input id="idPhoto" type="file" accept="image/*"><small>अपनी साफ़ फोटो चुनें। फोटो केवल इस ब्राउज़र में कार्ड पर दिखाई जाएगी।</small></div>
       </div>
-      <div class="form-actions"><button class="btn btn-green" type="submit">कार्ड बनाएँ</button><button class="btn btn-outline" type="button" onclick="window.print()">Print / Save PDF</button></div>
+      <div class="form-actions"><button class="btn btn-green" type="submit">Professional ID बनाएँ</button><button class="btn btn-outline" type="button" onclick="window.print()">Print / Save PDF</button></div>
     </form>
-    <div id="idPreview" class="id-preview" style="display:none">
-      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
-        <h3>⌖ MyAmin.com</h3><span class="pill">DEMO CARD</span>
-      </div>
-      <p><strong id="cardName"></strong></p>
-      <p>Profile ID: <span id="cardNumber"></span><br>
-      Contact: <span id="cardPhone"></span><br>
-      Location: <span id="cardDistrict"></span><br>
-      Role: <span id="cardRole"></span></p>
-      <p style="font-size:11px;color:#9a6a17">DEMO ONLY — NOT AN OFFICIAL ID OR LICENSE</p>
+    <div id="idPreview" class="id-preview id-card-set" style="display:none">
+      <article class="id-card-front">
+        <div class="id-card-watermark" aria-hidden="true">MY AMIN</div>
+        <div class="id-card-top"><div class="id-brand-mark">⌖</div><div><strong>MyAmin.com</strong><small>LAND SERVICE NETWORK</small></div><span class="id-demo-tag">DEMO</span></div>
+        <div class="id-card-main">
+          <div class="id-photo-wrap"><img id="cardPhoto" alt="Profile photo"><span id="cardPhotoPlaceholder">DP</span></div>
+          <div class="id-person"><span class="id-kicker">AMIN SERVICE PROFILE</span><h3 id="cardName"></h3><div class="id-profile-id">PROFILE ID · <strong id="cardNumber"></strong></div><div class="id-role" id="cardRole"></div></div>
+        </div>
+        <div class="id-card-bottom"><span>☎ <b id="cardPhone"></b></span><span>⌖ <b id="cardDistrict"></b></span></div>
+        <div class="id-card-disclaimer">DEMO PROFILE CARD · NOT A GOVERNMENT ID OR PROFESSIONAL LICENCE</div>
+      </article>
+      <article class="id-card-back">
+        <div class="id-back-brand">MyAmin.com <span>YOUR LAND. YOUR INFORMATION.</span></div>
+        <div class="id-qr-frame"><img id="cardQr" alt="QR code linking to MyAmin.com"></div>
+        <strong>Scan to visit our website</strong>
+        <span class="id-site-url">https://naitiksingh7512-csk.github.io/MyAmin.com-/</span>
+        <p>Connect with My Amin for land-service information and profile discovery.</p>
+        <div class="id-back-footer">DEMO CARD · Website QR only · Not an identity verification document</div>
+      </article>
     </div>
   </section>
 
@@ -1204,16 +1257,31 @@ function refreshBookings() {
   translateDynamic($("myBookings"));
 }
 
-/* ID Card Maker */
+/* ID Card Maker — local photo preview; QR points to the public website */
+let idPhotoData="";
+$("idPhoto").addEventListener("change",e=>{
+  const file=e.target.files&&e.target.files[0];
+  if(!file){idPhotoData="";return;}
+  if(!file.type.startsWith("image/")){toast("कृपया image file चुनें।");e.target.value="";return;}
+  if(file.size>5*1024*1024){toast("फोटो 5 MB से छोटी रखें।");e.target.value="";return;}
+  const reader=new FileReader();
+  reader.onload=()=>{idPhotoData=String(reader.result||"");};
+  reader.readAsDataURL(file);
+});
 $("idForm").addEventListener("submit",e=>{
   e.preventDefault();
-  $("cardName").textContent=$("idName").value;
-  $("cardNumber").textContent=$("idNumber").value||"DEMO-"+Date.now().toString().slice(-6);
-  $("cardPhone").textContent=$("idPhone").value||"Not provided";
-  $("cardDistrict").textContent=$("idDistrict").value||"Not provided";
-  $("cardRole").textContent=$("idRole").value||"Service Profile";
-  $("idPreview").style.display="block";
-  toast("डेमो ID कार्ड बन गया।");
+  $("cardName").textContent=$("idName").value.trim();
+  $("cardNumber").textContent=$("idNumber").value.trim()||"MA-"+Date.now().toString().slice(-8);
+  $("cardPhone").textContent=$("idPhone").value.trim()||"Not provided";
+  $("cardDistrict").textContent=$("idDistrict").value.trim()||"Not provided";
+  $("cardRole").textContent=$("idRole").value.trim()||"Land Service Profile";
+  const photo=$("cardPhoto"),placeholder=$("cardPhotoPlaceholder");
+  if(idPhotoData){photo.src=idPhotoData;photo.style.display="block";placeholder.style.display="none";}
+  else{photo.removeAttribute("src");photo.style.display="none";placeholder.style.display="grid";}
+  const site="https://naitiksingh7512-csk.github.io/MyAmin.com-/";
+  $("cardQr").src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data="+encodeURIComponent(site);
+  $("idPreview").style.display="grid";
+  toast("Professional demo ID card बन गया।");
 });
 
 /* Calculator */
