@@ -1058,7 +1058,8 @@ document.addEventListener("keydown",e=>{
 $("searchBtn").addEventListener("click",()=>{
   $("searchDialog").classList.add("show");
   $("siteSearch").value="";
-  renderSmartSearch();\n   setTimeout(()=>$("siteSearch").focus(),100);
+  renderSmartSearch();
+  setTimeout(()=>$("siteSearch").focus(),100);
 });
 function closeSearch() { $("searchDialog").classList.remove("show"); }
 $("searchDialog").addEventListener("click",e=>{
