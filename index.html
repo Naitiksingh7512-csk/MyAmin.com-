@@ -335,6 +335,86 @@ footer a {text-decoration:underline}
   #idPreview,#idPreview * {visibility:visible}
   #idPreview {position:absolute;left:0;top:0;width:100%}
 }
+
+/* My Amin visual refresh — CSS only */
+:root {
+  --green:#087f5b; --dark:#103b32; --light:#eef8f2; --gold:#e8b65a;
+  --text:#203a32; --muted:#71827a; --border:#dcebe2;
+  --shadow:0 18px 48px rgba(16,59,50,.11);
+}
+body {
+  background:radial-gradient(ellipse at 12% 8%,#eaf7ef 0,transparent 34%),#f7faf8;
+  color:var(--text); letter-spacing:.05px;
+}
+header {background:rgba(255,255,255,.88);box-shadow:0 5px 24px rgba(16,59,50,.055)}
+.nav {padding-top:15px;padding-bottom:15px}
+.logo-art {filter:drop-shadow(0 3px 5px rgba(21,63,120,.09))}
+.btn {border-radius:13px;transition:transform .2s ease,box-shadow .2s ease,background .2s ease}
+.btn:hover {transform:translateY(-2px);box-shadow:0 9px 22px rgba(8,127,91,.17)}
+.btn-green {background:linear-gradient(135deg,#0b9368,#086348);box-shadow:0 6px 16px rgba(8,127,91,.13)}
+.btn-light {background:linear-gradient(135deg,#edf8f0,#dff1e6)}
+.btn-outline,.lang,.iconbtn {transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease}
+.btn-outline:hover,.lang:hover,.iconbtn:hover {border-color:#8fc8aa;box-shadow:0 6px 18px rgba(16,59,50,.08);transform:translateY(-1px)}
+main {padding-top:30px}
+.hero {
+  background:linear-gradient(120deg,rgba(231,247,237,.97),rgba(255,255,255,.98) 62%,#f4faf6);
+  border:1px solid #d9ecdf;box-shadow:var(--shadow);
+  border-radius:30px;
+}
+.hero:before {
+  content:"";position:absolute;width:300px;height:300px;border-radius:50%;
+  right:-120px;top:-170px;background:radial-gradient(circle,rgba(232,182,90,.17),transparent 70%);
+  pointer-events:none;
+}
+.eyebrow {background:#e0f3e8;border:1px solid #cce9d7;letter-spacing:.45px}
+h1 {letter-spacing:-2px}
+.hero p {font-size:15px}
+.map-card {box-shadow:0 22px 55px rgba(16,59,50,.14);border:1px solid #e1eee5}
+.plot {box-shadow:inset 0 0 25px rgba(255,255,255,.35)}
+.float-card {box-shadow:0 12px 30px rgba(16,59,50,.13);border:1px solid #edf2ee}
+.section {margin-top:54px}
+.section h2 {letter-spacing:-.5px}
+.card,.panel,.portal,.list-item {
+  border-color:#e0ebe4;box-shadow:0 8px 26px rgba(16,59,50,.055);
+  transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;
+}
+.card:hover,.portal:hover,.list-item:hover {
+  transform:translateY(-3px);border-color:#b9ddc7;
+  box-shadow:0 14px 32px rgba(16,59,50,.09);
+}
+.card {border-radius:21px}
+.card-icon {background:linear-gradient(135deg,#e5f5eb,#d7eee0);border:1px solid #d2eadb}
+.quick {
+  border-radius:17px;background:linear-gradient(145deg,#fff,#f8fcf9);
+  box-shadow:0 5px 16px rgba(16,59,50,.045);min-height:86px;
+}
+.quick:hover {transform:translateY(-4px);box-shadow:0 12px 25px rgba(8,127,91,.12)}
+.panel {border-radius:24px}
+input,select,textarea {border-color:#d8e7de;border-radius:13px;transition:border-color .2s ease,box-shadow .2s ease}
+input:focus,select:focus,textarea:focus {border-color:#3ba77c;box-shadow:0 0 0 4px rgba(8,127,91,.10)}
+.notice {border-radius:14px}
+.success {border:1px solid #ccebd5;border-radius:14px}
+.pill {background:#e6f5eb;border:1px solid #d4ecdc}
+.portal {border-radius:17px;background:linear-gradient(150deg,#fff,#fbfdfb)}
+.portal a {text-decoration:none}
+.portal a:hover {text-decoration:underline}
+footer {background:linear-gradient(120deg,#103a30,#155744);position:relative;overflow:hidden}
+footer:before {content:"";position:absolute;width:260px;height:260px;border:1px solid rgba(255,255,255,.08);border-radius:50%;right:-70px;top:-145px}
+.drawer,.dialog-box {border:1px solid #e5eee8}
+.menu-link {border-radius:13px;transition:background .18s ease,transform .18s ease}
+.menu-link:hover {transform:translateX(-2px)}
+#toast {border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(12px)}
+@media(max-width:600px) {
+  main {padding-top:17px}
+  .hero {box-shadow:0 12px 30px rgba(16,59,50,.08)}
+  h1 {letter-spacing:-1.25px}
+  .section {margin-top:42px}
+  .card:hover,.portal:hover,.list-item:hover {transform:none}
+}
+@media(prefers-reduced-motion:reduce) {
+  *,*::before,*::after {scroll-behavior:auto!important;transition:none!important;animation:none!important}
+}
+
 </style>
 </head>
 
