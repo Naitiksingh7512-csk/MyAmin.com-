@@ -809,7 +809,7 @@ function runSearch() {
 
 /* Complete interface language switch.
    Static UI text and form controls are translated; user-entered data is never changed. */
-let currentLang="en";
+let currentLang=(()=>{try{return localStorage.getItem("myamin_language")==="hi"?"hi":"en";}catch(e){return "en";}})();
 const phrasePairs=[
 ["Home","होम"],["Find an Amin","अमीन खोजें"],["Services","सेवाएँ"],["Calculator","कैलकुलेटर"],
 ["LAND SERVICES MADE SIMPLE","भूमि सेवाएँ अब आसान"],["Simple booking","आसान बुकिंग"],["Direct contact","सीधा संपर्क"],["Government portal directory","सरकारी पोर्टल निर्देशिका"],
@@ -897,7 +897,13 @@ function applyLanguage(lang){
   translateDynamic(document.getElementById("statePortals"));
   translateDynamic(document.getElementById("aminResults"));
 }
-$("languageBtn").addEventListener("click",()=>applyLanguage(currentLang==="en"?"hi":"en"));
+window.toggleMyAminLanguage=function(){
+  applyLanguage(currentLang==="en"?"hi":"en");
+  try{localStorage.setItem("myamin_language",currentLang);}catch(e){}
+};
+$("languageBtn").onclick=window.toggleMyAminLanguage;
+$("languageBtn").setAttribute("aria-label","Change website language");
+$("languageBtn").setAttribute("aria-live","polite");
 collectStaticText();
 
 /* Customer login */
