@@ -848,32 +848,32 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
     <h2>📐 Land Unit Calculator | भूमि कैलकुलेटर</h2>
     <p data-en="Length and area are different measurements. Use this tool to convert area units." data-hi="लंबाई और क्षेत्रफल अलग-अलग माप हैं। इस टूल से क्षेत्रफल की इकाइयों का रूपांतरण करें।">लंबाई और क्षेत्रफल अलग-अलग माप हैं। इस टूल से क्षेत्रफल की इकाइयों का रूपांतरण करें।</p>
     <div class="form-grid">
-      <div class="field"><label for="unitValue">संख्या</label><input id="unitValue" type="number" min="0" step="any" value="1"></div>
-      <div class="field"><label for="unitFrom">किस इकाई से</label><select id="unitFrom">
-        <option value="1">Square feet (sq ft)</option>
-        <option value="9">Square yards (sq yd)</option>
-        <option value="10.7639104">Square meters (m²)</option>
-        <option value="435.6">Dismil (डिसमिल)</option>
-        <option value="43560">Acre (एकड़)</option>
-        <option value="107639.104">Hectare (हेक्टेयर)</option>
-        <option value="1361.25">Kattha (स्थानीय मान)</option>
-        <option value="68.0625">Dhur (स्थानीय मान)</option>
-        <option value="27225">Bigha (स्थानीय मान)</option>
+      <div class="field"><label for="unitValue" data-en="Number" data-hi="संख्या">Number</label><input id="unitValue" type="number" min="0" step="any" value="1" aria-label="Number"></div>
+      <div class="field"><label for="unitFrom" data-en="From unit" data-hi="किस इकाई से">From unit</label><select id="unitFrom">
+        <option value="1" data-en="Square feet (sq ft)" data-hi="वर्ग फुट (sq ft)">Square feet (sq ft)</option>
+        <option value="9" data-en="Square yards (sq yd)" data-hi="वर्ग गज (sq yd)">Square yards (sq yd)</option>
+        <option value="10.7639104" data-en="Square meters (m²)" data-hi="वर्ग मीटर (m²)">Square meters (m²)</option>
+        <option value="435.6" data-en="Dismil" data-hi="डिसमिल">Dismil</option>
+        <option value="43560" data-en="Acre" data-hi="एकड़">Acre</option>
+        <option value="107639.104" data-en="Hectare" data-hi="हेक्टेयर">Hectare</option>
+        <option value="1361.25" data-en="Kattha (local reference)" data-hi="कट्ठा (स्थानीय मान)">Kattha (local reference)</option>
+        <option value="68.0625" data-en="Dhur (local reference)" data-hi="धुर (स्थानीय मान)">Dhur (local reference)</option>
+        <option value="27225" data-en="Bigha (local reference)" data-hi="बीघा (स्थानीय मान)">Bigha (local reference)</option>
       </select></div>
-      <div class="field"><label for="unitTo">किस इकाई में</label><select id="unitTo">
-        <option value="1">Square feet (sq ft)</option>
-        <option value="9">Square yards (sq yd)</option>
-        <option value="10.7639104">Square meters (m²)</option>
-        <option value="435.6">Dismil (डिसमिल)</option>
-        <option value="43560">Acre (एकड़)</option>
-        <option value="107639.104">Hectare (हेक्टेयर)</option>
-        <option value="1361.25">Kattha (स्थानीय मान)</option>
-        <option value="68.0625">Dhur (स्थानीय मान)</option>
-        <option value="27225">Bigha (स्थानीय मान)</option>
+      <div class="field"><label for="unitTo" data-en="To unit" data-hi="किस इकाई में">To unit</label><select id="unitTo">
+        <option value="1" data-en="Square feet (sq ft)" data-hi="वर्ग फुट (sq ft)">Square feet (sq ft)</option>
+        <option value="9" data-en="Square yards (sq yd)" data-hi="वर्ग गज (sq yd)">Square yards (sq yd)</option>
+        <option value="10.7639104" data-en="Square meters (m²)" data-hi="वर्ग मीटर (m²)">Square meters (m²)</option>
+        <option value="435.6" data-en="Dismil" data-hi="डिसमिल">Dismil</option>
+        <option value="43560" data-en="Acre" data-hi="एकड़">Acre</option>
+        <option value="107639.104" data-en="Hectare" data-hi="हेक्टेयर">Hectare</option>
+        <option value="1361.25" data-en="Kattha (local reference)" data-hi="कट्ठा (स्थानीय मान)">Kattha (local reference)</option>
+        <option value="68.0625" data-en="Dhur (local reference)" data-hi="धुर (स्थानीय मान)">Dhur (local reference)</option>
+        <option value="27225" data-en="Bigha (local reference)" data-hi="बीघा (स्थानीय मान)">Bigha (local reference)</option>
       </select></div>
     </div>
     <div class="card" style="margin-top:16px;background:#f0f8f1">
-      <p>परिणाम</p><h2 id="unitResult" style="margin:0">1</h2>
+      <p data-en="Result" data-hi="परिणाम">Result</p><h2 id="unitResult" style="margin:0">1</h2>
     </div>
     <div class="notice" data-en="Note: local units such as Bigha, Kattha and Dhur can vary by area. The values shown are common reference values, not a legal measurement. Confirm the applicable local standard with the revenue department." data-hi="ध्यान दें: बीघा, कट्ठा और धुर जैसी स्थानीय इकाइयों के मान क्षेत्र के अनुसार बदल सकते हैं। ऊपर दिए मान सामान्य संदर्भ के लिए हैं, कानूनी माप नहीं। अपने क्षेत्र का सही मान राजस्व विभाग से पुष्टि करें।">ध्यान दें: बीघा, कट्ठा और धुर जैसी स्थानीय इकाइयों के मान क्षेत्र के अनुसार बदल सकते हैं। ऊपर दिए मान सामान्य संदर्भ के लिए हैं, कानूनी माप नहीं। अपने क्षेत्र का सही मान राजस्व विभाग से पुष्टि करें।</div>
   </section>
@@ -1562,7 +1562,7 @@ function loadAmins() {
 function renderAmins(records) {
   const box=$("aminResults");
   if(!records.length) {
-    box.innerHTML=currentLang==="hi"?'<div class="list-item"><strong>अभी कोई स्वीकृत अमीन प्रोफ़ाइल नहीं मिली।</strong><p>आप अमीन रजिस्ट्रेशन भेज सकते हैं। सार्वजनिक प्रोफ़ाइल अप्रूवल अभी उपलब्ध नहीं है।</p></div>':'<div class="list-item"><strong>No approved Amin profiles found yet.</strong><p>You can submit an Amin registration. Public profile approval is not available yet.</p></div>';
+    box.innerHTML=currentLang==="hi"?'<div class="list-item"><strong>अभी कोई स्वीकृत अमीन प्रोफ़ाइल नहीं मिली।</strong><p>अमीन के आवेदन एडमिन द्वारा मंजूर होने के बाद उनकी प्रोफ़ाइल और ID यहाँ दिखाई देगी।</p></div>':'<div class="list-item"><strong>No approved Amin profiles found yet.</strong><p>Approved Amin profiles and their IDs will appear here after Admin approval.</p></div>';
     translateDynamic(box);
     return;
   }
@@ -1680,13 +1680,17 @@ $("idForm").addEventListener("submit",e=>{
 
 /* Calculator */
 function calculate() {
-  const value=Number($("unitValue").value||0);
+  const raw=$("unitValue").value;
+  const value=Number(raw);
   const from=Number($("unitFrom").value);
   const to=Number($("unitTo").value);
   const result=(value*from/to);
-  $("unitResult").textContent=Number.isFinite(result)
-    ? result.toLocaleString(currentLang==="hi"?"hi-IN":"en-IN",{maximumFractionDigits:5})+(currentLang==="hi"?" (चुनी गई इकाई)":" (selected unit)")
-    :"कृपया सही संख्या भरें।";
+  const unit=$("unitTo").selectedOptions[0]?.textContent||"";
+  if(raw.trim()===""||!Number.isFinite(result)){
+    $("unitResult").textContent=currentLang==="hi"?"कृपया सही संख्या भरें।":"Please enter a valid number.";
+    return;
+  }
+  $("unitResult").textContent=result.toLocaleString(currentLang==="hi"?"hi-IN":"en-IN",{maximumFractionDigits:5})+" "+unit;
 }
 ["unitValue","unitFrom","unitTo"].forEach(id=>$(id).addEventListener("input",calculate));
 
