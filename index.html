@@ -1074,7 +1074,7 @@ function calculate() {
   const to=Number($("unitTo").value);
   const result=(value*from/to);
   $("unitResult").textContent=Number.isFinite(result)
-    ? result.toLocaleString("en-IN",{maximumFractionDigits:5})+" (selected unit)"
+    ? result.toLocaleString(currentLang==="hi"?"hi-IN":"en-IN",{maximumFractionDigits:5})+(currentLang==="hi"?" (चुनी गई इकाई)":" (selected unit)")
     :"कृपया सही संख्या भरें।";
 }
 ["unitValue","unitFrom","unitTo"].forEach(id=>$(id).addEventListener("input",calculate));
