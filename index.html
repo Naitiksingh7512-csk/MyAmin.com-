@@ -462,8 +462,8 @@ footer a {text-decoration:underline}
     <div class="notice">डेमो में जानकारी इसी ब्राउज़र में सेव होती है। यह अभी सुरक्षित ऑनलाइन अकाउंट नहीं है।</div>
     <form id="loginForm">
       <div class="form-grid">
-        <div class="field"><label for="customerName">पूरा नाम / Full Name *</label><input id="customerName" required></div>
-        <div class="field"><label for="customerPhone">मोबाइल नंबर *</label><input id="customerPhone" type="tel" required pattern="[0-9+() -]{8,18}"></div>
+        <div class="field"><label for="customerName">पूरा नाम / Full Name *</label><input id="customerName" autocomplete="name" maxlength="80" required></div>
+        <div class="field"><label for="customerPhone">मोबाइल नंबर *</label><input id="customerPhone" type="tel" inputmode="tel" autocomplete="tel" minlength="10" maxlength="18" required pattern="[0-9+() -]{10,18}" title="Enter a valid phone number."></div>
         <div class="field"><label for="customerEmail">ईमेल (वैकल्पिक)</label><input id="customerEmail" type="email"></div>
         <div class="field"><label for="customerDistrict">जिला / District</label><input id="customerDistrict"></div>
       </div>
@@ -482,9 +482,9 @@ footer a {text-decoration:underline}
         <div class="field"><label for="bookingAmin">अमीन का नाम (यदि पता हो)</label><input id="bookingAmin" placeholder="अमीन का नाम"></div>
         <div class="field"><label for="bookingService">सेवा *</label><select id="bookingService" required><option value="">सेवा चुनें</option><option>जमीन की नापी</option><option>सीमांकन / Boundary</option><option>नज़री नक्शा</option><option>जमीन से जुड़ी अन्य सहायता</option></select></div>
         <div class="field"><label for="bookingState">राज्य *</label><input id="bookingState" value="Bihar" required></div>
-        <div class="field"><label for="bookingDistrict">जिला *</label><input id="bookingDistrict" required></div>
-        <div class="field"><label for="bookingPlace">गाँव / स्थान *</label><input id="bookingPlace" required></div>
-        <div class="field"><label for="bookingDate">पसंदीदा तारीख *</label><input id="bookingDate" type="date" required></div>
+        <div class="field"><label for="bookingDistrict">जिला *</label><input id="bookingDistrict" maxlength="80" required></div>
+        <div class="field"><label for="bookingPlace">गाँव / स्थान *</label><input id="bookingPlace" maxlength="100" required></div>
+        <div class="field"><label for="bookingDate">पसंदीदा तारीख *</label><input id="bookingDate" type="date" required aria-describedby="bookingDateHelp"><small id="bookingDateHelp" class="muted" data-en="Choose today or a future date." data-hi="आज या आने वाली तारीख चुनें।">Choose today or a future date.</small></div>
         <div class="field full"><label for="bookingDetails">काम की जानकारी</label><textarea id="bookingDetails" placeholder="काम के बारे में बताइए। संवेदनशील दस्तावेज़ यहाँ न डालें।"></textarea></div>
       </div>
       <div class="form-actions"><button class="btn btn-green" type="submit">बुकिंग अनुरोध भेजें</button></div>
@@ -496,20 +496,20 @@ footer a {text-decoration:underline}
   <!-- AMIN REGISTRATION -->
   <section id="registerAmin" class="panel">
     <h2>👷 Amin Registration | अमीन रजिस्ट्रेशन</h2>
-    <p>अपनी प्रोफ़ाइल की जानकारी भरें। डेमो में प्रोफ़ाइल Owner Dashboard से अप्रूव होने के बाद खोज में दिखेगी।</p>
+    <p data-en="Submit your details for review. This demo stores the request only in this browser; public profile approval is not available yet." data-hi="जाँच के लिए अपनी जानकारी भेजें। इस डेमो में आवेदन केवल इसी ब्राउज़र में सेव होता है; सार्वजनिक प्रोफ़ाइल अप्रूवल अभी उपलब्ध नहीं है।">Submit your details for review. This demo stores the request only in this browser; public profile approval is not available yet.</p>
     <form id="aminForm">
       <div class="form-grid">
-        <div class="field"><label for="regName">पूरा नाम *</label><input id="regName" required></div>
-        <div class="field"><label for="regPhone">मोबाइल नंबर *</label><input id="regPhone" type="tel" required></div>
-        <div class="field"><label for="regWhatsApp">WhatsApp नंबर</label><input id="regWhatsApp" type="tel"></div>
+        <div class="field"><label for="regName">पूरा नाम *</label><input id="regName" autocomplete="name" maxlength="80" required></div>
+        <div class="field"><label for="regPhone">मोबाइल नंबर *</label><input id="regPhone" type="tel" inputmode="tel" autocomplete="tel" minlength="10" maxlength="18" required pattern="[0-9+() -]{10,18}" title="Enter a valid phone number."></div>
+        <div class="field"><label for="regWhatsApp">WhatsApp नंबर</label><input id="regWhatsApp" type="tel" inputmode="tel" maxlength="18" pattern="[0-9+() -]{10,18}" title="Enter a valid WhatsApp number or leave blank."></div>
         <div class="field"><label for="regBusinessId">व्यवसाय / पहचान संदर्भ</label><input id="regBusinessId"></div>
         <div class="field"><label for="regState">राज्य *</label><input id="regState" value="Bihar" required></div>
-        <div class="field"><label for="regDistrict">जिला *</label><input id="regDistrict" required></div>
-        <div class="field"><label for="regPlace">गाँव / शहर *</label><input id="regPlace" required></div>
-        <div class="field"><label for="regPhoto">प्रोफ़ाइल फोटो (डेमो)</label><input id="regPhoto" type="file" accept="image/*"></div>
+        <div class="field"><label for="regDistrict">जिला *</label><input id="regDistrict" maxlength="80" required></div>
+        <div class="field"><label for="regPlace">गाँव / शहर *</label><input id="regPlace" maxlength="100" required></div>
+        <div class="field"><label for="regPhotoNote" data-en="Profile photo" data-hi="प्रोफ़ाइल फोटो">Profile photo</label><p id="regPhotoNote" class="notice" data-en="Photo upload will be enabled after secure file storage is added." data-hi="सुरक्षित फ़ाइल स्टोरेज जुड़ने के बाद फोटो अपलोड चालू होगा।">Photo upload will be enabled after secure file storage is added.</p></div>
         <div class="field full"><label for="regDescription">अनुभव और सेवाएँ</label><textarea id="regDescription" placeholder="अपने अनुभव और सेवाओं का विवरण लिखें।"></textarea></div>
       </div>
-      <div class="notice">रजिस्ट्रेशन अपने आप सत्यापित नहीं होता। यह डेमो आवेदन है; असली ID या दस्तावेज़ अपलोड करने से पहले सुरक्षित सर्वर बनाना ज़रूरी है।</div>
+      <div class="notice" data-en="This is a demo application, not identity verification. Do not upload sensitive identity documents. Your request stays in this browser until a secure backend is added." data-hi="यह केवल डेमो आवेदन है, पहचान का सत्यापन नहीं। संवेदनशील पहचान दस्तावेज़ अपलोड न करें। सुरक्षित बैकएंड बनने तक आवेदन इसी ब्राउज़र में रहेगा।">This is a demo application, not identity verification. Do not upload sensitive identity documents. Your request stays in this browser until a secure backend is added.</div>
       <div class="form-actions"><button class="btn btn-green" type="submit">रजिस्ट्रेशन भेजें</button></div>
     </form>
     <div id="aminRegMessage" class="success"></div>
@@ -521,9 +521,9 @@ footer a {text-decoration:underline}
     <p>अपना डेमो कार्ड बनाओ। यह आधिकारिक या सरकारी पहचान-पत्र नहीं है।</p>
     <form id="idForm">
       <div class="form-grid">
-        <div class="field"><label for="idName">नाम *</label><input id="idName" required></div>
+        <div class="field"><label for="idName">नाम *</label><input id="idName" autocomplete="name" maxlength="80" required></div>
         <div class="field"><label for="idNumber">My Amin Profile ID</label><input id="idNumber" placeholder="उदाहरण: MA-1001"></div>
-        <div class="field"><label for="idPhone">संपर्क नंबर</label><input id="idPhone" type="tel"></div>
+        <div class="field"><label for="idPhone">संपर्क नंबर</label><input id="idPhone" type="tel" inputmode="tel" maxlength="18" pattern="[0-9+() -]{10,18}" title="Enter a valid contact number or leave blank."></div>
         <div class="field"><label for="idDistrict">जिला और राज्य</label><input id="idDistrict" placeholder="जिला, राज्य"></div>
         <div class="field full"><label for="idRole">काम / भूमिका</label><input id="idRole" value="Land Measurement Service"></div>
       </div>
@@ -638,18 +638,6 @@ footer a {text-decoration:underline}
     </div>
   </section>
 
-  <!-- OWNER DASHBOARD: hidden from normal navigation -->
-  <section id="owner" class="panel">
-    <h2>🔐 Owner Dashboard</h2>
-    <div class="notice">यह केवल डेमो है। ब्राउज़र में रखा हुआ गुप्त कोड सुरक्षित प्रमाणीकरण नहीं है। असली वेबसाइट में सर्वर-आधारित लॉगिन ज़रूरी है।</div>
-    <div class="form-actions">
-      <button class="btn btn-green" onclick="showOwnerData('amins')">अमीन आवेदन</button>
-      <button class="btn btn-green" onclick="showOwnerData('bookings')">बुकिंग</button>
-      <button class="btn btn-green" onclick="showOwnerData('reports')">रिपोर्ट</button>
-    </div>
-    <div id="ownerData" class="list"></div>
-    <div class="form-actions"><button class="btn btn-outline" onclick="closeOwner()">Dashboard बंद करें</button></div>
-  </section>
 </main>
 
 <footer>
@@ -686,7 +674,7 @@ footer a {text-decoration:underline}
     <div class="drawer-group">Account</div>
     <button class="menu-link" data-action="logout"><span>↪</span>Logout</button>
     <p style="font-size:11px;color:#859189;line-height:1.6;padding:10px">
-      Owner Dashboard सामान्य मेन्यू में नहीं दिखता। उसे खोलने के लिए Search आइकन में अपना Owner Code डालें।
+      निजी Owner Panel अभी उपलब्ध नहीं है। इसे सुरक्षित सर्वर-आधारित लॉगिन के साथ अलग से बनाया जाएगा।
     </p>
   </aside>
 </div>
@@ -695,10 +683,10 @@ footer a {text-decoration:underline}
 <div class="dialog" id="searchDialog" role="dialog" aria-modal="true" aria-label="Website Search">
   <div class="dialog-box">
     <div class="dialog-head"><h3>⌕ Search My Amin</h3><button class="closebtn" onclick="closeSearch()">✕</button></div>
-    <p style="font-size:13px;color:#718078">सेवा खोजें या Owner Code डालें।</p>
+    <p style="font-size:13px;color:#718078">सेवा खोजें। निजी Owner Panel यहाँ से नहीं खुलता।</p>
     <input id="siteSearch" placeholder="जैसे: ID Card, Booking, Bihar Bhumi…">
     <div class="form-actions"><button class="btn btn-green" onclick="runSearch()">Search / खोलें</button></div>
-    <div style="font-size:11px;color:#859189;margin-top:12px">Owner Code केवल इस डेमो में है; असली सुरक्षा के लिए backend login चाहिए।</div>
+    <div style="font-size:11px;color:#859189;margin-top:12px">निजी Owner Panel अभी विकासाधीन है; सार्वजनिक वेबसाइट पर कोई Owner Code उपलब्ध नहीं है।</div>
   </div>
 </div>
 
@@ -712,7 +700,7 @@ footer a {text-decoration:underline}
    अपना डेमो Owner Code यहाँ बदल सकते हो।
    असली वेबसाइट में इसे HTML में रखना सुरक्षित नहीं है।
 -------------------------------------------------------- */
-const OWNER_CODE = "MA-OWNER-7512";
+const OWNER_CODE = "";
 const DB = {
   amins:"myamin_demo_amins_v1",
   bookings:"myamin_demo_bookings_v1",
@@ -802,13 +790,6 @@ $("siteSearch").addEventListener("keydown",e=>{
 });
 function runSearch() {
   const query=$("siteSearch").value.trim();
-  if(query===OWNER_CODE) {
-    closeSearch();
-    go("owner");
-    showOwnerData("amins");
-    toast("Owner demo dashboard खुल गया।");
-    return;
-  }
   if(!query) {toast("पहले कुछ लिखें।");return;}
   const q=query.toLowerCase();
   const routes=[
@@ -826,7 +807,7 @@ function runSearch() {
     if(terms.some(term=>q.includes(term))) {closeSearch();go(route);return;}
   }
   if(q.includes("owner")||q.includes("dashboard")) {
-    toast("Owner Dashboard खोलने के लिए सही Owner Code डालें।");return;
+    toast("निजी Owner Panel अभी उपलब्ध नहीं है।");return;
   }
   toast("परिणाम नहीं मिला। दूसरा शब्द खोजें।");
 }
@@ -858,6 +839,8 @@ const phrasePairs=[
 ["भारत सरकार — State/UT Land Records Directory","Government of India — State/UT Land Records Directory"],["दूसरे राज्यों की सेवाएँ","Services for other states"],
 ["Approved demo profile","स्वीकृत डेमो प्रोफ़ाइल"],["अभी कोई अप्रूव्ड अमीन प्रोफ़ाइल नहीं मिली।","No approved Amin profiles found yet."],["आप अमीन रजिस्ट्रेशन कर सकते हैं। Owner Dashboard के डेमो में आवेदन अप्रूव करें।","You can register as an Amin. Approve applications in the demo Owner Dashboard."],["अपॉइंटमेंट माँगें","Request appointment"],["इस ग्राहक की कोई डेमो बुकिंग नहीं मिली।","No demo bookings found for this customer."],["लॉगिन: ","Logged in: "],["बुकिंग से पहले ग्राहक लॉगिन करना ज़रूरी है।","Customer login is required before booking."],["सेवा चुनें","Choose a service"],["अभी कोई राज्य नहीं मिला।","No state found."],["भूमि मापी सेवाएँ","Land measurement services"],["Open official portal / directory ↗","आधिकारिक पोर्टल / निर्देशिका खोलें ↗"],["स्थान:","Location:"],["तारीख:","Date:"],["स्थिति:","Status:"],["Booking ID:","बुकिंग आईडी:"],["DEMO CARD","डेमो कार्ड"],["DEMO ONLY — NOT AN OFFICIAL ID OR LICENSE","केवल डेमो — आधिकारिक पहचान-पत्र या लाइसेंस नहीं"],["Not provided","उपलब्ध नहीं"],["selected unit","चुनी गई इकाई"],["कृपया सही संख्या भरें।","Please enter a valid number."],
 ["किस इकाई में","To unit"],["Square feet (sq ft)","वर्ग फुट (sq ft)"],["Square yards (sq yd)","वर्ग गज (sq yd)"],["Square meters (m²)","वर्ग मीटर (m²)"],["Dismil (डिसमिल)","डिसमिल"],["Acre (एकड़)","एकड़"],["Hectare (हेक्टेयर)","हेक्टेयर"],["Kattha (डेमो मान)","कट्ठा (डेमो मान)"],["Dhur (डेमो मान)","धुर (डेमो मान)"],["Bigha (डेमो मान)","बीघा (डेमो मान)"],["परिणाम","Result"],["राज्य या पोर्टल खोजें…","Search state or portal…"],["वेबसाइट में समस्या हो, गलत सरकारी लिंक मिले या कोई नया फीचर चाहिए, तो यहाँ लिखें।","Report a website problem, incorrect government link, or suggest a new feature here."],["राज्यों और केंद्रशासित प्रदेशों के भूमि रिकॉर्ड पोर्टल की सरकारी निर्देशिका।","Government directory of land-record portals for states and union territories."],["बिहार की सेवाएँ अलग हैं और अन्य राज्यों के पोर्टल अलग सेक्शन में हैं। सरकारी साइट नए टैब में खुलेगी।","Bihar services and other state portals are listed separately. Government sites open in a new tab."],["भूमि अभिलेख से संबंधित पोर्टल।","Land-record related portal."],["जमीन के रिकॉर्ड और संबंधित ऑनलाइन सेवाएँ।","Land records and related online services."],["उपलब्ध भू-नक्शा सेवाएँ।","Available land-map services."],["भूमि रिकॉर्ड में सुधार संबंधी सेवा।","Service for corrections to land records."],["बिहार की ऑनलाइन मापी सेवा।","Bihar's online land-measurement service."],["भूमि पंजीकरण जानकारी।","Land registration information."],["बिहार विभाग की आधिकारिक वेबसाइट।","Official website of the Bihar department."],["बिहार की अन्य ऑनलाइन सरकारी सेवाएँ।","Other online government services in Bihar."],["भूमि सर्वेक्षण एवं बंदोबस्त निदेशालय।","Directorate of Land Records and Survey."],["सरकारी भूमि सेवाएँ","Government land services"],["बिहार भूमि सेवा पोर्टल","Bihar land service portal"]
+
+["Full Name *","पूरा नाम *"],["Mobile number *","मोबाइल नंबर *"],["Email (optional)","ईमेल (वैकल्पिक)"],["District","जिला"],["Amin name (if known)","अमीन का नाम (यदि पता हो)"],["Service *","सेवा *"],["Choose a service","सेवा चुनें"],["Land measurement","जमीन की नापी"],["Boundary demarcation","सीमांकन"],["Site sketch map","नज़री नक्शा"],["Other land-related assistance","जमीन से जुड़ी अन्य सहायता"],["State *","राज्य *"],["District *","जिला *"],["Village / Location *","गाँव / स्थान *"],["Preferred date *","पसंदीदा तारीख *"],["Work details","काम की जानकारी"],["Describe the work. Do not enter sensitive documents here.","काम के बारे में बताइए। संवेदनशील दस्तावेज़ यहाँ न डालें।"],["Send booking request","बुकिंग अनुरोध भेजें"],["WhatsApp number","WhatsApp नंबर"],["Business / identity reference","व्यवसाय / पहचान संदर्भ"],["Village / City *","गाँव / शहर *"],["Profile photo","प्रोफ़ाइल फोटो"],["Photo upload will be enabled after secure file storage is added.","सुरक्षित फ़ाइल स्टोरेज जुड़ने के बाद फोटो अपलोड चालू होगा।"],["Experience and services","अनुभव और सेवाएँ"],["Describe your experience and services.","अपने अनुभव और सेवाओं का विवरण लिखें।"],["Submit registration","रजिस्ट्रेशन भेजें"],["Name *","नाम *"],["My Amin Profile ID","My Amin प्रोफ़ाइल ID"],["Contact number","संपर्क नंबर"],["District and state","जिला और राज्य"],["Work / Role","काम / भूमिका"],["Create card","कार्ड बनाएँ"],["Number","संख्या"],["From unit","किस इकाई से"],["To unit","किस इकाई में"],["Report type *","रिपोर्ट का प्रकार *"],["Contact (optional)","संपर्क (वैकल्पिक)"],["Title *","शीर्षक *"],["Where is the problem?","समस्या कहाँ है?"],["Full details *","पूरी जानकारी *"],["What happened, on which page, and what action caused the problem?","क्या हुआ, किस पेज पर हुआ और क्या करने पर समस्या आई?"],["Submit report","रिपोर्ट भेजें"],["Choose today or a future date.","आज या आने वाली तारीख चुनें।"]
 ];
 const phraseMap={};
 phrasePairs.forEach(([en,hi])=>{phraseMap.en??={};phraseMap.hi??={};phraseMap.en[hi]=en;phraseMap.hi[en]=hi;});
@@ -933,15 +916,15 @@ $("loginForm").addEventListener("submit",e=>{
   };
   if(!user.name||!user.phone) {toast("नाम और मोबाइल नंबर भरें।");return;}
   save(DB.user,user);
-  $("loginMessage").textContent="डेमो लॉगिन सफल। अब बुकिंग अनुरोध भेज सकते हैं।";
+  $("loginMessage").textContent=currentLang==="hi"?"डेमो लॉगिन सफल। अब बुकिंग अनुरोध भेज सकते हैं।":"Demo login successful. You can now submit a booking request.";
   $("loginMessage").style.display="block";
   updateBookingUser();
-  toast("Login details इस डिवाइस में सेव हुईं।");
+  toast(currentLang==="hi"?"लॉगिन विवरण इसी डिवाइस में सेव हुए।":"Login details saved on this device.");
 });
 function logout() {
   localStorage.removeItem(DB.user);
   updateBookingUser();
-  toast("इस डिवाइस से डेमो लॉगआउट हो गया।");
+  toast(currentLang==="hi"?"इस डिवाइस से डेमो लॉगआउट हो गया।":"Demo logout completed on this device.");
 }
 function updateBookingUser() {
   const user=read(DB.user,null);
@@ -972,10 +955,10 @@ $("aminForm").addEventListener("submit",e=>{
   };
   amins.push(record);
   save(DB.amins,amins);
-  $("aminRegMessage").textContent="आवेदन डेमो में सेव हुआ। अप्रूवल के बाद ही यह खोज में दिखेगा।";
+  $("aminRegMessage").textContent=currentLang==="hi"?"आवेदन इसी डिवाइस के डेमो में सेव हुआ। सार्वजनिक प्रोफ़ाइल अप्रूवल अभी उपलब्ध नहीं है।":"Your request was saved in this device demo. Public profile approval is not available yet.";
   $("aminRegMessage").style.display="block";
   e.target.reset();
-  toast("Amin registration request सेव हुआ।");
+  toast(currentLang==="hi"?"अमीन रजिस्ट्रेशन अनुरोध इसी डिवाइस में सेव हुआ।":"Amin registration request saved on this device.");
 });
 
 /* Amin search/list */
@@ -1037,7 +1020,7 @@ $("bookingForm").addEventListener("submit",e=>{
     createdAt:new Date().toISOString()
   });
   save(DB.bookings,bookings);
-  $("bookingMessage").textContent="बुकिंग अनुरोध इस डिवाइस में सेव हुआ। यह अपने आप अमीन को नहीं भेजा गया है।";
+  $("bookingMessage").textContent=currentLang==="hi"?"बुकिंग अनुरोध इसी डिवाइस में सेव हुआ। यह अपने आप अमीन को नहीं भेजा गया है।":"Booking request saved on this device. It has not been sent to the Amin.";
   $("bookingMessage").style.display="block";
   e.target.reset();
   $("bookingDate").min=localTodayISO();
@@ -1092,7 +1075,7 @@ $("reportForm").addEventListener("submit",e=>{
     createdAt:new Date().toISOString()
   });
   save(DB.reports,reports);
-  $("reportMessage").textContent="रिपोर्ट डेमो में सेव हुई। अभी ईमेल या सर्वर पर नहीं भेजी गई है।";
+  $("reportMessage").textContent=currentLang==="hi"?"रिपोर्ट डेमो में सेव हुई। अभी ईमेल या सर्वर पर नहीं भेजी गई है।":"Report saved in this demo. It has not been sent by email or to a server.";
   $("reportMessage").style.display="block";
   e.target.reset();
   toast("रिपोर्ट सेव हुई।");
