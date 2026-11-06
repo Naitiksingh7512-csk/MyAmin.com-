@@ -1112,10 +1112,10 @@ const smartSearchItems=[
   {label:"Help & Report",hiLabel:"सहायता और शिकायत",hint:"सहायता या समस्या बताएँ",hiHint:"सहायता लें या समस्या बताएँ",terms:["help","support","report","सहायता"],route:"help",icon:"💬"}
 ];
 function normalizeSearchText(value){
- return String(value||"").toLocaleLowerCase().normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").replace(/[^\\p{L}\\p{N}]+/gu,"");
+ return String(value||"").toLocaleLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^\p{L}\p{N}]+/gu,"");
 }
 function searchTokens(value){
- return String(value||"").toLocaleLowerCase().normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").match(/[\\p{L}\\p{N}]+/gu)||[];
+ return String(value||"").toLocaleLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").match(/[\p{L}\p{N}]+/gu)||[];
 }
 function editDistance(a,b){
  const A=Array.from(a),B=Array.from(b);
