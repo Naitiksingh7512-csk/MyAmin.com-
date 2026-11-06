@@ -802,7 +802,7 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
         <div class="field"><label for="idName">नाम *</label><input id="idName" autocomplete="name" maxlength="80" required></div>
         <div class="field"><label for="idNumber">My Amin Profile ID</label><input id="idNumber" placeholder="उदाहरण: MA-1001"></div>
         <div class="field"><label for="idPhone">संपर्क नंबर</label><input id="idPhone" type="tel" inputmode="tel" maxlength="18" pattern="[0-9+() -]{10,18}" title="Enter a valid contact number or leave blank."></div>
-        <div class="field"><label for="idDistrict">जिला और राज्य</label><input id="idDistrict" placeholder="जिला, राज्य"></div><div class="field"><label for="idUpiId">UPI ID (Optional)</label><input id="idUpiId" maxlength="120" placeholder="name@bank"><small>Optional. Add the UPI ID where customers can pay you.</small></div>
+        <div class="field"><label for="idDistrict">जिला और राज्य</label><input id="idDistrict" placeholder="जिला, राज्य"></div><div class="field"><label for="idUpiId">UPI ID (Optional)</label><input id="idUpiId" maxlength="120" placeholder="name@bank" autocomplete="off"><small>Optional. Add the UPI ID where customers can pay you.</small></div><div class="field"><label for="idUpiQrUpload">UPI QR Code (Optional)</label><input id="idUpiQrUpload" type="file" accept="image/*"><small>Upload your payment QR. If you do not upload one, a QR can be created from your UPI ID.</small><img id="idUpiQrPreview" alt="UPI QR preview" hidden style="width:100px;height:100px;object-fit:contain;background:white;padding:6px;border:1px solid #ddd;border-radius:8px"></div>
         <div class="field"><label for="idRole">काम / भूमिका</label><input id="idRole" value="Land Measurement Service"></div>
         <div class="field"><label for="idPhoto">Profile Photo / DP</label><input id="idPhoto" type="file" accept="image/*"><small>अपनी साफ़ फोटो चुनें। फोटो केवल इस ब्राउज़र में कार्ड पर दिखाई जाएगी।</small></div>
       </div>
@@ -821,10 +821,12 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
       </article>
       <article class="id-card-back">
         <div class="id-back-brand">MyAmin.com <span>YOUR LAND. YOUR INFORMATION.</span></div>
-        <div class="id-qr-frame"><img id="cardQr" alt="QR code opening this Amin profile on MyAmin.com"></div>
-        <strong>Scan to open Amin profile</strong>
-        <span class="id-site-url">MyAmin.com · Profile page</span>
-        <p>Scan to open your profile. Use Pay Now on the profile page for UPI payment.</p>
+        <div class="id-qr-pair">
+          <div class="id-qr-unit"><div class="id-qr-frame"><img id="cardQr" alt="QR code opening this Amin profile on MyAmin.com"></div><strong>PROFILE QR</strong><small>Open your My Amin profile</small></div>
+          <div class="id-qr-unit"><div class="id-qr-frame"><img id="cardUpiQr" alt="UPI payment QR code" hidden><span id="cardUpiQrPlaceholder" style="font-size:9px;color:#64756c;padding:5px">Add UPI ID or QR</span></div><strong>UPI PAYMENT</strong><small>Pay directly to the Amin</small></div>
+        </div>
+        <span class="id-site-url">MyAmin.com · Profile and payment QR codes</span>
+        <p>Profile QR opens your page. UPI QR sends payment directly to your UPI app. Check the payee name before paying.</p>
         <div class="id-back-footer">MY AMIN · PROFILE CARD</div>
       </article>
     </div>
@@ -1430,7 +1432,12 @@ $("regPhoto").addEventListener("change",e=>{const file=e.target.files&&e.target.
 window.regUpiQrData="";
 $("regUpiQr").addEventListener("change",e=>{const file=e.target.files&&e.target.files[0];if(!file){window.regUpiQrData="";return;}if(!file.type.startsWith("image/")||file.size>3*1024*1024){toast("Choose a QR image under 3 MB.");e.target.value="";return;}const reader=new FileReader();reader.onload=()=>{window.regUpiQrData=String(reader.result||"");$("regUpiQrPreview").src=window.regUpiQrData;$("regUpiQrPreview").hidden=false;};reader.readAsDataURL(file);});
 window.idUpiQrData="";
-if($("idUpiQrUpload")) $("idUpiQrUpload").addEventListener("change",e=>{const file=e.target.files&&e.target.files[0];if(!file){window.idUpiQrData="";return;}if(!file.type.startsWith("image/")||file.size>3*1024*1024){toast("Choose a QR image under 3 MB.");e.target.value="";return;}const reader=new FileReader();reader.onload=()=>{window.idUpiQrData=String(reader.result||"");};reader.readAsDataURL(file);});
+if($("idUpiQrUpload")) $("idUpiQrUpload").addEventListener("change",e=>{
+ const file=e.target.files&&e.target.files[0];
+ if(!file){window.idUpiQrData="";$("idUpiQrPreview").hidden=true;return;}
+ if(!file.type.startsWith("image/")||file.size>3*1024*1024){toast("Choose a QR image under 3 MB.");e.target.value="";return;}
+ const reader=new FileReader();reader.onload=()=>{window.idUpiQrData=String(reader.result||"");$("idUpiQrPreview").src=window.idUpiQrData;$("idUpiQrPreview").hidden=false;};reader.readAsDataURL(file);
+});
 
 /* Amin registration */
 $("aminForm").addEventListener("submit",e=>{
@@ -1469,6 +1476,8 @@ $("aminForm").addEventListener("submit",e=>{
   $("idDistrict").value=record.district+", "+record.state;
   $("idUpiId").value=record.upiId||"";
   window.idUpiQrData=record.upiQr||"";
+  $("idUpiQrPreview").src=window.idUpiQrData;
+  $("idUpiQrPreview").hidden=!window.idUpiQrData;
   if(record.photo){$("cardPhoto").src=record.photo;$("cardPhoto").style.display="block";$("cardPhotoPlaceholder").style.display="none";}
   $("idRole").value="Land Measurement Service";
   e.target.reset();
@@ -1596,9 +1605,15 @@ $("idForm").addEventListener("submit",e=>{
   if(idPhotoData){photo.src=idPhotoData;photo.style.display="block";placeholder.style.display="none";}
   else{photo.removeAttribute("src");photo.style.display="none";placeholder.style.display="grid";}
   const cardId=$("idNumber").value.trim()||$("cardNumber").textContent.trim();
+  const upiId=$("idUpiId").value.trim();
+  if(upiId&&!/^[A-Za-z0-9._-]{2,256}@[A-Za-z0-9.-]{2,64}$/.test(upiId)){toast("Please enter a valid UPI ID, such as name@bank.");return;}
   const site="https://naitiksingh7512-csk.github.io/MyAmin.com-/?profile="+encodeURIComponent(cardId);
   $("cardQr").src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data="+encodeURIComponent(site);
-  window.generatedAminCard={id:cardId,name:$("idName").value.trim(),upiId:$("idUpiId").value.trim()};
+  const paymentQr=$("cardUpiQr"),paymentPlaceholder=$("cardUpiQrPlaceholder");
+  if(window.idUpiQrData){paymentQr.src=window.idUpiQrData;paymentQr.hidden=false;paymentPlaceholder.hidden=true;}
+  else if(upiId){const upiLink="upi://pay?pa="+encodeURIComponent(upiId)+"&pn="+encodeURIComponent($("idName").value.trim())+"&cu=INR";paymentQr.src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data="+encodeURIComponent(upiLink);paymentQr.hidden=false;paymentPlaceholder.hidden=true;}
+  else{paymentQr.removeAttribute("src");paymentQr.hidden=true;paymentPlaceholder.hidden=false;}
+  window.generatedAminCard={id:cardId,name:$("idName").value.trim(),upiId,upiQr:window.idUpiQrData||""};
   $("downloadAminCard").disabled=false;
   $("idPreview").style.display="grid";
   toast("My Amin प्रोफ़ाइल कार्ड तैयार है।");
