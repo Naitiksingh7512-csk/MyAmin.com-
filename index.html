@@ -355,11 +355,11 @@ footer a {text-decoration:underline}
     </div>
 
     <div class="navactions">
-      <button class="lang" id="languageBtn" type="button">हिंदी | English</button>
-      <button class="iconbtn" id="searchBtn" type="button" aria-label="Search">⌕</button>
-      <button class="btn btn-green btn-small" type="button" onclick="openLogin()">Login</button>
       <button class="iconbtn mobile-menu-btn" id="menuBtn" type="button"
         aria-label="Open menu" aria-expanded="false">☰</button>
+      <button class="btn btn-green btn-small" id="navLoginBtn" type="button" onclick="openLogin()">Login</button>
+      <button class="iconbtn" id="searchBtn" type="button" aria-label="Search">⌕</button>
+      <button class="lang" id="languageBtn" type="button">हिंदी | English</button>
     </div>
   </nav>
 </header>
@@ -831,16 +831,74 @@ function runSearch() {
   toast("परिणाम नहीं मिला। दूसरा शब्द खोजें।");
 }
 
-/* Language toggle */
+/* Complete interface language switch.
+   Static UI text and form controls are translated; user-entered data is never changed. */
 let currentLang="en";
-$("languageBtn").addEventListener("click",()=>{
-  currentLang=currentLang==="en"?"hi":"en";
-  document.documentElement.lang=currentLang;
-  document.querySelectorAll("[data-en][data-hi]").forEach(el=>{
-    el.textContent=el.dataset[currentLang];
+const phrasePairs=[
+["Home","होम"],["Find an Amin","अमीन खोजें"],["Services","सेवाएँ"],["Calculator","कैलकुलेटर"],
+["LAND SERVICES MADE SIMPLE","भूमि सेवाएँ अब आसान"],["Simple booking","आसान बुकिंग"],["Direct contact","सीधा संपर्क"],["Government portal directory","सरकारी पोर्टल निर्देशिका"],
+["Land Survey","भूमि सर्वेक्षण"],["Land measurement","भूमि मापी"],["Explore services →","सेवाएँ देखें →"],
+["What do you need today?","आज आपको क्या चाहिए?"],["Choose a service to get started.","शुरू करने के लिए कोई सेवा चुनें।"],
+["Book Appointment","अपॉइंटमेंट बुक करें"],["ID Card Maker","आईडी कार्ड बनाएँ"],["Land Portals","भूमि पोर्टल"],["Land Calculator","भूमि कैलकुलेटर"],["Report a Bug","समस्या बताएँ"],["Amin Registration","अमीन पंजीकरण"],["Help & Support","सहायता और समर्थन"],
+["Explore My Amin Services","My Amin की सेवाएँ देखें"],["Find an Amin","अमीन खोजें"],["Booking & Appointments","बुकिंग और अपॉइंटमेंट"],["Amin ID Card Maker","अमीन आईडी कार्ड निर्माता"],["Government Portals","सरकारी पोर्टल"],["Report & Support","समस्या और सहायता"],
+["अपने राज्य, जिले और स्थान के अनुसार अमीन खोजें।","Find an Amin by state, district, and location."],
+["राज्य, जिला या गाँव डालकर उपलब्ध डेमो प्रोफ़ाइल खोजें।","Search demo profiles by state, district, or village."],
+["नाम / स्थान / जिला","Name / Place / District"],["जैसे: पटना, बरौनी, Naitik","e.g. Patna, Barauni, Naitik"],["राज्य","State"],["सभी राज्य","All states"],["Search","खोजें"],["सभी प्रोफ़ाइल","All profiles"],
+["Customer Login / ग्राहक लॉगिन","Customer Login"],["बुकिंग का डेमो इस्तेमाल करने से पहले अपना नाम और संपर्क विवरण भरें।","Enter your name and contact details before using demo booking."],
+["डेमो में जानकारी इसी ब्राउज़र में सेव होती है। यह अभी सुरक्षित ऑनलाइन अकाउंट नहीं है।","In this demo, details are saved only in this browser. This is not a secure online account."],
+["पूरा नाम / Full Name *","Full Name *"],["मोबाइल नंबर *","Mobile number *"],["ईमेल (वैकल्पिक)","Email (optional)"],["जिला / District","District"],["Login / Continue","Login / Continue"],["Logout","लॉगआउट"],
+["Book an Appointment | अपॉइंटमेंट","अपॉइंटमेंट बुक करें"],["पहले लॉगिन करें, फिर अपनी ज़रूरत और पसंद की तारीख भरें।","Log in first, then enter your requirements and preferred date."],
+["अमीन का नाम (यदि पता हो)","Amin name (if known)"],["अमीन का नाम","Amin name"],["सेवा *","Service *"],["सेवा चुनें","Choose a service"],["जमीन की नापी","Land measurement"],["सीमांकन / Boundary","Boundary demarcation"],["नज़री नक्शा","Site sketch map"],["जमीन से जुड़ी अन्य सहायता","Other land-related assistance"],["गाँव / स्थान *","Village / Location *"],["पसंदीदा तारीख *","Preferred date *"],["काम की जानकारी","Work details"],["काम के बारे में बताइए। संवेदनशील दस्तावेज़ यहाँ न डालें।","Describe the work. Do not enter sensitive documents here."],["बुकिंग अनुरोध भेजें","Send booking request"],
+["Amin Registration | अमीन रजिस्ट्रेशन","Amin Registration"],["अपनी प्रोफ़ाइल की जानकारी भरें। डेमो में प्रोफ़ाइल Owner Dashboard से अप्रूव होने के बाद खोज में दिखेगी।","Enter your profile details. In this demo, your profile appears in search only after approval."],
+["WhatsApp नंबर","WhatsApp number"],["व्यवसाय / पहचान संदर्भ","Business / identity reference"],["गाँव / शहर *","Village / City *"],["प्रोफ़ाइल फोटो (डेमो)","Profile photo (demo)"],["अनुभव और सेवाएँ","Experience and services"],["अपने अनुभव और सेवाओं का विवरण लिखें।","Describe your experience and services."],["रजिस्ट्रेशन भेजें","Submit registration"],
+["अपना डेमो कार्ड बनाओ। यह आधिकारिक या सरकारी पहचान-पत्र नहीं है।","Create a demo card. This is not an official or government identity card."],["नाम *","Name *"],["संपर्क नंबर","Contact number"],["जिला और राज्य","District and state"],["काम / भूमिका","Work / Role"],["कार्ड बनाएँ","Create card"],["Print / Save PDF","प्रिंट / PDF सेव करें"],
+["संख्या","Number"],["किस इकाई से","From unit"],["किस इकाई में","To unit"],["Report a Bug / Issue / Suggestion","समस्या / सुझाव दर्ज करें"],["रिपोर्ट का प्रकार *","Report type *"],["संपर्क (वैकल्पिक)","Contact (optional)"],["शीर्षक *","Title *"],["समस्या कहाँ है?","Where is the problem?"],["पूरी जानकारी *","Full details *"],["क्या हुआ, किस पेज पर हुआ, और क्या करने पर समस्या आई?","What happened, on which page, and what action caused it?"],["रिपोर्ट सेव करें","Submit report"],
+["Help & Support | सहायता","Help & Support"],["Booking Help","बुकिंग सहायता"],["Amin Help","अमीन सहायता"],["Report a Problem","समस्या बताएँ"],["Booking खोलें","Open booking"],["Register","पंजीकरण"],["Report","रिपोर्ट"],
+["Main Menu","मुख्य मेन्यू"],["Home / होम","होम"],["Find an Amin / अमीन खोजें","अमीन खोजें"],["Booking & Appointments","बुकिंग और अपॉइंटमेंट"],["Customer Login / ग्राहक लॉगिन","ग्राहक लॉगिन"],["Tools & Features","टूल्स और सुविधाएँ"],["Land Unit Calculator","भूमि इकाई कैलकुलेटर"],["Bihar Bhumi Service Portal","बिहार भूमि सेवा पोर्टल"],["Services for Other States","अन्य राज्यों की सेवाएँ"],["Report a Bug / Issue","समस्या दर्ज करें"],["Account","खाता"],["My Amin Menu","My Amin मेन्यू"],["Search My Amin","My Amin खोजें"],["सेवा खोजें या Owner Code डालें।","Search for a service or enter the Owner Code."],["जैसे: ID Card, Booking, Bihar Bhumi…","e.g. ID Card, Booking, Bihar Bhumi…"],["Search / खोलें","खोजें / खोलें"],
+["भारत सरकार — State/UT Land Records Directory","Government of India — State/UT Land Records Directory"],["दूसरे राज्यों की सेवाएँ","Services for other states"]
+];
+const phraseMap={};
+phrasePairs.forEach(([en,hi])=>{phraseMap.en??={};phraseMap.hi??={};phraseMap.en[en]=hi;phraseMap.hi[hi]=en;});
+const staticTextNodes=[];
+const staticAttrs=[];
+function collectStaticText(){
+  const skip=new Set(["SCRIPT","STYLE"]);
+  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+  let node;
+  while((node=walker.nextNode())){
+    if(skip.has(node.parentElement.tagName)||node.parentElement.closest("#aminResults,#myBookings,#statePortals,#ownerData,#toast")) continue;
+    const value=node.nodeValue.trim();
+    if(value) staticTextNodes.push({node,original:value,leading:node.nodeValue.match(/^\\s*/)?.[0]||"",trailing:node.nodeValue.match(/\\s*$/)?.[0]||""});
+  }
+  document.querySelectorAll("input[placeholder],textarea[placeholder],button[aria-label],.dialog[aria-label]").forEach(el=>{
+    ["placeholder","aria-label"].forEach(attr=>{if(el.hasAttribute(attr))staticAttrs.push({el,attr,original:el.getAttribute(attr)});});
   });
-  $("languageBtn").textContent=currentLang==="en"?"हिंदी | English":"English | हिंदी";
-});
+}
+function applyLanguage(lang){
+  currentLang=lang;
+  document.documentElement.lang=lang;
+  staticTextNodes.forEach(item=>{
+    const translated=phraseMap[lang][item.original];
+    if(translated)item.node.nodeValue=item.leading+translated+item.trailing;
+  });
+  staticAttrs.forEach(item=>{
+    const translated=phraseMap[lang][item.original];
+    if(translated)item.el.setAttribute(item.attr,translated);
+  });
+  document.querySelectorAll("[data-en][data-hi]").forEach(el=>{
+    if(el.tagName==="H1") {
+      el.innerHTML=lang==="en"?'Find the Right <span>Amin</span> for Your Land.':'अपनी जमीन के लिए सही <span>Amin</span> खोजें।';
+    } else if(el.children.length===0) el.textContent=el.dataset[lang];
+  });
+  const states=$("aminState");
+  if(states) Array.from(states.options).forEach((o,i)=>{if(i>0){o.value=["Bihar","Jharkhand","Uttar Pradesh","West Bengal"][i-1];o.textContent=lang==="hi"?["बिहार","झारखंड","उत्तर प्रदेश","पश्चिम बंगाल"][i-1]:o.value;}});
+  $("languageBtn").textContent=lang==="en"?"हिंदी | English":"English | हिंदी";
+  $("navLoginBtn").textContent=lang==="en"?"Login":"लॉगिन";
+  renderPortals();
+  loadAmins();
+}
+$("languageBtn").addEventListener("click",()=>applyLanguage(currentLang==="en"?"hi":"en"));
+collectStaticText();
 
 /* Customer login */
 $("loginForm").addEventListener("submit",e=>{
