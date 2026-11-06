@@ -1132,7 +1132,7 @@ function getAllSearchItems(){
    const desc=card.querySelector("small")?.textContent?.trim()||"";
    if(!title)return;
    const link=card.querySelector("a")?.getAttribute("href")||"";
-   items.push({label:title,hiLabel:title,hint:desc,hiHint:desc,terms:[title,desc,link,"government portal","सरकारी पोर्टल"],route:"portals",icon:"🏛️",portalQuery:title});
+   items.push({label:title,hiLabel:title,hint:desc,hiHint:desc,terms:[title,desc,link,"government portal","सरकारी पोर्टल"],route:"portals",icon:"🏛️",portalQuery:title,url:link});
  });
  // Add all state and UT portal entries; users can search by state or portal name.
  if(Array.isArray(portals)) portals.forEach(p=>items.push({label:p[1]+" — "+p[0],hiLabel:p[1]+" — "+p[0],hint:"Official land-record portal / directory",hiHint:"सरकारी भूमि रिकॉर्ड पोर्टल / निर्देशिका",terms:[p[0],p[1],"land records","bhulekh","भूमि रिकॉर्ड"],route:"portals",icon:"🌐",portalQuery:p[0]}));
