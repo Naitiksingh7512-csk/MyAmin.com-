@@ -927,6 +927,7 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
     <div class="dialog-head"><h3>⌕ Search My Amin</h3><button class="closebtn" onclick="closeSearch()">✕</button></div>
     <p style="font-size:13px;color:#718078">सेवा खोजें और वेबसाइट के किसी भी सेक्शन तक जल्दी पहुँचें।</p>
     <input id="siteSearch" placeholder="जैसे: ID Card, Booking, Bihar Bhumi…">
+    <div id="searchSuggestions" class="list" aria-live="polite" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:9px;margin-top:14px"></div>
     <div class="form-actions"><button class="btn btn-green" onclick="runSearch()">Search / खोलें</button></div>
   </div>
 </div>
@@ -1021,7 +1022,7 @@ document.addEventListener("keydown",e=>{
 $("searchBtn").addEventListener("click",()=>{
   $("searchDialog").classList.add("show");
   $("siteSearch").value="";
-  setTimeout(()=>$("siteSearch").focus(),100);
+  renderSmartSearch();\n   setTimeout(()=>$("siteSearch").focus(),100);
 });
 function closeSearch() { $("searchDialog").classList.remove("show"); }
 $("searchDialog").addEventListener("click",e=>{
@@ -1030,6 +1031,26 @@ $("searchDialog").addEventListener("click",e=>{
 $("siteSearch").addEventListener("keydown",e=>{
   if(e.key==="Enter") {e.preventDefault();runSearch();}
 });
+const smartSearchItems=[
+  {label:"Find an Amin",hint:"नाम, गाँव या जिला",terms:["amin","अमीन","nearby","पास में"],route:"find",icon:"👷"},
+  {label:"Search by Profile UID",hint:"UID जैसे kumar@12345678",terms:["uid","profile id","आईडी"],route:"find",icon:"🪪"},
+  {label:"Nearby Amin",hint:"अपने आसपास के Amin खोजें",terms:["nearby amin","near me","नजदीक","आसपास"],route:"find",icon:"📍"},
+  {label:"New Booking",hint:"अपॉइंटमेंट अनुरोध भेजें",terms:["booking","appointment","बुकिंग"],route:"booking",icon:"📅"},
+  {label:"Amin Registration",hint:"Amin बनने के लिए आवेदन",terms:["register","registration","जुड़ें"],route:"registerAmin",icon:"📝"},
+  {label:"Amin ID Card",hint:"अपना ID card बनाएँ",terms:["id card","idcard","कार्ड"],route:"idmaker",icon:"🎫"},
+  {label:"Land Unit Calculator",hint:"कट्ठा, धुर और अन्य इकाइयाँ",terms:["calculator","कट्ठा","धुर","unit"],route:"calculator",icon:"📐"},
+  {label:"Bihar Bhumi Portal",hint:"सरकारी भूमि सेवा",terms:["bihar bhumi","bhumi","भूमि पोर्टल"],route:"portals",icon:"🏛️"},
+  {label:"My Account / Login",hint:"अपने account विकल्प खोलें",terms:["account","login","लॉगिन"],route:"login",icon:"👤"},
+  {label:"Help & Report",hint:"सहायता या समस्या बताएँ",terms:["help","support","report","सहायता"],route:"help",icon:"💬"}
+];
+function renderSmartSearch(){
+ const box=$("searchSuggestions"); if(!box)return;
+ const q=$("siteSearch").value.trim().toLocaleLowerCase();
+ const list=q?smartSearchItems.filter(x=>(x.label+" "+x.hint+" "+x.terms.join(" ")).toLocaleLowerCase().includes(q)):smartSearchItems;
+ box.innerHTML=list.map((x,i)=>'<button type="button" class="btn btn-outline" data-smart-route="'+x.route+'" style="justify-content:flex-start;text-align:left;min-height:66px;white-space:normal"><span style="font-size:20px">'+x.icon+'</span><span><strong style="display:block">'+x.label+'</strong><small style="color:var(--muted)">'+x.hint+'</small></span></button>').join("")||'<p class="notice">कोई सुझाव नहीं मिला। दूसरा शब्द लिखें।</p>';
+ box.querySelectorAll("[data-smart-route]").forEach(b=>b.addEventListener("click",()=>{const route=b.dataset.smartRoute;closeSearch();go(route);}));
+}
+$("siteSearch").addEventListener("input",renderSmartSearch);
 function runSearch() {
   const query=$("siteSearch").value.trim();
   if(!query) {toast("पहले कुछ लिखें।");return;}
