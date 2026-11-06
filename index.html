@@ -335,6 +335,149 @@ footer a {text-decoration:underline}
   #idPreview,#idPreview * {visibility:visible}
   #idPreview {position:absolute;left:0;top:0;width:100%}
 }
+
+
+/* My Amin visual refresh — CSS-only; existing features and IDs remain unchanged */
+:root {
+  --green:#147a50;
+  --dark:#103d32;
+  --light:#edf7f0;
+  --gold:#e8b653;
+  --text:#20352e;
+  --muted:#6d7d75;
+  --border:#dce9e0;
+  --shadow:0 16px 42px rgba(16,61,50,.10);
+}
+body {
+  background:
+    radial-gradient(ellipse at 8% 12%,rgba(20,122,80,.055),transparent 30rem),
+    linear-gradient(180deg,#fbfdfb 0%,#f4f9f5 100%);
+  line-height:1.55;
+}
+header {
+  box-shadow:0 5px 22px rgba(16,61,50,.045);
+}
+.nav {min-height:76px}
+.logo {transition:transform .2s ease}
+.logo:hover {transform:translateY(-1px)}
+.navlinks a {
+  position:relative;
+  padding:9px 0;
+  transition:color .2s ease;
+}
+.navlinks a::after {
+  content:"";
+  position:absolute;left:0;right:100%;bottom:2px;height:2px;
+  background:var(--gold);border-radius:4px;transition:right .2s ease;
+}
+.navlinks a:hover::after {right:0}
+.btn {
+  border-radius:13px;
+  transition:transform .18s ease,box-shadow .18s ease,background .18s ease;
+}
+.btn:hover {
+  transform:translateY(-2px);
+  box-shadow:0 9px 20px rgba(16,61,50,.13);
+}
+.btn:active {transform:translateY(0)}
+.btn-green {
+  background:linear-gradient(135deg,#19865a,#106442);
+  box-shadow:0 7px 17px rgba(19,123,82,.17);
+}
+.hero {
+  isolation:isolate;
+  min-height:390px;
+  border:1px solid rgba(20,122,80,.13);
+  background:
+    radial-gradient(circle at 88% 12%,rgba(232,182,83,.20),transparent 16rem),
+    linear-gradient(125deg,#eaf6ed 0%,#fff 58%,#f7fbf4 100%);
+  box-shadow:0 20px 55px rgba(16,61,50,.075);
+}
+.hero::before {
+  content:"";
+  position:absolute;z-index:-1;
+  width:310px;height:310px;border-radius:50%;
+  right:-105px;top:-145px;
+  border:1px solid rgba(20,122,80,.12);
+  box-shadow:0 0 0 24px rgba(20,122,80,.025),0 0 0 52px rgba(20,122,80,.02);
+}
+.hero h1 {letter-spacing:-1.5px}
+.hero p {max-width:590px;line-height:1.85;color:#5e7067}
+.eyebrow {
+  border:1px solid rgba(20,122,80,.10);
+  box-shadow:0 4px 12px rgba(20,122,80,.05);
+}
+.hero-note {color:#587267}
+.section {padding-top:42px}
+.section-head {margin-bottom:19px}
+.section h2 {letter-spacing:-.55px;color:var(--dark)}
+.card,.quick,.panel,.portal,.list-item {
+  border:1px solid var(--border);
+  box-shadow:0 7px 22px rgba(16,61,50,.045);
+  transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;
+}
+.card:hover,.quick:hover,.portal:hover,.list-item:hover {
+  transform:translateY(-4px);
+  border-color:#c3ddcb;
+  box-shadow:0 15px 32px rgba(16,61,50,.095);
+}
+.card {border-radius:19px}
+.card-icon {
+  border-radius:15px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.65);
+}
+.quick {border-radius:16px}
+.panel {
+  border-radius:21px;
+  background:linear-gradient(145deg,#fff,#fbfefb);
+}
+input,select,textarea {
+  border-radius:12px !important;
+  transition:border-color .18s ease,box-shadow .18s ease;
+}
+input:focus,select:focus,textarea:focus {
+  border-color:var(--green);
+  box-shadow:0 0 0 4px rgba(20,122,80,.10);
+}
+.portal {border-radius:17px;padding:18px}
+.portal a {text-decoration:underline;text-underline-offset:3px}
+.pill {border:1px solid rgba(20,122,80,.10)}
+footer {
+  background:
+    radial-gradient(circle at 85% 0%,rgba(232,182,83,.12),transparent 20rem),
+    linear-gradient(120deg,#103a30,#174c3d);
+}
+footer a:hover {color:#fff}
+.dialog-box {
+  border:1px solid rgba(255,255,255,.65);
+  box-shadow:0 25px 80px rgba(0,0,0,.22);
+}
+.drawer {box-shadow:-20px 0 60px rgba(0,0,0,.16)}
+#toast {border:1px solid rgba(255,255,255,.12)}
+button:focus-visible,a:focus-visible {
+  outline:3px solid rgba(232,182,83,.85);
+  outline-offset:3px;
+}
+@media(max-width:600px) {
+  .nav {min-height:64px}
+  .hero {min-height:0;box-shadow:0 12px 30px rgba(16,61,50,.07)}
+  .hero::before {width:210px;height:210px;right:-120px;top:-95px}
+  .hero h1 {letter-spacing:-1.1px;line-height:1.12}
+  .hero-buttons {gap:9px}
+  .hero-buttons .btn {flex:1 1 100%;min-height:47px}
+  .section {padding-top:32px}
+  .card,.quick,.portal,.list-item {border-radius:15px}
+  .panel {border-radius:17px}
+}
+@media(prefers-reduced-motion:reduce) {
+  *,*::before,*::after {
+    scroll-behavior:auto !important;
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;
+  }
+}
+
 </style>
 </head>
 
