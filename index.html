@@ -532,6 +532,25 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
   .id-card-front,.id-card-back{box-shadow:none;break-inside:avoid;print-color-adjust:exact;-webkit-print-color-adjust:exact}
 }
 
+/* Subtle animated land-survey hero illustration */
+.map-card{position:relative;overflow:hidden}
+.map-card:after{content:"";position:absolute;inset:42px 0 42px;pointer-events:none;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.42) 48%,transparent 60%);transform:translateX(-120%);animation:surveySweep 5.5s ease-in-out infinite}
+.map-art .plot svg{overflow:visible}
+.map-art .plot svg path{transform-box:fill-box;transform-origin:center;animation:plotBreathe 4.8s ease-in-out infinite}
+.map-art .plot svg path:nth-of-type(2){animation-delay:.35s}
+.map-art .plot svg path:nth-of-type(3){animation-delay:.7s}
+.map-art .plot svg g text{transform-box:fill-box;transform-origin:center;animation:plotLabel 3.6s ease-in-out infinite}
+.map-art .plot svg g text:nth-child(2){animation-delay:.45s}
+.map-art .plot svg g text:nth-child(3){animation-delay:.9s}
+.map-art .plot svg circle{transform-box:fill-box;transform-origin:center;animation:surveyPin 2s ease-out infinite}
+.float-one,.float-two{animation:floatSurvey 4s ease-in-out infinite}
+.float-two{animation-delay:1.2s}
+@keyframes surveySweep{0%,15%{transform:translateX(-120%)}65%,100%{transform:translateX(120%)}}
+@keyframes plotBreathe{0%,100%{filter:brightness(1);stroke-width:3}50%{filter:brightness(1.12);stroke-width:4}}
+@keyframes plotLabel{0%,100%{opacity:.78}50%{opacity:1}}
+@keyframes surveyPin{0%{r:5;opacity:1}75%{r:13;opacity:.25}100%{r:5;opacity:1}}
+@keyframes floatSurvey{0%,100%{translate:0 0}50%{translate:0 -7px}}
+@media(prefers-reduced-motion:reduce){.map-card:after,.map-art .plot svg path,.map-art .plot svg g text,.map-art .plot svg circle,.float-one,.float-two{animation:none!important}}
 </style>
 </head>
 
