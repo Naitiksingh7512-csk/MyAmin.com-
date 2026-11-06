@@ -811,7 +811,7 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
     <div id="idPreview" class="id-preview id-card-set" style="display:none">
       <article class="id-card-front">
         <div class="id-card-watermark" aria-hidden="true">MY AMIN</div>
-        <div class="id-card-top"><div class="id-brand-mark"><img src="assets/myamin-logo.svg" alt="My Amin logo"></div><div><strong>MyAmin.com</strong><small>LAND SERVICE NETWORK</small></div><span class="id-demo-tag">DEMO</span></div>
+        <div class="id-card-top"><div class="id-brand-mark"><img src="assets/myamin-logo.svg" alt="My Amin logo"></div><div class="id-brand-caption"><small>LAND SERVICE NETWORK</small></div><span class="id-demo-tag">DEMO</span></div>
         <div class="id-card-main">
           <div class="id-photo-wrap"><img id="cardPhoto" alt="Profile photo"><span id="cardPhotoPlaceholder">DP</span></div>
           <div class="id-person"><span class="id-kicker">AMIN SERVICE PROFILE</span><h3 id="cardName"></h3><div class="id-profile-id">PROFILE ID · <strong id="cardNumber"></strong></div><div class="id-role" id="cardRole"></div></div>
@@ -1809,12 +1809,12 @@ applyLanguage(currentLang);
   box-sizing:border-box!important;
 }
 .id-brand-mark{
-  width:48px!important;height:48px!important;flex:0 0 48px!important;
-  display:grid!important;place-items:center!important;
-  border-radius:10px!important;background:transparent!important;
-  overflow:hidden!important;padding:0!important;
+  width:136px!important;height:40px!important;flex:0 0 136px!important;
+  display:flex!important;align-items:center!important;justify-content:flex-start!important;
+  border-radius:0!important;background:transparent!important;
+  overflow:visible!important;padding:0!important;
 }
-.id-brand-mark img{
+.id-brand-caption{min-width:0;display:flex;align-items:center}.id-brand-caption small{font-size:7px!important;letter-spacing:1.2px!important;color:#718078!important;font-weight:800!important}.id-brand-mark img{
   display:block!important;width:100%!important;height:100%!important;
   object-fit:contain!important;visibility:visible!important;opacity:1!important;
 }
@@ -1831,7 +1831,7 @@ applyLanguage(currentLang);
 .id-back-footer{margin-top:6px!important}
 @media(max-width:480px){
   .id-card-front,.id-card-back{width:100%!important;aspect-ratio:1.48!important;padding:14px!important}
-  .id-brand-mark{width:42px!important;height:42px!important;flex-basis:42px!important}
+  .id-brand-mark{width:112px!important;height:34px!important;flex-basis:112px!important}
   .id-photo-wrap{width:68px!important;height:68px!important;flex-basis:68px!important}
   .id-card-main{gap:10px!important;padding:10px 0 8px!important}
   .id-person h3{font-size:16px!important}
