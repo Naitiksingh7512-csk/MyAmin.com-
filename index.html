@@ -828,6 +828,7 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
     </div>
   </section>
 
+<section id="publicAminProfile" class="panel"><h2>👷 Amin Profile | अमीन प्रोफ़ाइल</h2><div id="publicAminProfileContent" class="list"></div><button class="btn btn-outline" type="button" onclick="go('home')">Back to My Amin</button></section>
   <!-- CALCULATOR -->
   <section id="calculator" class="panel">
     <h2>📐 Land Unit Calculator | भूमि कैलकुलेटर</h2>
@@ -980,7 +981,19 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
 
 <div id="toast" role="status" aria-live="polite"></div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="">
+function openQrAminProfile(){
+ const id=new URLSearchParams(window.location.search).get("profile");if(!id)return;
+ const records=read(DB.amins,[]),amin=records.find(a=>(a.profileId||a.id)===id);
+ go("publicAminProfile");
+ const box=$("publicAminProfileContent");
+ if(!amin){box.innerHTML='<div class="list-item"><strong>Profile not published on this device.</strong><p>This demo currently saves registrations only in the browser where they were submitted. To make this QR show the Amin profile on every phone, My Amin needs a shared online database and public profile hosting.</p><p>Profile ID: '+safe(id)+'</p></div>';return;}
+ box.innerHTML='<div class="list-item">'+(amin.photo?'<img src="'+amin.photo+'" alt="Amin profile photo" style="width:92px;height:92px;object-fit:cover;border-radius:50%">':'')+'<h3>'+safe(amin.name)+'</h3><p><strong>Profile ID:</strong> '+safe(id)+'<br>📍 '+safe([amin.place,amin.district,amin.state].filter(Boolean).join(", "))+'<br>☎ '+safe(amin.phone||"Not provided")+'<br>'+safe(amin.description||"Land measurement service")+'</p></div>';
+}
+
+const nearbySearchInput=$("nearbyLocationQuery");if(nearbySearchInput)nearbySearchInput.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();searchNearbyLocation();}});
+openQrAminProfile();
+</script>
 <script>
 "use strict";
 
