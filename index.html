@@ -566,6 +566,8 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
 @media(max-width:420px){.nearby-location-search{flex-wrap:wrap}.nearby-location-search input{flex-basis:100%}.nearby-location-search button{width:100%}.id-qr-unit .id-qr-frame{width:88px;height:88px}}
 
 .account-payment-box{margin:16px 0;padding:14px;border:1px solid #dce9df;border-radius:14px;background:#f7fbf8;display:grid;gap:8px}.account-payment-box input:not([type=file]){width:100%;padding:11px;border:1px solid #d4e2d8;border-radius:9px}.account-payment-box label{font-size:13px;font-weight:700}.account-payment-box small{color:#68796f}.account-payment-box img[hidden]{display:none}
+
+.amin-booking-card{margin:10px 0}.amin-booking-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.amin-booking-response{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.amin-booking-response label{font-size:12px;color:#52675c;display:flex;flex-direction:column;gap:4px}.amin-booking-response input{min-width:0;width:100%;padding:8px;border:1px solid #d9e5dc;border-radius:9px}.amin-booking-response button{font-size:12px;padding:8px}.amin-booking-response button:first-of-type{grid-column:1/-1}@media(max-width:520px){.amin-booking-response{grid-template-columns:1fr 1fr}.amin-booking-response button{grid-column:auto}}
 </style>
 <style>.account-stat{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px;cursor:pointer;color:inherit;display:grid;gap:5px}.account-stat strong{font-size:22px}.account-stat small{font-size:12px}.account-detail-grid>div{position:relative;padding:10px 42px 10px 10px}.account-edit-field{position:absolute;right:7px;top:8px;border:0;background:transparent;cursor:pointer;font-size:17px}</style>
 <style>
@@ -762,7 +764,7 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
         <div class="field"><label for="bookingState">राज्य *</label><input id="bookingState" value="Bihar" required></div>
         <div class="field"><label for="bookingDistrict">जिला *</label><input id="bookingDistrict" maxlength="80" required></div>
         <div class="field"><label for="bookingPlace">गाँव / स्थान *</label><input id="bookingPlace" maxlength="100" required></div>
-        <div class="field"><label for="bookingDate">पसंदीदा तारीख *</label><input id="bookingDate" type="date" required aria-describedby="bookingDateHelp"><small id="bookingDateHelp" class="muted" data-en="Choose today or a future date." data-hi="आज या आने वाली तारीख चुनें।">Choose today or a future date.</small></div>
+        <div class="field"><label for="bookingDate">पसंदीदा तारीख *</label><input id="bookingDate" type="date" required aria-describedby="bookingDateHelp"><small id="bookingDateHelp" class="muted" data-en="Choose today or a future date." data-hi="आज या आने वाली तारीख चुनें।">Choose today or a future date.</small></div><div class="field"><label for="bookingPreferredTime">पसंदीदा समय (वैकल्पिक)</label><input id="bookingPreferredTime" type="time"><small>अमीन अंतिम समय की पुष्टि करेगा।</small></div>
         <div class="field full"><label for="bookingDetails">काम की जानकारी</label><textarea id="bookingDetails" placeholder="काम के बारे में बताइए। संवेदनशील दस्तावेज़ यहाँ न डालें।"></textarea></div>
       </div>
       <div class="form-actions"><button class="btn btn-green" type="submit">बुकिंग अनुरोध भेजें</button></div>
@@ -1064,14 +1066,39 @@ document.querySelectorAll("[data-action='logout']").forEach(button=>{
   button.addEventListener("click",()=>{logout();closeMenu();});
 });
 function refreshAminMenuProfile(){const a=read(DB.aminProfile,null),b=$("aminMenuProfile");if(!b)return;b.style.display=a?"flex":"none";if(a){$("aminMenuProfileName").textContent=a.name;$("aminMenuProfileId").textContent=a.profileId;$("aminMenuAvatar").src=a.photo||"";$("aminMenuAvatar").hidden=!a.photo;$("aminMenuAvatarFallback").hidden=!!a.photo;}}
-function openAminAccount(){const a=read(DB.aminProfile,null);if(!a)return;closeMenu();$("accountFullName").textContent=a.name||"";$("accountProfileId").textContent=a.profileId||"";$("accountPhone").textContent=a.phone||"—";$("accountWhatsApp").textContent=a.whatsapp||"—";$("accountDistrict").textContent=a.district||"—";$("accountState").textContent=a.state||"—";$("accountPlace").textContent=a.place||"—";$("accountBusiness").textContent=a.businessId||"—";$("accountApproval").textContent=a.approved?"Approved":"Pending approval";$("accountAvatar").src=a.photo||"";$("accountAvatar").hidden=!a.photo;$("accountAvatarFallback").hidden=!!a.photo;$("accountUpiId").value=a.upiId||"";$("accountUpiQrPreview").src=a.upiQr||"";$("accountUpiQrPreview").hidden=!a.upiQr;const bs=read(DB.bookings,[]).filter(x=>x.aminId===a.profileId||x.profileId===a.profileId||String(x.amin||"").trim().toLowerCase()===String(a.name||"").trim().toLowerCase());const status=x=>String(x.status||"pending").toLowerCase();const done=bs.filter(x=>["completed","complete","done"].includes(status(x)));const active=bs.filter(x=>["confirmed","accepted","in progress","ongoing","started"].includes(status(x)));const pending=bs.filter(x=>!["completed","complete","done","confirmed","accepted","in progress","ongoing","started","cancelled"].includes(status(x)));$("accountCompletedCount").textContent=done.length;$("accountActiveCount").textContent=active.length;$("accountPendingCount").textContent=pending.length;$("accountBookings").innerHTML=bs.length?bs.map(x=>'<div class="list-item"><strong>'+safe(x.date||"Booking")+'</strong><p>'+safe(x.details||x.service||"Request")+'</p><small>'+safe(x.status||"Pending")+'</small></div>').join(""):"<p>No bookings yet.</p>";$("accountMessages").innerHTML="<p>Messaging will work after backend connection.</p>";$("aminAccountDialog").classList.add("show");}
+function openAminAccount(){const a=read(DB.aminProfile,null);if(!a)return;closeMenu();$("accountFullName").textContent=a.name||"";$("accountProfileId").textContent=a.profileId||"";$("accountPhone").textContent=a.phone||"—";$("accountWhatsApp").textContent=a.whatsapp||"—";$("accountDistrict").textContent=a.district||"—";$("accountState").textContent=a.state||"—";$("accountPlace").textContent=a.place||"—";$("accountBusiness").textContent=a.businessId||"—";$("accountApproval").textContent=a.approved?"Approved":"Pending approval";$("accountAvatar").src=a.photo||"";$("accountAvatar").hidden=!a.photo;$("accountAvatarFallback").hidden=!!a.photo;$("accountUpiId").value=a.upiId||"";$("accountUpiQrPreview").src=a.upiQr||"";$("accountUpiQrPreview").hidden=!a.upiQr;const bs=read(DB.bookings,[]).filter(x=>x.aminId===a.profileId||x.profileId===a.profileId||String(x.amin||"").trim().toLowerCase()===String(a.name||"").trim().toLowerCase());const status=x=>String(x.status||"pending").toLowerCase();const done=bs.filter(x=>["completed","complete","done"].includes(status(x)));const active=bs.filter(x=>["confirmed","accepted","in progress","ongoing","started"].includes(status(x)));const pending=bs.filter(x=>!["completed","complete","done","confirmed","accepted","in progress","ongoing","started","cancelled"].includes(status(x)));$("accountCompletedCount").textContent=done.length;$("accountActiveCount").textContent=active.length;$("accountPendingCount").textContent=pending.length;renderAminBookingList(a,bs);$("accountMessages").innerHTML="<p>Messaging will work after backend connection.</p>";$("aminAccountDialog").classList.add("show");}
+function renderAminBookingList(amin,list){
+ const box=$("accountBookings");
+ if(!list.length){box.innerHTML="<p>No booking requests yet.</p>";return;}
+ box.innerHTML=list.map(x=>'<article class="list-item amin-booking-card"><div class="amin-booking-head"><strong>'+safe(x.service||"Booking request")+'</strong><span class="pill">'+safe(x.status||"Pending")+'</span></div><p><b>Customer:</b> '+safe(x.customer||"—")+' · '+safe(x.phone||"—")+'<br><b>Location:</b> '+safe([x.place,x.district,x.state].filter(Boolean).join(", "))+'<br><b>Preferred date:</b> '+safe(x.date||"—")+' · '+safe(x.preferredTime||"Any time")+'<br><b>Work:</b> '+safe(x.details||"—")+(x.confirmedDate?'<br><b>Confirmed:</b> '+safe(x.confirmedDate)+' · '+safe(x.confirmedTime||"Time not set"):"")+'</p><div class="amin-booking-response"><label>Confirm date<input type="date" data-confirm-date="'+safe(x.id)+'" value="'+safe(x.confirmedDate||x.date||"")+'"></label><label>Confirm time<input type="time" data-confirm-time="'+safe(x.id)+'" value="'+safe(x.confirmedTime||x.preferredTime||"")+'"></label><button type="button" class="btn btn-green" data-confirm-booking="'+safe(x.id)+'">Confirm date &amp; time</button><button type="button" class="btn btn-outline" data-set-booking="'+safe(x.id)+'" data-status="In progress">Mark in progress</button><button type="button" class="btn btn-outline" data-set-booking="'+safe(x.id)+'" data-status="Completed">Mark completed</button><button type="button" class="btn btn-outline" data-set-booking="'+safe(x.id)+'" data-status="Cancelled">Cancel</button></div></article>').join("");
+ box.querySelectorAll("[data-confirm-booking]").forEach(btn=>btn.addEventListener("click",()=>confirmAminBooking(btn.dataset.confirmBooking)));
+ box.querySelectorAll("[data-set-booking]").forEach(btn=>btn.addEventListener("click",()=>setAminBookingStatus(btn.dataset.setBooking,btn.dataset.status)));
+ translateDynamic(box);
+}
+function setAminBookingStatus(id,status){
+ const amin=read(DB.aminProfile,null);if(!amin)return;
+ const list=read(DB.bookings,[]),booking=list.find(x=>String(x.id)===String(id)&&(x.aminId===amin.profileId||x.profileId===amin.profileId||String(x.amin||"").trim().toLowerCase()===String(amin.name||"").trim().toLowerCase()));
+ if(!booking){toast("This booking is not linked to your profile.");return;}
+ booking.status=status;booking.updatedAt=new Date().toISOString();
+ if(save(DB.bookings,list)){toast(currentLang==="hi"?"बुकिंग की स्थिति अपडेट हुई।":"Booking status updated.");openAminAccount();refreshBookings();}
+}
+function confirmAminBooking(id){
+ const amin=read(DB.aminProfile,null);if(!amin)return;
+ const list=read(DB.bookings,[]),booking=list.find(x=>String(x.id)===String(id)&&(x.aminId===amin.profileId||x.profileId===amin.profileId||String(x.amin||"").trim().toLowerCase()===String(amin.name||"").trim().toLowerCase()));
+ if(!booking){toast("This booking is not linked to your profile.");return;}
+ const dateInput=$("accountBookings").querySelector('[data-confirm-date="'+id+'"]');
+ const timeInput=$("accountBookings").querySelector('[data-confirm-time="'+id+'"]');
+ if(!dateInput||!dateInput.value||!timeInput||!timeInput.value){toast(currentLang==="hi"?"पुष्टि के लिए तारीख और समय दोनों चुनें।":"Choose both a date and time to confirm.");return;}
+ booking.confirmedDate=dateInput.value;booking.confirmedTime=timeInput.value;booking.status="Confirmed";booking.updatedAt=new Date().toISOString();
+ if(save(DB.bookings,list)){toast(currentLang==="hi"?"बुकिंग की तारीख और समय की पुष्टि हो गई।":"Booking date and time confirmed.");openAminAccount();refreshBookings();}
+}
 function refreshAminAccount(){if($("aminAccountDialog").classList.contains("show"))openAminAccount();}
 function showAccountList(kind){
  const a=read(DB.aminProfile,null);if(!a)return;
  const bs=read(DB.bookings,[]).filter(x=>x.aminId===a.profileId||x.profileId===a.profileId);
  if(kind==="messages"){ $("accountMessages").scrollIntoView({behavior:"smooth"});return; }
  const st=x=>String(x.status||"pending").toLowerCase();const list=kind==="completed"?bs.filter(x=>["completed","complete","done"].includes(st(x))):kind==="active"?bs.filter(x=>["confirmed","accepted","in progress","ongoing","started"].includes(st(x))):kind==="pending"?bs.filter(x=>!["completed","complete","done","confirmed","accepted","in progress","ongoing","started","cancelled"].includes(st(x))):bs;
- $("accountBookings").innerHTML=list.length?list.map(x=>'<div class="list-item"><strong>'+safe(x.date||"Booking")+'</strong><p>'+safe(x.details||x.service||"Request")+'</p><small>'+safe(x.status||"Pending")+'</small></div>').join(""):"<p>No "+kind+" bookings yet.</p>";
+ renderAminBookingList(a,list);
  $("accountBookings").scrollIntoView({behavior:"smooth"});
 }
 $("accountCompletedTab").addEventListener("click",()=>showAccountList("completed"));
@@ -1294,6 +1321,15 @@ const phrasePairs=[
 ["Reports are currently saved only in this browser on this device. They are not sent to the server or by email yet.","रिपोर्ट अभी इसी डिवाइस के ब्राउज़र में सेव होती है। अभी सर्वर या ईमेल पर नहीं भेजी जाती।"],
 ["Fill in the registration form to apply as an Amin. Online profile review and approval services are still to be connected.","अमीन बनने के लिए रजिस्ट्रेशन फ़ॉर्म भरें। ऑनलाइन प्रोफ़ाइल जाँच और स्वीकृति सेवा जुड़ना अभी बाकी है।"],
 ["A place for land-service information and Amin contacts.","भूमि सेवाओं की जानकारी और अमीन संपर्क का मंच।"],
+["Preferred time (optional)","पसंदीदा समय (वैकल्पिक)"],["The Amin will confirm the final time.","अमीन अंतिम समय की पुष्टि करेगा।"],
+["Customer:","ग्राहक:"],["Location:","स्थान:"],["Preferred date:","पसंदीदा तारीख:"],["Work:","काम:"],["Confirmed:","पुष्टि:"],
+["Confirm date","पुष्टि की तारीख"],["Confirm time","पुष्टि का समय"],["Confirm date & time","तारीख और समय की पुष्टि करें"],
+["Mark in progress","काम शुरू करें"],["Mark completed","काम पूरा करें"],["Cancel","रद्द करें"],
+["No booking requests yet.","अभी कोई बुकिंग अनुरोध नहीं है।"],["Any time","कोई भी समय"],
+["This booking is not linked to your profile.","यह बुकिंग आपकी प्रोफ़ाइल से जुड़ी नहीं है।"],
+["Choose both a date and time to confirm.","पुष्टि के लिए तारीख और समय दोनों चुनें।"],
+["Booking status updated.","बुकिंग की स्थिति अपडेट हुई।"],["Booking date and time confirmed.","बुकिंग की तारीख और समय की पुष्टि हो गई।"],
+["Time not set","समय तय नहीं हुआ"],["अमीन की पुष्टि बाकी","Amin confirmation pending"],
 ["UPI ID (Optional)","UPI ID (वैकल्पिक)"],
 ["Optional. Add the UPI ID where customers can pay you.","वैकल्पिक। ग्राहक जहाँ भुगतान कर सकें, वह UPI ID जोड़ें।"],
 ["UPI QR Code (Optional)","UPI QR कोड (वैकल्पिक)"],
@@ -1561,6 +1597,7 @@ $("bookingForm").addEventListener("submit",e=>{
     district:$("bookingDistrict").value.trim(),
     place:$("bookingPlace").value.trim(),
     date:$("bookingDate").value,
+    preferredTime:$("bookingPreferredTime").value,
     details:$("bookingDetails").value.trim(),
     status:"Pending",
     createdAt:new Date().toISOString()
@@ -1579,7 +1616,7 @@ function refreshBookings() {
   const mine=user?list.filter(b=>b.phone===user.phone):[];
   $("myBookings").innerHTML=mine.length?mine.map(b=>`
     <div class="list-item"><strong>${safe(b.service)}</strong>
-    <p>Booking ID: ${safe(b.id)}<br>स्थान: ${safe(b.place)}, ${safe(b.district)}, ${safe(b.state)}<br>तारीख: ${safe(b.date)}<br>स्थिति: ${safe(b.status)}</p></div>
+    <p>Booking ID: ${safe(b.id)}<br>स्थान: ${safe(b.place)}, ${safe(b.district)}, ${safe(b.state)}<br>पसंदीदा तारीख/समय: ${safe(b.date)} · ${safe(b.preferredTime||"कोई भी समय")}<br>${b.confirmedDate?"अमीन द्वारा पुष्टि: "+safe(b.confirmedDate)+" · "+safe(b.confirmedTime||""):"अमीन की पुष्टि बाकी"}<br>स्थिति: ${safe(b.status)}</p></div>
   `).join(""):"<p>इस ग्राहक की कोई बुकिंग नहीं मिली।</p>";
   translateDynamic($("myBookings"));
 }
