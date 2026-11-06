@@ -870,7 +870,7 @@ function collectStaticText(){
   while((node=walker.nextNode())){
     if(skip.has(node.parentElement.tagName)||node.parentElement.closest("#aminResults,#myBookings,#statePortals,#ownerData,#toast")) continue;
     const value=node.nodeValue.trim();
-    if(value) staticTextNodes.push({node,original:value,leading:node.nodeValue.match(/^\\s*/)?.[0]||"",trailing:node.nodeValue.match(/\\s*$/)?.[0]||""});
+    if(value) staticTextNodes.push({node,original:value,leading:node.nodeValue.match(/^\s*/)?.[0]||"",trailing:node.nodeValue.match(/\s*$/)?.[0]||""});
   }
   document.querySelectorAll("input[placeholder],textarea[placeholder],button[aria-label],.dialog[aria-label]").forEach(el=>{
     ["placeholder","aria-label"].forEach(attr=>{if(el.hasAttribute(attr))staticAttrs.push({el,attr,original:el.getAttribute(attr)});});
