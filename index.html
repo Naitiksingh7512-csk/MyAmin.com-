@@ -67,6 +67,13 @@ header {
   visibility:visible;
   opacity:1;
 }
+.logo-art .brand-arc{stroke-dasharray:150;stroke-dashoffset:0;transform-origin:72px 35px;animation:brandArc 5s ease-in-out infinite}
+.logo-art .brand-leaf{transform-origin:313px 20px;animation:brandLeaf 3.8s ease-in-out infinite}
+@keyframes brandArc{0%,100%{opacity:.82;stroke-dashoffset:12}50%{opacity:1;stroke-dashoffset:-8}}
+@keyframes brandLeaf{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(5deg)}}
+.footer-brand .logo-art{width:220px;min-width:220px;max-width:100%;flex:0 1 220px}
+.footer-brand .logo{display:inline-flex!important;max-width:100%}
+@media(prefers-reduced-motion:reduce){.logo-art .brand-arc,.logo-art .brand-leaf{animation:none!important}}
 .logo-icon {
   width:43px;height:43px;border-radius:14px;
   display:grid;place-items:center;
@@ -605,18 +612,21 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
   <nav class="nav">
     <a class="logo" href="#home" aria-label="My Amin Home">
       <svg class="logo-art" viewBox="0 0 520 132" role="img" aria-label="MyAmin.com — आपकी जमीन, आपकी जानकारी" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="fieldGreen" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#35b84b"/><stop offset="1" stop-color="#087b32"/></linearGradient></defs>
         <g fill="none" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 58 L72 18 L126 58" stroke="#153f78" stroke-width="9"/>
-          <path d="M37 54 V91 H108 V54" stroke="#153f78" stroke-width="8"/>
-          <path d="M62 91 V67 H84 V91" stroke="#153f78" stroke-width="6"/>
-          <rect x="66" y="34" width="14" height="10" rx="1.5" fill="#ffffff" stroke="#153f78" stroke-width="3"/>
-          <path d="M73 35 V43 M67 39 H79" stroke="#153f78" stroke-width="2"/>
-          <path d="M12 103 Q65 86 126 103" stroke="#178b36" stroke-width="8"/>
-          <path d="M22 116 Q68 101 118 116" stroke="#178b36" stroke-width="6"/>
-          <path d="M18 30 Q69 2 122 30" stroke="#f59b16" stroke-width="6"/>
+          <path class="brand-arc" d="M18 58 Q61 -5 127 37" stroke="#f59b16" stroke-width="6"/>
+          <path d="M18 64 L72 20 L126 64" stroke="#153f78" stroke-width="9"/>
+          <path d="M36 58 V91 H108 V58" stroke="#153f78" stroke-width="8"/>
+          <path d="M62 91 V68 H84 V91" stroke="#153f78" stroke-width="6"/>
+          <path d="M52 48 V36 H66 V48 M76 48 V36 H90 V48" stroke="#153f78" stroke-width="4"/>
+          <path d="M10 105 Q57 87 126 103 Q90 132 43 119 Z" fill="url(#fieldGreen)" stroke="#15943c" stroke-width="2"/>
+          <path d="M22 108 Q61 99 108 108 M35 117 Q70 109 98 116" stroke="#fff" stroke-width="3"/>
+          <path d="M103 76 Q103 63 116 63 Q129 63 129 76 Q129 87 116 101 Q103 87 103 76Z" fill="#e33d45" stroke="#fff" stroke-width="2"/>
+          <circle cx="116" cy="76" r="4" fill="#fff" stroke="none"/>
         </g>
         <text x="145" y="75" font-family="Arial,sans-serif" font-size="57" font-weight="800" letter-spacing="-2" fill="#153f78">My</text>
         <text x="225" y="75" font-family="Arial,sans-serif" font-size="57" font-weight="800" letter-spacing="-2" fill="#178b36">Amin</text>
+        <path class="brand-leaf" d="M300 22 Q309 1 326 8 Q324 26 302 31 Q306 20 316 14" fill="#178b36"/>
         <text x="365" y="75" font-family="Arial,sans-serif" font-size="45" font-weight="800" fill="#153f78">.com</text>
         <text x="147" y="108" font-family="Arial,sans-serif" font-size="19" font-weight="700" fill="#153f78">आपकी जमीन, आपकी जानकारी</text>
       </svg>
@@ -927,7 +937,25 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
 
 <footer>
   <div class="footer-inner">
-    <div><div class="logo" style="color:white"><span class="logo-icon">⌖</span>MyAmin.com</div><p>आपकी जमीन, आपकी जानकारी।<br>एक आसान भूमि सेवा डेमो।</p></div>
+    <div class="footer-brand"><a class="logo" href="#home" aria-label="My Amin Home"><svg class="logo-art" viewBox="0 0 520 132" role="img" aria-label="MyAmin.com — आपकी जमीन, आपकी जानकारी" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="fieldGreen" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#35b84b"/><stop offset="1" stop-color="#087b32"/></linearGradient></defs>
+        <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path class="brand-arc" d="M18 58 Q61 -5 127 37" stroke="#f59b16" stroke-width="6"/>
+          <path d="M18 64 L72 20 L126 64" stroke="#153f78" stroke-width="9"/>
+          <path d="M36 58 V91 H108 V58" stroke="#153f78" stroke-width="8"/>
+          <path d="M62 91 V68 H84 V91" stroke="#153f78" stroke-width="6"/>
+          <path d="M52 48 V36 H66 V48 M76 48 V36 H90 V48" stroke="#153f78" stroke-width="4"/>
+          <path d="M10 105 Q57 87 126 103 Q90 132 43 119 Z" fill="url(#fieldGreen)" stroke="#15943c" stroke-width="2"/>
+          <path d="M22 108 Q61 99 108 108 M35 117 Q70 109 98 116" stroke="#fff" stroke-width="3"/>
+          <path d="M103 76 Q103 63 116 63 Q129 63 129 76 Q129 87 116 101 Q103 87 103 76Z" fill="#e33d45" stroke="#fff" stroke-width="2"/>
+          <circle cx="116" cy="76" r="4" fill="#fff" stroke="none"/>
+        </g>
+        <text x="145" y="75" font-family="Arial,sans-serif" font-size="57" font-weight="800" letter-spacing="-2" fill="#153f78">My</text>
+        <text x="225" y="75" font-family="Arial,sans-serif" font-size="57" font-weight="800" letter-spacing="-2" fill="#178b36">Amin</text>
+        <path class="brand-leaf" d="M300 22 Q309 1 326 8 Q324 26 302 31 Q306 20 316 14" fill="#178b36"/>
+        <text x="365" y="75" font-family="Arial,sans-serif" font-size="45" font-weight="800" fill="#153f78">.com</text>
+        <text x="147" y="108" font-family="Arial,sans-serif" font-size="19" font-weight="700" fill="#153f78">आपकी जमीन, आपकी जानकारी</text>
+      </svg></a><p>आपकी जमीन, आपकी जानकारी।<br>एक आसान भूमि सेवा डेमो।</p></div>
     <div><strong data-en="Quick Links" data-hi="त्वरित लिंक">Quick Links</strong><p><a href="#find" data-en="Find an Amin" data-hi="अमीन खोजें">Find an Amin</a><br><a href="#portals" data-en="Government Portals" data-hi="सरकारी पोर्टल">Government Portals</a><br><a href="#idmaker" data-en="ID Card Maker" data-hi="आईडी कार्ड निर्माता">ID Card Maker</a><br><a href="#report" data-en="Report a Bug" data-hi="समस्या बताएँ">Report a Bug</a></p></div>
     <div><strong data-en="Important" data-hi="महत्वपूर्ण">Important</strong><p data-en="My Amin is not a government department. Use official websites for government services. Created by Naitik Singh." data-hi="My Amin सरकारी विभाग नहीं है। सरकारी सेवाओं के लिए आधिकारिक वेबसाइट देखें। Created by Naitik Singh.">My Amin is not a government department. Use official websites for government services. Created by Naitik Singh.</p></div>
   </div>
