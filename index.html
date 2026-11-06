@@ -552,7 +552,32 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
 @keyframes floatSurvey{0%,100%{translate:0 0}50%{translate:0 -7px}}
 @media(prefers-reduced-motion:reduce){.map-card:after,.map-art .plot svg path,.map-art .plot svg g text,.map-art .plot svg circle,.float-one,.float-two{animation:none!important}}
 .account-menu-card{margin:14px 10px;padding:20px 14px;border:1px solid #d9e9dc;border-radius:20px;background:linear-gradient(145deg,#fffdf6,#e6f3eb);display:flex;flex-direction:column;align-items:center;gap:9px;text-align:center;box-shadow:0 12px 28px #123b3218}.account-menu-card>small{font-size:11px;overflow-wrap:anywhere}.account-avatar,.account-detail-avatar{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:#145b46;color:white;font-size:30px;border:4px solid white;box-shadow:0 0 0 2px #e9b95b}.account-avatar img,.account-detail-avatar img{width:100%;height:100%;object-fit:cover}.account-open-btn{border:0;border-radius:999px;background:#145b46;color:white;font-weight:800;padding:10px 20px}.amin-dashboard{width:min(760px,calc(100vw - 28px));max-height:88vh;overflow:auto}.dashboard-identity{display:flex;align-items:center;gap:16px;padding:16px 0}.dashboard-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0 20px}.dashboard-stats>div{padding:14px;border-radius:15px;background:#edf6ef;text-align:center}.dashboard-stats strong,.dashboard-stats small{display:block}.dashboard-stats strong{font-size:24px;color:#145b46}.account-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}.account-detail-grid>div{padding:12px;border:1px solid #e1ebe4;border-radius:13px;min-width:0}.account-detail-grid small,.account-detail-grid strong{display:block}.account-detail-grid strong{font-size:13px;overflow-wrap:anywhere}.reg-photo-preview{width:84px;height:84px;border-radius:50%;overflow:hidden;border:3px solid #e6c16d;background:#edf6ef;display:grid;place-items:center;font-size:30px}.reg-photo-preview img{width:100%;height:100%;object-fit:cover}@media(max-width:600px){.account-detail-grid{grid-template-columns:1fr}.amin-dashboard{padding:16px}}</style>
-<style>.account-stat{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px;cursor:pointer;color:inherit;display:grid;gap:5px}.account-stat strong{font-size:22px}.account-stat small{font-size:12px}.account-detail-grid>div{position:relative;padding:10px 42px 10px 10px}.account-edit-field{position:absolute;right:7px;top:8px;border:0;background:transparent;cursor:pointer;font-size:17px}</style></head>
+<style>.account-stat{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px;cursor:pointer;color:inherit;display:grid;gap:5px}.account-stat strong{font-size:22px}.account-stat small{font-size:12px}.account-detail-grid>div{position:relative;padding:10px 42px 10px 10px}.account-edit-field{position:absolute;right:7px;top:8px;border:0;background:transparent;cursor:pointer;font-size:17px}</style>
+<style>
+/* Refined, lightweight search experience */
+#searchDialog .dialog-box{width:min(590px,100%);padding:clamp(19px,4vw,28px);border-radius:24px;box-shadow:0 24px 80px #071b1550}
+#searchDialog .dialog-head{align-items:flex-start}
+#searchDialog .dialog-head h3{font-size:23px;font-weight:750;letter-spacing:-.45px;margin-top:3px}
+.search-kicker,.search-section-label{display:block;color:#789087;font-size:10px;font-weight:700;letter-spacing:1.5px}
+.search-description{font-size:13px;color:#718078;margin:9px 0 18px}
+.search-input-wrap{display:flex;align-items:center;gap:11px;border:1px solid #dce8e0;background:#f8fbf8;border-radius:15px;padding:0 14px;transition:border-color .2s,box-shadow .2s}
+.search-input-wrap:focus-within{border-color:#188366;box-shadow:0 0 0 3px #18836618}
+.search-input-wrap>span{font-size:25px;color:#28745d;line-height:1}
+#siteSearch{width:100%;min-width:0;border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;padding:15px 0!important;font-size:15px!important;font-weight:450!important;color:#183b30}
+.search-section-label{margin:20px 0 9px}
+.search-suggestions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.search-result{display:flex;align-items:center;gap:11px;min-width:0;min-height:65px;padding:11px 12px;border:1px solid #e5eee8;border-radius:14px;background:#fff;text-align:left;color:#1c3b31;cursor:pointer;transition:background .18s,border-color .18s,transform .18s}
+.search-result:hover,.search-result:focus-visible{background:#f1f8f3;border-color:#b8d8c5;transform:translateY(-1px);outline:none}
+.search-result-icon{width:36px;height:36px;flex:0 0 36px;display:grid;place-items:center;border-radius:11px;background:#edf6ef;font-size:18px}
+.search-result-copy{display:grid;gap:4px;min-width:0}
+.search-result-copy strong{font-size:13px;font-weight:650;line-height:1.3;overflow-wrap:anywhere}
+.search-result-copy small{font-size:11px;font-weight:400;color:#77877f;line-height:1.35}
+.search-result-arrow{margin-left:auto;color:#8ba096;font-size:22px}
+.search-empty{grid-column:1/-1;color:#718078;font-size:13px;padding:12px}
+.search-submit{font-weight:600!important;font-size:14px!important}
+@media(max-width:480px){.search-suggestions{grid-template-columns:1fr}.search-result{min-height:59px}}
+</style>
+</head>
 
 <body>
 <div class="topline"></div>
@@ -924,11 +949,12 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
 <!-- SEARCH DIALOG -->
 <div class="dialog" id="searchDialog" role="dialog" aria-modal="true" aria-label="Website Search">
   <div class="dialog-box">
-    <div class="dialog-head"><h3>⌕ Search My Amin</h3><button class="closebtn" onclick="closeSearch()">✕</button></div>
-    <p style="font-size:13px;color:#718078">सेवा खोजें और वेबसाइट के किसी भी सेक्शन तक जल्दी पहुँचें।</p>
-    <input id="siteSearch" placeholder="जैसे: ID Card, Booking, Bihar Bhumi…">
-    <div id="searchSuggestions" class="list" aria-live="polite" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:9px;margin-top:14px"></div>
-    <div class="form-actions"><button class="btn btn-green" onclick="runSearch()">Search / खोलें</button></div>
+    <div class="dialog-head"><div><span class="search-kicker" data-en="QUICK NAVIGATION" data-hi="त्वरित खोज">QUICK NAVIGATION</span><h3 data-en="Search My Amin" data-hi="My Amin खोजें">Search My Amin</h3></div><button class="closebtn" type="button" onclick="closeSearch()" aria-label="Close search">✕</button></div>
+    <p class="search-description" data-en="Find services, profiles and pages in one place." data-hi="सेवाएँ, प्रोफ़ाइल और पेज आसानी से खोजें।">Find services, profiles and pages in one place.</p>
+    <div class="search-input-wrap"><span aria-hidden="true">⌕</span><input id="siteSearch" placeholder="Search services or Profile ID…" autocomplete="off"></div>
+    <div class="search-section-label" data-en="QUICK LINKS" data-hi="त्वरित लिंक">QUICK LINKS</div>
+    <div id="searchSuggestions" class="list search-suggestions" aria-live="polite"></div>
+    <div class="form-actions"><button class="btn btn-green search-submit" onclick="runSearch()" data-en="Open result" data-hi="खोलें">Open result</button></div>
   </div>
 </div>
 
@@ -1069,22 +1095,23 @@ $("siteSearch").addEventListener("keydown",e=>{
   if(e.key==="Enter") {e.preventDefault();runSearch();}
 });
 const smartSearchItems=[
-  {label:"Find an Amin",hint:"नाम, गाँव या जिला",terms:["amin","अमीन","nearby","पास में"],route:"find",icon:"👷"},
-  {label:"Search by Profile UID",hint:"UID जैसे kumar@12345678",terms:["uid","profile id","आईडी"],route:"find",icon:"🪪"},
-  {label:"Nearby Amin",hint:"अपने आसपास के Amin खोजें",terms:["nearby amin","near me","नजदीक","आसपास"],route:"find",icon:"📍"},
-  {label:"New Booking",hint:"अपॉइंटमेंट अनुरोध भेजें",terms:["booking","appointment","बुकिंग"],route:"booking",icon:"📅"},
-  {label:"Amin Registration",hint:"Amin बनने के लिए आवेदन",terms:["register","registration","जुड़ें"],route:"registerAmin",icon:"📝"},
-  {label:"Amin ID Card",hint:"अपना ID card बनाएँ",terms:["id card","idcard","कार्ड"],route:"idmaker",icon:"🎫"},
-  {label:"Land Unit Calculator",hint:"कट्ठा, धुर और अन्य इकाइयाँ",terms:["calculator","कट्ठा","धुर","unit"],route:"calculator",icon:"📐"},
-  {label:"Bihar Bhumi Portal",hint:"सरकारी भूमि सेवा",terms:["bihar bhumi","bhumi","भूमि पोर्टल"],route:"portals",icon:"🏛️"},
-  {label:"My Account / Login",hint:"अपने account विकल्प खोलें",terms:["account","login","लॉगिन"],route:"login",icon:"👤"},
-  {label:"Help & Report",hint:"सहायता या समस्या बताएँ",terms:["help","support","report","सहायता"],route:"help",icon:"💬"}
+  {label:"Find an Amin",hiLabel:"अमीन खोजें",hint:"नाम, गाँव या जिला",hiHint:"नाम, गाँव या जिला खोजें",terms:["amin","अमीन","nearby","पास में"],route:"find",icon:"👷"},
+  {label:"Search by Profile UID",hiLabel:"प्रोफ़ाइल UID से खोजें",hint:"UID जैसे kumar@12345678",hiHint:"अमीन की प्रोफ़ाइल ID डालें",terms:["uid","profile id","आईडी"],route:"find",icon:"🪪"},
+  {label:"Nearby Amin",hiLabel:"आस-पास के अमीन",hint:"अपने आसपास के Amin खोजें",hiHint:"अपने आसपास अमीन खोजें",terms:["nearby amin","near me","नजदीक","आसपास"],route:"find",icon:"📍"},
+  {label:"New Booking",hiLabel:"नई बुकिंग",hint:"अपॉइंटमेंट अनुरोध भेजें",hiHint:"अपॉइंटमेंट का अनुरोध करें",terms:["booking","appointment","बुकिंग"],route:"booking",icon:"📅"},
+  {label:"Amin Registration",hiLabel:"अमीन पंजीकरण",hint:"Amin बनने के लिए आवेदन",hiHint:"अमीन के रूप में पंजीकरण करें",terms:["register","registration","जुड़ें"],route:"registerAmin",icon:"📝"},
+  {label:"Amin ID Card",hiLabel:"अमीन पहचान पत्र",hint:"अपना ID card बनाएँ",hiHint:"अपना ID कार्ड बनाएँ या डाउनलोड करें",terms:["id card","idcard","कार्ड"],route:"idmaker",icon:"🎫"},
+  {label:"Land Unit Calculator",hiLabel:"भूमि इकाई कैलकुलेटर",hint:"कट्ठा, धुर और अन्य इकाइयाँ",hiHint:"कट्ठा, धुर और अन्य इकाइयाँ बदलें",terms:["calculator","कट्ठा","धुर","unit"],route:"calculator",icon:"📐"},
+  {label:"Bihar Bhumi Portal",hiLabel:"बिहार भूमि पोर्टल",hint:"सरकारी भूमि सेवा",hiHint:"सरकारी भूमि सेवाएँ खोलें",terms:["bihar bhumi","bhumi","भूमि पोर्टल"],route:"portals",icon:"🏛️"},
+  {label:"My Account / Login",hiLabel:"मेरा अकाउंट / लॉगिन",hint:"अपने account विकल्प खोलें",hiHint:"अपना अकाउंट खोलें",terms:["account","login","लॉगिन"],route:"login",icon:"👤"},
+  {label:"Help & Report",hiLabel:"सहायता और शिकायत",hint:"सहायता या समस्या बताएँ",hiHint:"सहायता लें या समस्या बताएँ",terms:["help","support","report","सहायता"],route:"help",icon:"💬"}
 ];
 function renderSmartSearch(){
  const box=$("searchSuggestions"); if(!box)return;
  const q=$("siteSearch").value.trim().toLocaleLowerCase();
+ const hi=currentLang==="hi";
  const list=q?smartSearchItems.filter(x=>(x.label+" "+x.hint+" "+x.terms.join(" ")).toLocaleLowerCase().includes(q)):smartSearchItems;
- box.innerHTML=list.map((x,i)=>'<button type="button" class="btn btn-outline" data-smart-route="'+x.route+'" style="justify-content:flex-start;text-align:left;min-height:66px;white-space:normal"><span style="font-size:20px">'+x.icon+'</span><span><strong style="display:block">'+x.label+'</strong><small style="color:var(--muted)">'+x.hint+'</small></span></button>').join("")||'<p class="notice">कोई सुझाव नहीं मिला। दूसरा शब्द लिखें।</p>';
+ box.innerHTML=list.map(x=>'<button type="button" class="search-result" data-smart-route="'+x.route+'"><span class="search-result-icon">'+x.icon+'</span><span class="search-result-copy"><strong>'+(hi?x.hiLabel:x.label)+'</strong><small>'+(hi?x.hiHint:x.hint)+'</small></span><span class="search-result-arrow">›</span></button>').join("")||'<p class="search-empty">'+(hi?'कोई सुझाव नहीं मिला। दूसरा शब्द लिखें।':'No results found. Try another search.')+'</p>';
  box.querySelectorAll("[data-smart-route]").forEach(b=>b.addEventListener("click",()=>{const route=b.dataset.smartRoute;closeSearch();go(route);}));
 }
 $("siteSearch").addEventListener("input",renderSmartSearch);
