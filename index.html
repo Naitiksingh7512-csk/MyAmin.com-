@@ -1903,6 +1903,31 @@ applyLanguage(currentLang);
   .id-person h3{font-size:16px!important}
   .id-qr-frame{width:88px!important;height:88px!important;margin:5px auto 4px!important}
 }
+
+/* Refined motion and colorful service tiles */
+.quick-grid .quick{
+ background:linear-gradient(135deg,#fff 0%,#f0fbf6 48%,#f4f5ff 100%);
+ border:1px solid transparent;
+ background-image:linear-gradient(135deg,#fff,#f0fbf6 55%,#f4f5ff),linear-gradient(115deg,#17a86b,#3888ef,#9a58d6,#e8a33d,#17a86b);
+ background-origin:border-box;background-clip:padding-box,border-box;
+ box-shadow:0 8px 20px rgba(18,59,50,.07);
+ animation:quickGlow 6s ease-in-out infinite;
+}
+.quick-grid .quick:nth-child(3n+1){animation-delay:-1.2s}
+.quick-grid .quick:nth-child(3n+2){animation-delay:-3.1s}
+.quick-grid .quick:hover{transform:translateY(-5px) scale(1.015);box-shadow:0 14px 28px rgba(38,112,150,.16)}
+.quick-grid .quick span:first-child{filter:drop-shadow(0 3px 4px rgba(15,65,48,.13))}
+@keyframes quickGlow{0%,100%{filter:saturate(.92);box-shadow:0 7px 18px rgba(20,125,85,.07)}50%{filter:saturate(1.18);box-shadow:0 9px 24px rgba(80,105,190,.14)}}
+#services .card{position:relative;isolation:isolate;border:1px solid transparent;background:linear-gradient(#fff,#fff) padding-box,linear-gradient(120deg,#16a66d,#3988ee,#a35bdb,#e5a13a,#16a66d) border-box;background-size:auto,260% 260%;animation:serviceRgb 9s linear infinite}
+#services .card:nth-child(even){animation-delay:-4.5s}
+#services .card:hover{transform:translateY(-5px);box-shadow:0 17px 36px rgba(55,105,145,.14)}
+@keyframes serviceRgb{0%{background-position:0 0,0% 50%}100%{background-position:0 0,100% 50%}}
+.hero .map-card{animation:mapFloat 7s ease-in-out infinite}
+@keyframes mapFloat{0%,100%{transform:rotate(-2deg) translateY(0)}50%{transform:rotate(-1deg) translateY(-7px)}}
+.section-head h2{animation:headingFade .7s ease both}
+@keyframes headingFade{from{opacity:.55;transform:translateY(5px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.quick-grid .quick,#services .card,.hero .map-card,.section-head h2{animation:none!important;transition:none!important}}
+
 </style>
 
 </body>
