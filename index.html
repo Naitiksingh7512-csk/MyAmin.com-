@@ -902,6 +902,8 @@ function applyLanguage(lang){
   });
   const states=$("aminState");
   if(states) Array.from(states.options).forEach((o,i)=>{if(i>0){o.value=["Bihar","Jharkhand","Uttar Pradesh","West Bengal"][i-1];o.textContent=lang==="hi"?["बिहार","झारखंड","उत्तर प्रदेश","पश्चिम बंगाल"][i-1]:o.value;}});
+  const portalSearch=$("portalSearch");
+  if(portalSearch) portalSearch.placeholder=lang==="en"?"Search state or portal…":"राज्य या पोर्टल खोजें…";
   $("languageBtn").textContent=lang==="en"?"हिंदी | English":"English | हिंदी";
   $("navLoginBtn").textContent=lang==="en"?"Login":"लॉगिन";
   renderPortals();
