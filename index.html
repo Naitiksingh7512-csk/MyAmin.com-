@@ -1148,7 +1148,7 @@ function renderSmartSearch(){
  box.innerHTML=list.slice(0,18).map((x,i)=>'<button type="button" class="search-result" data-smart-index="'+i+'"><span class="search-result-icon">'+x.icon+'</span><span class="search-result-copy"><strong>'+(hi?x.hiLabel:x.label)+'</strong><small>'+(hi?x.hiHint:x.hint)+'</small></span><span class="search-result-arrow">›</span></button>').join("")||'<p class="search-empty">'+(hi?'कोई सुझाव नहीं मिला। दूसरा शब्द लिखें।':'No results found. Try another search.')+'</p>';
  box.querySelectorAll("[data-smart-index]").forEach(b=>b.addEventListener("click",()=>{
    const item=list[Number(b.dataset.smartIndex)];
-   closeSearch();go(item.route);
+   closeSearch();if(item.url){window.open(item.url,"_blank","noopener");return;}go(item.route);
    if(item.portalQuery&&$("portalSearch")){$("portalSearch").value=item.portalQuery;renderPortals();}
  }));
 }
