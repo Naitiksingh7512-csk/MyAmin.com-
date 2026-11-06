@@ -914,6 +914,8 @@ function applyLanguage(lang){
   $("navLoginBtn").textContent=lang==="en"?"Login":"लॉगिन";
   renderPortals();
   loadAmins();
+  refreshBookings();
+  updateBookingUser();
   translateDynamic(document.getElementById("statePortals"));
   translateDynamic(document.getElementById("aminResults"));
 }
@@ -1012,7 +1014,8 @@ function prefillBooking(name) {
 }
 
 /* Booking */
-$("bookingDate").min=new Date().toISOString().slice(0,10);
+function localTodayISO(){const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");}
+$("bookingDate").min=localTodayISO();
 $("bookingForm").addEventListener("submit",e=>{
   e.preventDefault();
   const user=read(DB.user,null);
@@ -1035,7 +1038,7 @@ $("bookingForm").addEventListener("submit",e=>{
   $("bookingMessage").textContent="बुकिंग अनुरोध इस डिवाइस में सेव हुआ। यह अपने आप अमीन को नहीं भेजा गया है।";
   $("bookingMessage").style.display="block";
   e.target.reset();
-  $("bookingDate").min=new Date().toISOString().slice(0,10);
+  $("bookingDate").min=localTodayISO();
   updateBookingUser();
   refreshBookings();
 });
