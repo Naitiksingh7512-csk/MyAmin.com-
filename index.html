@@ -577,7 +577,22 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
 .search-submit{font-weight:600!important;font-size:14px!important}
 @media(max-width:480px){.search-suggestions{grid-template-columns:1fr}.search-result{min-height:59px}}
 </style>
-\n<style>.search-nav-btn{display:grid;place-items:center}.search-nav-btn svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.search-nav-btn:hover svg{transform:scale(1.04)}.search-nav-btn svg{transition:transform .18s ease}</style>\n</head>
+\n<style>.search-nav-btn{display:grid;place-items:center}.search-nav-btn svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.search-nav-btn:hover svg{transform:scale(1.04)}.search-nav-btn svg{transition:transform .18s ease}</style>\n\n<style>
+/* Refined, accessible search experience */
+.search-nav-btn{width:44px;height:44px;border:1px solid #dce9e1!important;border-radius:15px!important;background:linear-gradient(145deg,#fff,#f3f8f4)!important;color:#145b43!important;box-shadow:0 5px 16px rgba(18,75,53,.08);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.search-nav-btn svg{width:20px;height:20px;stroke-width:1.65}
+.search-nav-btn:hover{transform:translateY(-1px);border-color:#a8ccb6!important;box-shadow:0 8px 20px rgba(18,75,53,.13)}
+#searchDialog .dialog-box{border:1px solid #e1ece5;border-radius:24px;box-shadow:0 24px 70px rgba(9,35,25,.22);padding:clamp(18px,4vw,28px)}
+#searchDialog .search-input-wrap{display:flex;align-items:center;gap:12px;border:1.5px solid #cbded2;border-radius:16px;background:#f8fbf9;padding:0 15px;min-height:56px}
+#searchDialog .search-input-wrap:focus-within{border-color:#17845d;box-shadow:0 0 0 4px rgba(23,132,93,.10)}
+#siteSearch{border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;width:100%;min-width:0;font-size:16px!important;font-weight:450!important}
+#searchDialog .search-result{border-radius:15px;min-height:62px;padding:10px 13px}
+#searchDialog .search-result-copy strong{font-weight:600;font-size:13px;line-height:1.35;overflow-wrap:normal;word-break:normal}
+#searchDialog .search-result-copy small{font-size:11px;line-height:1.4}
+#searchDialog .search-kicker{letter-spacing:.14em;font-size:10px;font-weight:650;color:#658274}
+#searchDialog .search-description{color:#687b71;font-size:13px}
+@media(max-width:520px){#searchDialog .dialog-box{width:calc(100% - 22px);margin:11px;border-radius:20px}.search-suggestions{grid-template-columns:1fr}}
+</style>\n</head>
 
 <body>
 <div class="topline"></div>
@@ -1106,13 +1121,36 @@ const smartSearchItems=[
   {label:"My Account / Login",hiLabel:"मेरा अकाउंट / लॉगिन",hint:"अपने account विकल्प खोलें",hiHint:"अपना अकाउंट खोलें",terms:["account","login","लॉगिन"],route:"login",icon:"👤"},
   {label:"Help & Report",hiLabel:"सहायता और शिकायत",hint:"सहायता या समस्या बताएँ",hiHint:"सहायता लें या समस्या बताएँ",terms:["help","support","report","सहायता"],route:"help",icon:"💬"}
 ];
+function normalizeSearchText(value){
+ return String(value||"").toLocaleLowerCase().normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").replace(/[^\\p{L}\\p{N}]+/gu,"");
+}
+function getAllSearchItems(){
+ const items=[...smartSearchItems];
+ // Add every Bihar government portal card (including e-Mapi) to site-wide search.
+ document.querySelectorAll("#portals .portal").forEach(card=>{
+   const title=card.querySelector("strong")?.textContent?.trim();
+   const desc=card.querySelector("small")?.textContent?.trim()||"";
+   if(!title)return;
+   const link=card.querySelector("a")?.getAttribute("href")||"";
+   items.push({label:title,hiLabel:title,hint:desc,hiHint:desc,terms:[title,desc,link,"government portal","सरकारी पोर्टल"],route:"portals",icon:"🏛️",portalQuery:title});
+ });
+ // Add all state and UT portal entries; users can search by state or portal name.
+ if(Array.isArray(portals)) portals.forEach(p=>items.push({label:p[1]+" — "+p[0],hiLabel:p[1]+" — "+p[0],hint:"Official land-record portal / directory",hiHint:"सरकारी भूमि रिकॉर्ड पोर्टल / निर्देशिका",terms:[p[0],p[1],"land records","bhulekh","भूमि रिकॉर्ड"],route:"portals",icon:"🌐",portalQuery:p[0]}));
+ return items;
+}
 function renderSmartSearch(){
  const box=$("searchSuggestions"); if(!box)return;
- const q=$("siteSearch").value.trim().toLocaleLowerCase();
+ const q=$("siteSearch").value.trim();
  const hi=currentLang==="hi";
- const list=q?smartSearchItems.filter(x=>(x.label+" "+x.hint+" "+x.terms.join(" ")).toLocaleLowerCase().includes(q)):smartSearchItems;
- box.innerHTML=list.map(x=>'<button type="button" class="search-result" data-smart-route="'+x.route+'"><span class="search-result-icon">'+x.icon+'</span><span class="search-result-copy"><strong>'+(hi?x.hiLabel:x.label)+'</strong><small>'+(hi?x.hiHint:x.hint)+'</small></span><span class="search-result-arrow">›</span></button>').join("")||'<p class="search-empty">'+(hi?'कोई सुझाव नहीं मिला। दूसरा शब्द लिखें।':'No results found. Try another search.')+'</p>';
- box.querySelectorAll("[data-smart-route]").forEach(b=>b.addEventListener("click",()=>{const route=b.dataset.smartRoute;closeSearch();go(route);}));
+ const all=getAllSearchItems();
+ const needle=normalizeSearchText(q);
+ const list=needle?all.filter(x=>normalizeSearchText([x.label,x.hiLabel,x.hint,x.hiHint,...x.terms].join(" ")).includes(needle)):all.slice(0,10);
+ box.innerHTML=list.slice(0,18).map((x,i)=>'<button type="button" class="search-result" data-smart-index="'+i+'"><span class="search-result-icon">'+x.icon+'</span><span class="search-result-copy"><strong>'+(hi?x.hiLabel:x.label)+'</strong><small>'+(hi?x.hiHint:x.hint)+'</small></span><span class="search-result-arrow">›</span></button>').join("")||'<p class="search-empty">'+(hi?'कोई सुझाव नहीं मिला। दूसरा शब्द लिखें।':'No results found. Try another search.')+'</p>';
+ box.querySelectorAll("[data-smart-index]").forEach(b=>b.addEventListener("click",()=>{
+   const item=list[Number(b.dataset.smartIndex)];
+   closeSearch();go(item.route);
+   if(item.portalQuery&&$("portalSearch")){$("portalSearch").value=item.portalQuery;renderPortals();}
+ }));
 }
 $("siteSearch").addEventListener("input",renderSmartSearch);
 function runSearch() {
