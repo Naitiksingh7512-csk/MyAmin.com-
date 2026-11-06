@@ -984,37 +984,7 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="">
-function openQrAminProfile(){
- const id=new URLSearchParams(window.location.search).get("profile");if(!id)return;
- const records=read(DB.amins,[]),amin=records.find(a=>(a.profileId||a.id)===id);
- go("publicAminProfile");
- const box=$("publicAminProfileContent");
- if(!amin){box.innerHTML='<div class="list-item"><strong>Profile not published on this device.</strong><p>This demo currently saves registrations only in the browser where they were submitted. To make this QR show the Amin profile on every phone, My Amin needs a shared online database and public profile hosting.</p><p>Profile ID: '+safe(id)+'</p></div>';return;}
- const jobs=read(DB.bookings,[]).filter(x=>x.aminId===id||x.profileId===id||String(x.amin||"").trim().toLowerCase()===String(amin.name||"").trim().toLowerCase());const st=x=>String(x.status||"pending").toLowerCase();const done=jobs.filter(x=>["completed","complete","done"].includes(st(x))).length;const active=jobs.filter(x=>["confirmed","accepted","in progress","ongoing","started"].includes(st(x))).length;const pending=jobs.filter(x=>!["completed","complete","done","confirmed","accepted","in progress","ongoing","started","cancelled"].includes(st(x))).length;box.innerHTML='<div class="list-item">'+(amin.photo?'<img src="'+amin.photo+'" alt="Amin profile photo" style="width:92px;height:92px;object-fit:cover;border-radius:50%">':'')+'<h3>'+safe(amin.name)+'</h3><p><strong>Profile ID:</strong> '+safe(id)+'<br>📍 '+safe([amin.place,amin.district,amin.state].filter(Boolean).join(", "))+'<br>☎ '+safe(amin.phone||"Not provided")+'<br>'+safe(amin.description||"Land measurement service")+'</p><div class="dashboard-stats"><div><strong>'+done+'</strong><small>Completed</small></div><div><strong>'+active+'</strong><small>In progress</small></div><div><strong>'+pending+'</strong><small>Pending</small></div></div>'+(amin.upiId?'<p><strong>UPI ID:</strong> '+safe(amin.upiId)+'</p><a class="btn btn-green" href="upi://pay?pa='+encodeURIComponent(amin.upiId)+'&pn='+encodeURIComponent(amin.name||"Amin")+'&cu=INR">Pay Now</a>':'')+'</div>';
-}
-
-const nearbySearchInput=$("nearbyLocationQuery");if(nearbySearchInput)nearbySearchInput.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();searchNearbyLocation();}});
-openQrAminProfile();
-
-async function downloadAminIdCard(){
- const preview=$("idPreview");if(!preview||preview.style.display==="none")return;
- if(typeof html2canvas!=="function"){toast("Card image tool is still loading. Please try again.");return;}
- const button=$("downloadAminCard");button.disabled=true;
- try{
-  const cards=Array.from(preview.querySelectorAll(".id-card-front,.id-card-back"));
-  const canvas=document.createElement("canvas");const scale=2;const gap=24;const width=760;const cardCanvases=[];
-  for(const card of cards){const shot=await html2canvas(card,{scale:2,backgroundColor:null,useCORS:true});cardCanvases.push(shot);}
-  canvas.width=width*scale;canvas.height=(Math.max(...cardCanvases.map(c=>c.height/scale))+gap+Math.max(...cardCanvases.map(c=>c.height/scale)))*scale;
-  const ctx=canvas.getContext("2d");ctx.fillStyle="#ffffff";ctx.fillRect(0,0,canvas.width,canvas.height);
-  let y=0;for(const shot of cardCanvases){ctx.drawImage(shot,0,y,canvas.width,shot.height);y+=shot.height+gap*scale;}
-  const link=document.createElement("a");link.download="My-Amin-ID-"+(window.generatedAminCard?.id||"Card")+".png";link.href=canvas.toDataURL("image/png");link.click();toast("ID Card PNG downloaded.");
- }catch(err){toast("Could not download the card. Try Print / Save PDF.");}
- finally{button.disabled=false;}
-}
-$("downloadAminCard").addEventListener("click",downloadAminIdCard);
-
-</script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script>
 "use strict";
 
@@ -1242,7 +1212,7 @@ function runSearch() {
   if(!query) {toast("पहले कुछ लिखें।");return;}
   const q=query.toLowerCase();
   /* Profile ID lookup: show only approved Amin profiles publicly. */
-  if(/^[\\p{L}\\p{N}._-]+@\\d{8}$/u.test(query)) {
+  if(/^[\p{L}\p{N}._-]+@\d{8}$/u.test(query)) {
     const matches=read(DB.amins,[]).filter(a=>String(a.profileId||a.id||"").toLowerCase()===q);
     if(!matches.length) {toast("इस Profile ID का कोई Amin इस browser के demo records में नहीं मिला।");return;}
     const approved=matches.filter(a=>a.approved);
@@ -1782,6 +1752,39 @@ async function refreshNearbyAmins(userLat=null,userLng=null){
  nearbySetStatus("Showing "+found.length+" of "+records.length+" approved Amin profile(s). Red pins show approximate registered areas, not verified live Amin positions.");
 }
 
+
+
+function openQrAminProfile(){
+ const id=new URLSearchParams(window.location.search).get("profile");if(!id)return;
+ const records=read(DB.amins,[]),amin=records.find(a=>(a.profileId||a.id)===id);
+ go("publicAminProfile");
+ const box=$("publicAminProfileContent");
+ if(!amin){box.innerHTML='<div class="list-item"><strong>Profile not published on this device.</strong><p>This demo currently saves registrations only in the browser where they were submitted. To make this QR show the Amin profile on every phone, My Amin needs a shared online database and public profile hosting.</p><p>Profile ID: '+safe(id)+'</p></div>';return;}
+ const jobs=read(DB.bookings,[]).filter(x=>x.aminId===id||x.profileId===id||String(x.amin||"").trim().toLowerCase()===String(amin.name||"").trim().toLowerCase());const st=x=>String(x.status||"pending").toLowerCase();const done=jobs.filter(x=>["completed","complete","done"].includes(st(x))).length;const active=jobs.filter(x=>["confirmed","accepted","in progress","ongoing","started"].includes(st(x))).length;const pending=jobs.filter(x=>!["completed","complete","done","confirmed","accepted","in progress","ongoing","started","cancelled"].includes(st(x))).length;box.innerHTML='<div class="list-item">'+(amin.photo?'<img src="'+amin.photo+'" alt="Amin profile photo" style="width:92px;height:92px;object-fit:cover;border-radius:50%">':'')+'<h3>'+safe(amin.name)+'</h3><p><strong>Profile ID:</strong> '+safe(id)+'<br>📍 '+safe([amin.place,amin.district,amin.state].filter(Boolean).join(", "))+'<br>☎ '+safe(amin.phone||"Not provided")+'<br>'+safe(amin.description||"Land measurement service")+'</p><div class="dashboard-stats"><div><strong>'+done+'</strong><small>Completed</small></div><div><strong>'+active+'</strong><small>In progress</small></div><div><strong>'+pending+'</strong><small>Pending</small></div></div>'+(amin.upiId?'<p><strong>UPI ID:</strong> '+safe(amin.upiId)+'</p><a class="btn btn-green" href="upi://pay?pa='+encodeURIComponent(amin.upiId)+'&pn='+encodeURIComponent(amin.name||"Amin")+'&cu=INR">Pay Now</a>':'')+'</div>';
+}
+
+const nearbySearchInput=$("nearbyLocationQuery");if(nearbySearchInput)nearbySearchInput.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();searchNearbyLocation();}});
+openQrAminProfile();
+
+async function downloadAminIdCard(){
+ const preview=$("idPreview");if(!preview||preview.style.display==="none")return;
+ if(typeof html2canvas!=="function"){toast("Card image tool is still loading. Please try again.");return;}
+ const button=$("downloadAminCard");button.disabled=true;
+ try{
+  const cards=Array.from(preview.querySelectorAll(".id-card-front,.id-card-back"));
+  const canvas=document.createElement("canvas");const scale=2;const gap=24;const width=760;const cardCanvases=[];
+  for(const card of cards){const shot=await html2canvas(card,{scale:2,backgroundColor:null,useCORS:true});cardCanvases.push(shot);}
+  canvas.width=width*scale;canvas.height=(Math.max(...cardCanvases.map(c=>c.height/scale))+gap+Math.max(...cardCanvases.map(c=>c.height/scale)))*scale;
+  const ctx=canvas.getContext("2d");ctx.fillStyle="#ffffff";ctx.fillRect(0,0,canvas.width,canvas.height);
+  let y=0;for(const shot of cardCanvases){ctx.drawImage(shot,0,y,canvas.width,shot.height);y+=shot.height+gap*scale;}
+  const link=document.createElement("a");link.download="My-Amin-ID-"+(window.generatedAminCard?.id||"Card")+".png";link.href=canvas.toDataURL("image/png");link.click();toast("ID Card PNG downloaded.");
+ }catch(err){toast("Could not download the card. Try Print / Save PDF.");}
+ finally{button.disabled=false;}
+}
+$("downloadAminCard").addEventListener("click",downloadAminIdCard);
+
+/* Initialize saved language after all page features are ready */
+applyLanguage(currentLang);
 </script>
 </body>
 </html>
