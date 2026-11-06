@@ -1075,7 +1075,7 @@ function showAccountList(kind){
 $("accountCompletedTab").addEventListener("click",()=>showAccountList("completed"));
 $("accountActiveTab").addEventListener("click",()=>showAccountList("active"));
 $("accountPendingTab").addEventListener("click",()=>showAccountList("pending"));
-$("accountMessagesTab").addEventListener("click",()=>showAccountList("messages"));
+if($("accountMessagesTab")) $("accountMessagesTab").addEventListener("click",()=>showAccountList("messages"));
 $("changeAccountPhoto").addEventListener("click",()=>$("accountPhotoInput").click());
 $("saveAccountPayment").addEventListener("click",()=>{const a=read(DB.aminProfile,null);if(!a)return;a.upiId=$("accountUpiId").value.trim();a.upiQr=window.accountUpiQrData||a.upiQr||"";save(DB.aminProfile,a);save(DB.amins,read(DB.amins,[]).map(x=>x.profileId===a.profileId?{...x,upiId:a.upiId,upiQr:a.upiQr}:x));toast("UPI details saved on this device.");});
 window.accountUpiQrData="";$("accountUpiQrFile").addEventListener("change",e=>{const file=e.target.files&&e.target.files[0];if(!file)return;if(!["image/jpeg"].includes(file.type)||file.size>3*1024*1024){toast("Choose a JPG/JPEG QR image under 3 MB.");e.target.value="";return;}const reader=new FileReader();reader.onload=()=>{window.accountUpiQrData=String(reader.result||"");$("accountUpiQrPreview").src=window.accountUpiQrData;$("accountUpiQrPreview").hidden=false;};reader.readAsDataURL(file);});
@@ -1428,7 +1428,7 @@ $("regPhoto").addEventListener("change",e=>{const file=e.target.files&&e.target.
 window.regUpiQrData="";
 $("regUpiQr").addEventListener("change",e=>{const file=e.target.files&&e.target.files[0];if(!file){window.regUpiQrData="";return;}if(!file.type.startsWith("image/")||file.size>3*1024*1024){toast("Choose a QR image under 3 MB.");e.target.value="";return;}const reader=new FileReader();reader.onload=()=>{window.regUpiQrData=String(reader.result||"");$("regUpiQrPreview").src=window.regUpiQrData;$("regUpiQrPreview").hidden=false;};reader.readAsDataURL(file);});
 window.idUpiQrData="";
-$("idUpiQrUpload").addEventListener("change",e=>{const file=e.target.files&&e.target.files[0];if(!file){window.idUpiQrData="";return;}if(!file.type.startsWith("image/")||file.size>3*1024*1024){toast("Choose a QR image under 3 MB.");e.target.value="";return;}const reader=new FileReader();reader.onload=()=>{window.idUpiQrData=String(reader.result||"");};reader.readAsDataURL(file);});
+if($("idUpiQrUpload")) $("idUpiQrUpload").addEventListener("change",e=>{const file=e.target.files&&e.target.files[0];if(!file){window.idUpiQrData="";return;}if(!file.type.startsWith("image/")||file.size>3*1024*1024){toast("Choose a QR image under 3 MB.");e.target.value="";return;}const reader=new FileReader();reader.onload=()=>{window.idUpiQrData=String(reader.result||"");};reader.readAsDataURL(file);});
 
 /* Amin registration */
 $("aminForm").addEventListener("submit",e=>{
