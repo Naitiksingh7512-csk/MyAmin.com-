@@ -553,36 +553,52 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
 @keyframes floatSurvey{0%,100%{translate:0 0}50%{translate:0 -7px}}
 @media(prefers-reduced-motion:reduce){.map-card:after,.map-art .plot svg path,.map-art .plot svg g text,.map-art .plot svg circle,.float-one,.float-two{animation:none!important}}
 .account-menu-card{margin:14px 10px;padding:20px 14px;border:1px solid #d9e9dc;border-radius:20px;background:linear-gradient(145deg,#fffdf6,#e6f3eb);display:flex;flex-direction:column;align-items:center;gap:9px;text-align:center;box-shadow:0 12px 28px #123b3218}.account-menu-card>small{font-size:11px;overflow-wrap:anywhere}.account-avatar,.account-detail-avatar{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:#145b46;color:white;font-size:30px;border:4px solid white;box-shadow:0 0 0 2px #e9b95b}.account-avatar img,.account-detail-avatar img{width:100%;height:100%;object-fit:cover}.account-open-btn{border:0;border-radius:999px;background:#145b46;color:white;font-weight:800;padding:10px 20px}.amin-dashboard{width:min(760px,calc(100vw - 28px));max-height:88vh;overflow:auto}.dashboard-identity{display:flex;align-items:center;gap:16px;padding:16px 0}.dashboard-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0 20px}.dashboard-stats>div{padding:14px;border-radius:15px;background:#edf6ef;text-align:center}.dashboard-stats strong,.dashboard-stats small{display:block}.dashboard-stats strong{font-size:24px;color:#145b46}.account-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}.account-detail-grid>div{padding:12px;border:1px solid #e1ebe4;border-radius:13px;min-width:0}.account-detail-grid small,.account-detail-grid strong{display:block}.account-detail-grid strong{font-size:13px;overflow-wrap:anywhere}.reg-photo-preview{width:84px;height:84px;border-radius:50%;overflow:hidden;border:3px solid #e6c16d;background:#edf6ef;display:grid;place-items:center;font-size:30px}.reg-photo-preview img{width:100%;height:100%;object-fit:cover}@media(max-width:600px){.account-detail-grid{grid-template-columns:1fr}.amin-dashboard{padding:16px}}
-/* Header/footer logo sizing correction — CSS only */
+/* Compact logo proportions — CSS only */
 .logo-image{
-  width:148px!important;
-  max-width:148px!important;
-  flex:0 0 148px!important;
-  height:auto!important;
-  object-fit:contain;
+  display:block!important;
+  width:156px!important;
+  height:48px!important;
+  max-width:156px!important;
+  flex:0 0 156px!important;
+  object-fit:fill!important;
 }
 .footer-brand .logo-image{
-  width:148px!important;
-  max-width:148px!important;
-  flex:0 0 148px!important;
+  width:22px!important;
+  height:22px!important;
+  max-width:22px!important;
+  flex:0 0 22px!important;
+  object-fit:contain!important;
+  border-radius:4px;
+}
+.footer-brand .logo{
+  display:inline-flex!important;
+  width:22px!important;
+  height:22px!important;
+  max-width:22px!important;
+  overflow:hidden;
+  vertical-align:middle;
 }
 @media(max-width:700px){
   .logo-image{
-    width:122px!important;
-    max-width:122px!important;
-    flex:0 0 122px!important;
-  }
-  .footer-brand .logo-image{
     width:132px!important;
+    height:42px!important;
     max-width:132px!important;
     flex:0 0 132px!important;
+  }
+  .footer-brand .logo-image,
+  .footer-brand .logo{
+    width:22px!important;
+    height:22px!important;
+    max-width:22px!important;
+    flex:0 0 22px!important;
   }
 }
 @media(max-width:420px){
   .logo-image{
-    width:112px!important;
-    max-width:112px!important;
-    flex:0 0 112px!important;
+    width:124px!important;
+    height:40px!important;
+    max-width:124px!important;
+    flex:0 0 124px!important;
   }
 }
 
