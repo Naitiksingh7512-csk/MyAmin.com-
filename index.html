@@ -172,12 +172,27 @@ h1 span {color:var(--green)}
 .card .btn {margin-top:9px}
 .quick-grid {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 .quick {
-  border:1px solid var(--border);background:white;
-  border-radius:16px;padding:18px 12px;text-align:center;
-  font-weight:750;font-size:13px;line-height:1.5;
+  position:relative;
+  border:1px solid #dce8df;background:white;
+  border-radius:14px;padding:13px 9px;text-align:center;
+  font-weight:750;font-size:12px;line-height:1.35;
+  min-height:76px;
+  animation:quickRgbBorder 7s linear infinite;
+  transition:transform .2s ease,box-shadow .2s ease;
 }
-.quick span {display:block;font-size:24px;margin-bottom:7px}
-.quick:hover {border-color:#88c6a0;background:#f0faf2}
+.quick span {display:block;font-size:20px;margin-bottom:4px}
+.quick:hover {
+  background:#f7fff9;transform:translateY(-2px);
+  box-shadow:0 5px 16px rgba(19,123,82,.12);
+}
+@keyframes quickRgbBorder {
+  0%,100% {border-color:rgba(24,160,105,.48);box-shadow:0 0 0 1px rgba(24,160,105,.06)}
+  33% {border-color:rgba(55,135,235,.48);box-shadow:0 0 7px rgba(55,135,235,.10)}
+  66% {border-color:rgba(170,95,220,.42);box-shadow:0 0 7px rgba(170,95,220,.09)}
+}
+@media (prefers-reduced-motion:reduce) {
+  .quick {animation:none}
+}
 .panel {
   display:none;background:white;border:1px solid var(--border);
   border-radius:23px;padding:25px;box-shadow:var(--shadow);
