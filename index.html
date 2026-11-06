@@ -640,7 +640,7 @@ footer a {text-decoration:underline}
       <div class="form-actions"><button class="btn btn-green" type="submit">रिपोर्ट सेव करें</button></div>
     </form>
     <div id="reportMessage" class="success"></div>
-    <div class="notice">यह डेमो रिपोर्ट को इसी डिवाइस में सेव करता है। अभी रिपोर्ट ईमेल या वेबसाइट के मालिक को अपने आप नहीं भेजी जाती।</div>
+    <div class="notice">यह डेमो रिपोर्ट केवल इसी डिवाइस में सेव करता है। अभी रिपोर्ट ईमेल से नहीं भेजी जाती।</div>
   </section>
 
   <!-- HELP -->
@@ -689,7 +689,6 @@ footer a {text-decoration:underline}
     <div class="drawer-group">Account</div>
     <button class="menu-link" data-action="logout"><span>↪</span>Logout</button>
     <p style="font-size:11px;color:#859189;line-height:1.6;padding:10px">
-      निजी Owner Panel अभी उपलब्ध नहीं है। इसे सुरक्षित सर्वर-आधारित लॉगिन के साथ अलग से बनाया जाएगा।
     </p>
   </aside>
 </div>
@@ -698,10 +697,9 @@ footer a {text-decoration:underline}
 <div class="dialog" id="searchDialog" role="dialog" aria-modal="true" aria-label="Website Search">
   <div class="dialog-box">
     <div class="dialog-head"><h3>⌕ Search My Amin</h3><button class="closebtn" onclick="closeSearch()">✕</button></div>
-    <p style="font-size:13px;color:#718078">सेवा खोजें। निजी Owner Panel यहाँ से नहीं खुलता।</p>
+    <p style="font-size:13px;color:#718078">सेवा खोजें और वेबसाइट के किसी भी सेक्शन तक जल्दी पहुँचें।</p>
     <input id="siteSearch" placeholder="जैसे: ID Card, Booking, Bihar Bhumi…">
     <div class="form-actions"><button class="btn btn-green" onclick="runSearch()">Search / खोलें</button></div>
-    <div style="font-size:11px;color:#859189;margin-top:12px">निजी Owner Panel अभी विकासाधीन है; सार्वजनिक वेबसाइट पर कोई Owner Code उपलब्ध नहीं है।</div>
   </div>
 </div>
 
@@ -785,7 +783,7 @@ document.addEventListener("keydown",e=>{
   if(e.key==="Escape") { closeMenu();closeSearch(); }
 });
 
-/* Search and hidden owner access */
+/* Website search */
 $("searchBtn").addEventListener("click",()=>{
   $("searchDialog").classList.add("show");
   $("siteSearch").value="";
@@ -816,9 +814,6 @@ function runSearch() {
   for(const [terms,route] of routes) {
     if(terms.some(term=>q.includes(term))) {closeSearch();go(route);return;}
   }
-  if(q.includes("owner")||q.includes("dashboard")) {
-    toast("निजी Owner Panel अभी उपलब्ध नहीं है।");return;
-  }
   toast("परिणाम नहीं मिला। दूसरा शब्द खोजें।");
 }
 
@@ -840,7 +835,7 @@ const phrasePairs=[
 ["पूरा नाम / Full Name *","Full Name *"],["मोबाइल नंबर *","Mobile number *"],["ईमेल (वैकल्पिक)","Email (optional)"],["जिला / District","District"],["Login / Continue","Login / Continue"],["Logout","लॉगआउट"],
 ["Book an Appointment | अपॉइंटमेंट","अपॉइंटमेंट बुक करें"],["पहले लॉगिन करें, फिर अपनी ज़रूरत और पसंद की तारीख भरें।","Log in first, then enter your requirements and preferred date."],
 ["अमीन का नाम (यदि पता हो)","Amin name (if known)"],["अमीन का नाम","Amin name"],["सेवा *","Service *"],["सेवा चुनें","Choose a service"],["जमीन की नापी","Land measurement"],["सीमांकन / Boundary","Boundary demarcation"],["नज़री नक्शा","Site sketch map"],["जमीन से जुड़ी अन्य सहायता","Other land-related assistance"],["गाँव / स्थान *","Village / Location *"],["पसंदीदा तारीख *","Preferred date *"],["काम की जानकारी","Work details"],["काम के बारे में बताइए। संवेदनशील दस्तावेज़ यहाँ न डालें।","Describe the work. Do not enter sensitive documents here."],["बुकिंग अनुरोध भेजें","Send booking request"],
-["Amin Registration | अमीन रजिस्ट्रेशन","Amin Registration"],["अपनी प्रोफ़ाइल की जानकारी भरें। डेमो में प्रोफ़ाइल Owner Dashboard से अप्रूव होने के बाद खोज में दिखेगी।","Enter your profile details. In this demo, your profile appears in search only after approval."],
+["Amin Registration | अमीन रजिस्ट्रेशन","Amin Registration"],["अपनी प्रोफ़ाइल की जानकारी भरें। डेमो में यह जानकारी केवल इसी डिवाइस पर सेव होगी; यह अपने आप सार्वजनिक खोज में नहीं आएगी।","Enter your profile details. In this demo, the information is saved only on this device and is not automatically published in public search."],
 ["WhatsApp नंबर","WhatsApp number"],["व्यवसाय / पहचान संदर्भ","Business / identity reference"],["गाँव / शहर *","Village / City *"],["प्रोफ़ाइल फोटो (डेमो)","Profile photo (demo)"],["अनुभव और सेवाएँ","Experience and services"],["अपने अनुभव और सेवाओं का विवरण लिखें।","Describe your experience and services."],["रजिस्ट्रेशन भेजें","Submit registration"],
 ["अपना डेमो कार्ड बनाओ। यह आधिकारिक या सरकारी पहचान-पत्र नहीं है।","Create a demo card. This is not an official or government identity card."],["नाम *","Name *"],["संपर्क नंबर","Contact number"],["जिला और राज्य","District and state"],["काम / भूमिका","Work / Role"],["कार्ड बनाएँ","Create card"],["Print / Save PDF","प्रिंट / PDF सेव करें"],
 ["संख्या","Number"],["किस इकाई से","From unit"],["किस इकाई में","To unit"],["Report a Bug / Issue / Suggestion","समस्या / सुझाव दर्ज करें"],["रिपोर्ट का प्रकार *","Report type *"],["संपर्क (वैकल्पिक)","Contact (optional)"],["शीर्षक *","Title *"],["समस्या कहाँ है?","Where is the problem?"],["पूरी जानकारी *","Full details *"],["क्या हुआ, किस पेज पर हुआ, और क्या करने पर समस्या आई?","What happened, on which page, and what action caused it?"],["रिपोर्ट सेव करें","Submit report"],
