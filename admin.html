@@ -194,6 +194,7 @@ $("teamFullAccess").addEventListener("change",toggleTeamFullAccess);
 ["teamSearch","teamFilter"].forEach(id=>$(id).addEventListener("input",renderTeam));
 $("attendanceMember").addEventListener("change",renderTeam);
 $("attendanceAction").addEventListener("click",attendanceAction);
+toggleTeamFullAccess();
 const sections={team:["Team management","टीम मैनेजमेंट"],overview:["Dashboard overview","डैशबोर्ड"],applications:["Amin applications","अमीन आवेदन"],directory:["Amin directory","अमीन सूची"],customers:["Customers","ग्राहक"],bookings:["Customer bookings","ग्राहक बुकिंग"],reports:["Website reports","वेबसाइट रिपोर्ट"],commission:["Commission tracker","कमीशन ट्रैकर"],payments:["Amin payment details","अमीन भुगतान जानकारी"],activity:["Activity history","गतिविधि इतिहास"]};
 document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{$("pageTitle").textContent=sections[b.dataset.tab][lang==="hi"?1:0]}));
 ["applicationSearch","applicationFilter"].forEach(id=>$(id).addEventListener("input",renderApplications));
