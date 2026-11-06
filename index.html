@@ -811,7 +811,7 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
     <div id="idPreview" class="id-preview id-card-set" style="display:none">
       <article class="id-card-front">
         <div class="id-card-watermark" aria-hidden="true">MY AMIN</div>
-        <div class="id-card-top"><div class="id-brand-mark">⌖</div><div><strong>MyAmin.com</strong><small>LAND SERVICE NETWORK</small></div><span class="id-demo-tag">DEMO</span></div>
+        <div class="id-card-top"><div class="id-brand-mark"><img src="assets/myamin-logo.svg" alt="My Amin logo"></div><div><strong>MyAmin.com</strong><small>LAND SERVICE NETWORK</small></div><span class="id-demo-tag">DEMO</span></div>
         <div class="id-card-main">
           <div class="id-photo-wrap"><img id="cardPhoto" alt="Profile photo"><span id="cardPhotoPlaceholder">DP</span></div>
           <div class="id-person"><span class="id-kicker">AMIN SERVICE PROFILE</span><h3 id="cardName"></h3><div class="id-profile-id">PROFILE ID · <strong id="cardNumber"></strong></div><div class="id-role" id="cardRole"></div></div>
@@ -1225,6 +1225,7 @@ function runSearch() {
     return;
   }
   const routes=[
+    [["nearby amin","find nearby","near me","nearby map","gps map","आसपास के अमीन","नजदीकी अमीन","पास के अमीन","मेरे पास अमीन"],"nearby"],
     [["id card","idcard","id-card","आईडी","पहचान कार्ड","card maker"],"idmaker"],
     [["amin","अमीन","अमीन खोज"],"find"],
     [["booking","appointment","बुकिंग","अपॉइंटमेंट"],"booking"],
@@ -1351,6 +1352,7 @@ function applyLanguage(lang){
   refreshAminMenuProfile();
   translateDynamic(document.getElementById("statePortals"));
   translateDynamic(document.getElementById("aminResults"));
+  translateDynamic(document.body);
 }
 window.toggleMyAminLanguage=function(){
   applyLanguage(currentLang==="en"?"hi":"en");
@@ -1463,6 +1465,7 @@ $("aminForm").addEventListener("submit",e=>{
   $("idName").value=name;
   $("idNumber").value=profileId;
   $("idPhone").value=record.phone;
+  idPhotoData=record.photo||"";
   $("idDistrict").value=record.district+", "+record.state;
   $("idUpiId").value=record.upiId||"";
   window.idUpiQrData=record.upiQr||"";
@@ -1519,10 +1522,17 @@ $("bookingForm").addEventListener("submit",e=>{
   const user=read(DB.user,null);
   if(!user) {toast("पहले Customer Login करें।");go("login");return;}
   const bookings=read(DB.bookings,[]);
+  const selectedAminName=$("bookingAmin").value.trim();
+  const matchedAmin=read(DB.amins,[]).find(a=>
+    String(a.profileId||a.id||"").toLowerCase()===selectedAminName.toLowerCase() ||
+    String(a.name||"").trim().toLowerCase()===selectedAminName.toLowerCase()
+  );
   bookings.push({
     id:"BK-"+Date.now().toString().slice(-8),
     customer:user.name,phone:user.phone,
-    amin:$("bookingAmin").value.trim(),
+    amin:selectedAminName,
+    aminId:matchedAmin?(matchedAmin.profileId||matchedAmin.id||""):"",
+    profileId:matchedAmin?(matchedAmin.profileId||matchedAmin.id||""):"",
     service:$("bookingService").value,
     state:$("bookingState").value.trim(),
     district:$("bookingDistrict").value.trim(),
@@ -1786,5 +1796,48 @@ $("downloadAminCard").addEventListener("click",downloadAminIdCard);
 /* Initialize saved language after all page features are ready */
 applyLanguage(currentLang);
 </script>
+
+<style>
+/* My Amin ID card correction: landscape cards and the same official site logo */
+.id-card-set{grid-template-columns:1fr!important;justify-items:center!important;gap:16px!important}
+.id-card-front,.id-card-back{
+  width:min(100%,440px)!important;
+  max-width:440px!important;
+  aspect-ratio:1.586!important;
+  min-height:0!important;
+  height:auto!important;
+  box-sizing:border-box!important;
+}
+.id-brand-mark{
+  width:48px!important;height:48px!important;flex:0 0 48px!important;
+  display:grid!important;place-items:center!important;
+  border-radius:10px!important;background:transparent!important;
+  overflow:hidden!important;padding:0!important;
+}
+.id-brand-mark img{
+  display:block!important;width:100%!important;height:100%!important;
+  object-fit:contain!important;visibility:visible!important;opacity:1!important;
+}
+.id-card-top{gap:11px!important}
+.id-card-top strong{font-size:17px!important}
+.id-card-top small{font-size:7px!important}
+.id-card-main{padding:13px 0 10px!important;gap:13px!important}
+.id-photo-wrap{width:78px!important;height:78px!important;flex-basis:78px!important}
+.id-person h3{font-size:18px!important}
+.id-qr-frame{width:100px!important;height:100px!important;margin:7px auto 5px!important}
+.id-card-back{padding:14px!important}
+.id-card-back .id-back-brand{font-size:17px!important}
+.id-card-back p{margin:5px 0 0!important}
+.id-back-footer{margin-top:6px!important}
+@media(max-width:480px){
+  .id-card-front,.id-card-back{width:100%!important;aspect-ratio:1.48!important;padding:14px!important}
+  .id-brand-mark{width:42px!important;height:42px!important;flex-basis:42px!important}
+  .id-photo-wrap{width:68px!important;height:68px!important;flex-basis:68px!important}
+  .id-card-main{gap:10px!important;padding:10px 0 8px!important}
+  .id-person h3{font-size:16px!important}
+  .id-qr-frame{width:88px!important;height:88px!important;margin:5px auto 4px!important}
+}
+</style>
+
 </body>
 </html>
