@@ -695,12 +695,7 @@ footer a {text-decoration:underline}
 <script>
 "use strict";
 
-/* -------------------------------------------------------
-   CONFIGURATION
-   अपना डेमो Owner Code यहाँ बदल सकते हो।
-   असली वेबसाइट में इसे HTML में रखना सुरक्षित नहीं है।
--------------------------------------------------------- */
-const OWNER_CODE = "";
+/* Local demo storage configuration */
 const DB = {
   amins:"myamin_demo_amins_v1",
   bookings:"myamin_demo_bookings_v1",
@@ -837,7 +832,7 @@ const phrasePairs=[
 ["Help & Support | सहायता","Help & Support"],["Booking Help","बुकिंग सहायता"],["Amin Help","अमीन सहायता"],["Report a Problem","समस्या बताएँ"],["Booking खोलें","Open booking"],["Register","पंजीकरण"],["Report","रिपोर्ट"],
 ["Main Menu","मुख्य मेन्यू"],["Home / होम","होम"],["Find an Amin / अमीन खोजें","अमीन खोजें"],["Booking & Appointments","बुकिंग और अपॉइंटमेंट"],["Customer Login / ग्राहक लॉगिन","ग्राहक लॉगिन"],["Tools & Features","टूल्स और सुविधाएँ"],["Land Unit Calculator","भूमि इकाई कैलकुलेटर"],["Bihar Bhumi Service Portal","बिहार भूमि सेवा पोर्टल"],["Services for Other States","अन्य राज्यों की सेवाएँ"],["Report a Bug / Issue","समस्या दर्ज करें"],["Account","खाता"],["My Amin Menu","My Amin मेन्यू"],["Search My Amin","My Amin खोजें"],["सेवा खोजें या Owner Code डालें।","Search for a service or enter the Owner Code."],["जैसे: ID Card, Booking, Bihar Bhumi…","e.g. ID Card, Booking, Bihar Bhumi…"],["Search / खोलें","खोजें / खोलें"],
 ["भारत सरकार — State/UT Land Records Directory","Government of India — State/UT Land Records Directory"],["दूसरे राज्यों की सेवाएँ","Services for other states"],
-["Approved demo profile","स्वीकृत डेमो प्रोफ़ाइल"],["अभी कोई अप्रूव्ड अमीन प्रोफ़ाइल नहीं मिली।","No approved Amin profiles found yet."],["आप अमीन रजिस्ट्रेशन कर सकते हैं। Owner Dashboard के डेमो में आवेदन अप्रूव करें।","You can register as an Amin. Approve applications in the demo Owner Dashboard."],["अपॉइंटमेंट माँगें","Request appointment"],["इस ग्राहक की कोई डेमो बुकिंग नहीं मिली।","No demo bookings found for this customer."],["लॉगिन: ","Logged in: "],["बुकिंग से पहले ग्राहक लॉगिन करना ज़रूरी है।","Customer login is required before booking."],["सेवा चुनें","Choose a service"],["अभी कोई राज्य नहीं मिला।","No state found."],["भूमि मापी सेवाएँ","Land measurement services"],["Open official portal / directory ↗","आधिकारिक पोर्टल / निर्देशिका खोलें ↗"],["स्थान:","Location:"],["तारीख:","Date:"],["स्थिति:","Status:"],["Booking ID:","बुकिंग आईडी:"],["DEMO CARD","डेमो कार्ड"],["DEMO ONLY — NOT AN OFFICIAL ID OR LICENSE","केवल डेमो — आधिकारिक पहचान-पत्र या लाइसेंस नहीं"],["Not provided","उपलब्ध नहीं"],["selected unit","चुनी गई इकाई"],["कृपया सही संख्या भरें।","Please enter a valid number."],
+["Approved demo profile","स्वीकृत डेमो प्रोफ़ाइल"],["अभी कोई अप्रूव्ड अमीन प्रोफ़ाइल नहीं मिली।","No approved Amin profiles found yet."],["अपॉइंटमेंट माँगें","Request appointment"],["इस ग्राहक की कोई डेमो बुकिंग नहीं मिली।","No demo bookings found for this customer."],["लॉगिन: ","Logged in: "],["बुकिंग से पहले ग्राहक लॉगिन करना ज़रूरी है।","Customer login is required before booking."],["सेवा चुनें","Choose a service"],["अभी कोई राज्य नहीं मिला।","No state found."],["भूमि मापी सेवाएँ","Land measurement services"],["Open official portal / directory ↗","आधिकारिक पोर्टल / निर्देशिका खोलें ↗"],["स्थान:","Location:"],["तारीख:","Date:"],["स्थिति:","Status:"],["Booking ID:","बुकिंग आईडी:"],["DEMO CARD","डेमो कार्ड"],["DEMO ONLY — NOT AN OFFICIAL ID OR LICENSE","केवल डेमो — आधिकारिक पहचान-पत्र या लाइसेंस नहीं"],["Not provided","उपलब्ध नहीं"],["selected unit","चुनी गई इकाई"],["कृपया सही संख्या भरें।","Please enter a valid number."],
 ["किस इकाई में","To unit"],["Square feet (sq ft)","वर्ग फुट (sq ft)"],["Square yards (sq yd)","वर्ग गज (sq yd)"],["Square meters (m²)","वर्ग मीटर (m²)"],["Dismil (डिसमिल)","डिसमिल"],["Acre (एकड़)","एकड़"],["Hectare (हेक्टेयर)","हेक्टेयर"],["Kattha (डेमो मान)","कट्ठा (डेमो मान)"],["Dhur (डेमो मान)","धुर (डेमो मान)"],["Bigha (डेमो मान)","बीघा (डेमो मान)"],["परिणाम","Result"],["राज्य या पोर्टल खोजें…","Search state or portal…"],["वेबसाइट में समस्या हो, गलत सरकारी लिंक मिले या कोई नया फीचर चाहिए, तो यहाँ लिखें।","Report a website problem, incorrect government link, or suggest a new feature here."],["राज्यों और केंद्रशासित प्रदेशों के भूमि रिकॉर्ड पोर्टल की सरकारी निर्देशिका।","Government directory of land-record portals for states and union territories."],["बिहार की सेवाएँ अलग हैं और अन्य राज्यों के पोर्टल अलग सेक्शन में हैं। सरकारी साइट नए टैब में खुलेगी।","Bihar services and other state portals are listed separately. Government sites open in a new tab."],["भूमि अभिलेख से संबंधित पोर्टल।","Land-record related portal."],["जमीन के रिकॉर्ड और संबंधित ऑनलाइन सेवाएँ।","Land records and related online services."],["उपलब्ध भू-नक्शा सेवाएँ।","Available land-map services."],["भूमि रिकॉर्ड में सुधार संबंधी सेवा।","Service for corrections to land records."],["बिहार की ऑनलाइन मापी सेवा।","Bihar's online land-measurement service."],["भूमि पंजीकरण जानकारी।","Land registration information."],["बिहार विभाग की आधिकारिक वेबसाइट।","Official website of the Bihar department."],["बिहार की अन्य ऑनलाइन सरकारी सेवाएँ।","Other online government services in Bihar."],["भूमि सर्वेक्षण एवं बंदोबस्त निदेशालय।","Directorate of Land Records and Survey."],["सरकारी भूमि सेवाएँ","Government land services"],["बिहार भूमि सेवा पोर्टल","Bihar land service portal"]
 
 ["Full Name *","पूरा नाम *"],["Mobile number *","मोबाइल नंबर *"],["Email (optional)","ईमेल (वैकल्पिक)"],["District","जिला"],["Amin name (if known)","अमीन का नाम (यदि पता हो)"],["Service *","सेवा *"],["Choose a service","सेवा चुनें"],["Land measurement","जमीन की नापी"],["Boundary demarcation","सीमांकन"],["Site sketch map","नज़री नक्शा"],["Other land-related assistance","जमीन से जुड़ी अन्य सहायता"],["State *","राज्य *"],["District *","जिला *"],["Village / Location *","गाँव / स्थान *"],["Preferred date *","पसंदीदा तारीख *"],["Work details","काम की जानकारी"],["Describe the work. Do not enter sensitive documents here.","काम के बारे में बताइए। संवेदनशील दस्तावेज़ यहाँ न डालें।"],["Send booking request","बुकिंग अनुरोध भेजें"],["WhatsApp number","WhatsApp नंबर"],["Business / identity reference","व्यवसाय / पहचान संदर्भ"],["Village / City *","गाँव / शहर *"],["Profile photo","प्रोफ़ाइल फोटो"],["Photo upload will be enabled after secure file storage is added.","सुरक्षित फ़ाइल स्टोरेज जुड़ने के बाद फोटो अपलोड चालू होगा।"],["Experience and services","अनुभव और सेवाएँ"],["Describe your experience and services.","अपने अनुभव और सेवाओं का विवरण लिखें।"],["Submit registration","रजिस्ट्रेशन भेजें"],["Name *","नाम *"],["My Amin Profile ID","My Amin प्रोफ़ाइल ID"],["Contact number","संपर्क नंबर"],["District and state","जिला और राज्य"],["Work / Role","काम / भूमिका"],["Create card","कार्ड बनाएँ"],["Number","संख्या"],["From unit","किस इकाई से"],["To unit","किस इकाई में"],["Report type *","रिपोर्ट का प्रकार *"],["Contact (optional)","संपर्क (वैकल्पिक)"],["Title *","शीर्षक *"],["Where is the problem?","समस्या कहाँ है?"],["Full details *","पूरी जानकारी *"],["What happened, on which page, and what action caused the problem?","क्या हुआ, किस पेज पर हुआ और क्या करने पर समस्या आई?"],["Submit report","रिपोर्ट भेजें"],["Choose today or a future date.","आज या आने वाली तारीख चुनें।"]
@@ -979,7 +974,7 @@ function loadAmins() {
 function renderAmins(records) {
   const box=$("aminResults");
   if(!records.length) {
-    box.innerHTML='<div class="list-item"><strong>अभी कोई अप्रूव्ड अमीन प्रोफ़ाइल नहीं मिली।</strong><p>आप अमीन रजिस्ट्रेशन कर सकते हैं। Owner Dashboard के डेमो में आवेदन अप्रूव करें।</p></div>';
+    box.innerHTML=currentLang==="hi"?'<div class="list-item"><strong>अभी कोई स्वीकृत अमीन प्रोफ़ाइल नहीं मिली।</strong><p>आप अमीन रजिस्ट्रेशन भेज सकते हैं। सार्वजनिक प्रोफ़ाइल अप्रूवल अभी उपलब्ध नहीं है।</p></div>':'<div class="list-item"><strong>No approved Amin profiles found yet.</strong><p>You can submit an Amin registration. Public profile approval is not available yet.</p></div>';
     translateDynamic(box);
     return;
   }
@@ -1132,59 +1127,6 @@ function renderPortals() {
   translateDynamic($("statePortals"));
 }
 $("portalSearch").addEventListener("input",renderPortals);
-
-/* Hidden demo Owner Dashboard */
-function showOwnerData(type) {
-  const box=$("ownerData");
-  if(type==="amins") {
-    const items=read(DB.amins,[]);
-    box.innerHTML="<h3>Amin Registration Requests</h3>"+(items.length?items.map(a=>`
-      <div class="list-item"><strong>${safe(a.name)}</strong><p>${safe(a.phone)}<br>${safe(a.place)}, ${safe(a.district)}, ${safe(a.state)}<br>${safe(a.description||"")}</p>
-      <p>Status: ${a.approved?"Approved":"Pending approval"}</p>
-      ${a.approved?"":`<button class="btn btn-green btn-small" onclick="approveAmin('${safe(a.id)}')">Approve profile</button>`}
-      <button class="btn btn-outline btn-small" onclick="deleteAmin('${safe(a.id)}')">Delete</button></div>
-    `).join(""):"<p>कोई आवेदन नहीं।</p>");
-  } else if(type==="bookings") {
-    const items=read(DB.bookings,[]);
-    box.innerHTML="<h3>Booking Requests</h3>"+(items.length?items.map(b=>`
-      <div class="list-item"><strong>${safe(b.id)} — ${safe(b.service)}</strong><p>ग्राहक: ${safe(b.customer)} (${safe(b.phone)})<br>स्थान: ${safe(b.place)}, ${safe(b.district)}<br>तारीख: ${safe(b.date)}<br>स्थिति: ${safe(b.status)}</p>
-      <button class="btn btn-green btn-small" onclick="setBookingStatus('${safe(b.id)}','Confirmed')">Confirm</button>
-      <button class="btn btn-outline btn-small" onclick="setBookingStatus('${safe(b.id)}','Declined')">Decline</button></div>
-    `).join(""):"<p>कोई बुकिंग नहीं।</p>");
-  } else {
-    const items=read(DB.reports,[]);
-    box.innerHTML="<h3>Reports & Suggestions</h3>"+(items.length?items.map(r=>`
-      <div class="list-item"><strong>${safe(r.type)} — ${safe(r.title)}</strong><p>${safe(r.details)}<br>Contact: ${safe(r.contact||"Not provided")}<br>ID: ${safe(r.id)}</p>
-      <button class="btn btn-outline btn-small" onclick="deleteReport('${safe(r.id)}')">Remove from demo</button></div>
-    `).join(""):"<p>कोई रिपोर्ट नहीं।</p>");
-  }
-}
-function approveAmin(id) {
-  const items=read(DB.amins,[]);
-  const item=items.find(a=>a.id===id);
-  if(item) item.approved=true;
-  save(DB.amins,items);showOwnerData("amins");toast("डेमो प्रोफ़ाइल approved हुई।");
-}
-function deleteAmin(id) {
-  if(!confirm("क्या यह डेमो आवेदन हटाना है?"))return;
-  save(DB.amins,read(DB.amins,[]).filter(a=>a.id!==id));
-  showOwnerData("amins");
-}
-function setBookingStatus(id,status) {
-  const items=read(DB.bookings,[]);
-  const item=items.find(b=>b.id===id);
-  if(item)item.status=status;
-  save(DB.bookings,items);showOwnerData("bookings");
-}
-function deleteReport(id) {
-  if(!confirm("क्या यह डेमो रिपोर्ट हटानी है?"))return;
-  save(DB.reports,read(DB.reports,[]).filter(r=>r.id!==id));
-  showOwnerData("reports");
-}
-function closeOwner() {
-  $("owner").classList.remove("active");
-  $("home").scrollIntoView({behavior:"smooth"});
-}
 
 /* Initial setup */
 updateBookingUser();
