@@ -846,39 +846,23 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
   <!-- CALCULATOR -->
   <section id="calculator" class="panel">
     <h2>📐 Land Unit Calculator | भूमि कैलकुलेटर</h2>
-    <p data-en="Convert land area units. Square Kadi is an approximate traditional reference; local survey standards may differ." data-hi="जमीन के क्षेत्रफल की इकाइयों का रूपांतरण करें। वर्ग कड़ी एक अनुमानित पारंपरिक मान है; स्थानीय सर्वे के मान अलग हो सकते हैं।">जमीन के क्षेत्रफल की इकाइयों का रूपांतरण करें। वर्ग कड़ी एक अनुमानित पारंपरिक मान है; स्थानीय सर्वे के मान अलग हो सकते हैं।</p>
-    <p id="unitKadiNote" style="font-size:13px;color:#64748b;margin-top:-6px" data-en="Reference only: 1 decimal ≈ 1,000 square Kadi, so 1 square Kadi ≈ 0.4356 sq ft. Verify the local chain/measurement before using it for official land work." data-hi="केवल संदर्भ हेतु: 1 डिसमिल ≈ 1,000 वर्ग कड़ी, इसलिए 1 वर्ग कड़ी ≈ 0.4356 वर्ग फुट। सरकारी नापी या रजिस्ट्री से पहले स्थानीय जरीब/माप की पुष्टि करें।">केवल संदर्भ हेतु: 1 डिसमिल ≈ 1,000 वर्ग कड़ी, इसलिए 1 वर्ग कड़ी ≈ 0.4356 वर्ग फुट। सरकारी नापी या रजिस्ट्री से पहले स्थानीय जरीब/माप की पुष्टि करें।</p>
+    <p data-en="Convert international, metric and traditional land measurement units. Choose area or length." data-hi="अंतरराष्ट्रीय, मीट्रिक और पारंपरिक भूमि माप इकाइयों में बदलें। क्षेत्रफल या लंबाई चुनें।">अंतरराष्ट्रीय, मीट्रिक और पारंपरिक भूमि माप इकाइयों में बदलें। क्षेत्रफल या लंबाई चुनें।</p>
     <div class="form-grid">
+      <div class="field"><label for="unitMode" data-en="Measurement type" data-hi="माप का प्रकार">Measurement type</label>
+        <select id="unitMode">
+          <option value="area" data-en="Area (square units)" data-hi="क्षेत्रफल (वर्ग इकाइयाँ)">Area (square units)</option>
+          <option value="length" data-en="Length (linear units)" data-hi="लंबाई (रेखीय इकाइयाँ)">Length (linear units)</option>
+        </select>
+      </div>
       <div class="field"><label for="unitValue" data-en="Number" data-hi="संख्या">Number</label><input id="unitValue" type="number" min="0" step="any" value="1" aria-label="Number"></div>
-      <div class="field"><label for="unitFrom" data-en="From unit" data-hi="किस इकाई से">From unit</label><select id="unitFrom">
-        <option value="1" data-en="Square feet (sq ft)" data-hi="वर्ग फुट (sq ft)">Square feet (sq ft)</option>
-        <option value="9" data-en="Square yards (sq yd)" data-hi="वर्ग गज (sq yd)">Square yards (sq yd)</option>
-        <option value="10.7639104" data-en="Square meters (m²)" data-hi="वर्ग मीटर (m²)">Square meters (m²)</option>
-        <option value="435.6" data-en="Dismil" data-hi="डिसमिल">Dismil</option>
-        <option value="43560" data-en="Acre" data-hi="एकड़">Acre</option>
-        <option value="107639.104" data-en="Hectare" data-hi="हेक्टेयर">Hectare</option>
-        <option value="1361.25" data-en="Kattha (local reference)" data-hi="कट्ठा (स्थानीय मान)">Kattha (local reference)</option>
-        <option value="68.0625" data-en="Dhur (local reference)" data-hi="धुर (स्थानीय मान)">Dhur (local reference)</option>
-        <option value="27225" data-en="Bigha (local reference)" data-hi="बीघा (स्थानीय मान)">Bigha (local reference)</option>
-        <option value="0.4356" data-en="Square Kadi (approx.)" data-hi="वर्ग कड़ी (अनुमानित)">वर्ग कड़ी (अनुमानित)</option>
-      </select></div>
-      <div class="field"><label for="unitTo" data-en="To unit" data-hi="किस इकाई में">To unit</label><select id="unitTo">
-        <option value="1" data-en="Square feet (sq ft)" data-hi="वर्ग फुट (sq ft)">Square feet (sq ft)</option>
-        <option value="9" data-en="Square yards (sq yd)" data-hi="वर्ग गज (sq yd)">Square yards (sq yd)</option>
-        <option value="10.7639104" data-en="Square meters (m²)" data-hi="वर्ग मीटर (m²)">Square meters (m²)</option>
-        <option value="435.6" data-en="Dismil" data-hi="डिसमिल">Dismil</option>
-        <option value="43560" data-en="Acre" data-hi="एकड़">Acre</option>
-        <option value="107639.104" data-en="Hectare" data-hi="हेक्टेयर">Hectare</option>
-        <option value="1361.25" data-en="Kattha (local reference)" data-hi="कट्ठा (स्थानीय मान)">Kattha (local reference)</option>
-        <option value="68.0625" data-en="Dhur (local reference)" data-hi="धुर (स्थानीय मान)">Dhur (local reference)</option>
-        <option value="27225" data-en="Bigha (local reference)" data-hi="बीघा (स्थानीय मान)">Bigha (local reference)</option>
-        <option value="0.4356" data-en="Square Kadi (approx.)" data-hi="वर्ग कड़ी (अनुमानित)">वर्ग कड़ी (अनुमानित)</option>
-      </select></div>
+      <div class="field"><label for="unitFrom" data-en="From unit" data-hi="किस इकाई से">From unit</label><select id="unitFrom"></select></div>
+      <div class="field"><label for="unitTo" data-en="To unit" data-hi="किस इकाई में">To unit</label><select id="unitTo"></select></div>
     </div>
+    <p id="unitKadiNote" style="font-size:13px;color:#64748b;margin-top:10px" data-en="Kadi length reference: 1 Kadi (link) = 0.66 ft = 7.92 in; 100 Kadi = 1 standard 66-ft survey chain (Jarib). Local chains and older records may differ—verify the applicable survey standard." data-hi="कड़ी लंबाई का संदर्भ: 1 कड़ी (लिंक) = 0.66 फुट = 7.92 इंच; 100 कड़ी = 1 मानक 66-फुट की सर्वे जरीब। स्थानीय जरीब और पुराने अभिलेखों में अंतर हो सकता है—लागू सर्वे मानक की पुष्टि करें।">कड़ी लंबाई का संदर्भ: 1 कड़ी (लिंक) = 0.66 फुट = 7.92 इंच; 100 कड़ी = 1 मानक 66-फुट की सर्वे जरीब। स्थानीय जरीब और पुराने अभिलेखों में अंतर हो सकता है—लागू सर्वे मानक की पुष्टि करें।</p>
     <div class="card" style="margin-top:16px;background:#f0f8f1">
       <p data-en="Result" data-hi="परिणाम">Result</p><h2 id="unitResult" style="margin:0">1</h2>
     </div>
-    <div class="notice" data-en="Note: local units such as Bigha, Kattha and Dhur can vary by area. The values shown are common reference values, not a legal measurement. Confirm the applicable local standard with the revenue department." data-hi="ध्यान दें: बीघा, कट्ठा और धुर जैसी स्थानीय इकाइयों के मान क्षेत्र के अनुसार बदल सकते हैं। ऊपर दिए मान सामान्य संदर्भ के लिए हैं, कानूनी माप नहीं। अपने क्षेत्र का सही मान राजस्व विभाग से पुष्टि करें।">ध्यान दें: बीघा, कट्ठा और धुर जैसी स्थानीय इकाइयों के मान क्षेत्र के अनुसार बदल सकते हैं। ऊपर दिए मान सामान्य संदर्भ के लिए हैं, कानूनी माप नहीं। अपने क्षेत्र का सही मान राजस्व विभाग से पुष्टि करें।</div>
+    <div class="notice" data-en="Traditional units such as Kattha, Dhur, Bigha, Hath and Lattha can vary by district and survey tradition. Their displayed values are reference conversions only, not legal measurements. Confirm local values before a sale, deed or official survey." data-hi="कट्ठा, धुर, बीघा, हाथ और लट्ठा जैसी पारंपरिक इकाइयाँ जिले और सर्वे परंपरा के अनुसार बदल सकती हैं। यहाँ दिए मान केवल संदर्भ रूपांतरण हैं, कानूनी माप नहीं। खरीद-बिक्री, रजिस्ट्री या सरकारी नापी से पहले स्थानीय मान की पुष्टि करें।">कट्ठा, धुर, बीघा, हाथ और लट्ठा जैसी पारंपरिक इकाइयाँ जिले और सर्वे परंपरा के अनुसार बदल सकती हैं। यहाँ दिए मान केवल संदर्भ रूपांतरण हैं, कानूनी माप नहीं। खरीद-बिक्री, रजिस्ट्री या सरकारी नापी से पहले स्थानीय मान की पुष्टि करें।</div>
   </section>
 
   <!-- PORTALS -->
@@ -1392,27 +1376,13 @@ function translateDynamic(root){
   });
 }
 function syncCalculatorLanguage(lang){
-  const labels = {
-    en:{unitValue:"Number",unitFrom:"From unit",unitTo:"To unit"},
-    hi:{unitValue:"संख्या",unitFrom:"किस इकाई से",unitTo:"किस इकाई में"}
-  };
+  const labels={en:{unitMode:"Measurement type",unitValue:"Number",unitFrom:"From unit",unitTo:"To unit"},hi:{unitMode:"माप का प्रकार",unitValue:"संख्या",unitFrom:"किस इकाई से",unitTo:"किस इकाई में"}};
   Object.entries(labels[lang]).forEach(([id,label])=>{
-    const el=$(id);
-    const field=el?.closest(".field");
-    const labelEl=field?.querySelector('label[for="'+id+'"]');
-    if(labelEl) labelEl.textContent=label;
-    if(id==="unitValue" && el) el.setAttribute("aria-label",label);
+    const el=$(id), field=el?.closest(".field"), labelEl=field?.querySelector('label[for="'+id+'"]');
+    if(labelEl)labelEl.textContent=label;
+    if(el&&id==="unitValue")el.setAttribute("aria-label",label);
   });
-  ["unitFrom","unitTo"].forEach(id=>{
-    const select=$(id);
-    if(!select)return;
-    Array.from(select.options).forEach(option=>{
-      const translated=option.getAttribute("data-"+lang);
-      if(translated!==null) option.textContent=translated;
-    });
-  });
-  const note=$("unitKadiNote");
-  if(note) note.textContent=note.getAttribute("data-"+lang)||note.textContent;
+  if($("unitMode"))renderLandUnits();
 }
 function applyLanguage(lang){
   currentLang=lang;
@@ -1724,21 +1694,88 @@ $("idForm").addEventListener("submit",e=>{
 });
 
 /* Calculator */
+const LAND_UNITS = {
+  area: [
+    ["sqmm","Square millimeter (mm²)","वर्ग मिलीमीटर (mm²)",1/92903.04],
+    ["sqcm","Square centimeter (cm²)","वर्ग सेंटीमीटर (cm²)",1/929.0304],
+    ["sqin","Square inch (in²)","वर्ग इंच (in²)",1/144],
+    ["sqft","Square foot (ft²)","वर्ग फुट (ft²)",1],
+    ["sqyd","Square yard / Gaj (yd²)","वर्ग गज (yd²)",9],
+    ["sqm","Square meter (m²)","वर्ग मीटर (m²)",10.7639104167],
+    ["sqkm","Square kilometer (km²)","वर्ग किलोमीटर (km²)",10763910.4167],
+    ["acre","Acre","एकड़",43560],
+    ["hectare","Hectare","हेक्टेयर",107639.104167],
+    ["are","Are","आर",1076.39104167],
+    ["dismil","Decimal / Dismil","डिसमिल",435.6],
+    ["sqmi","Square mile (mi²)","वर्ग मील (mi²)",27878400],
+    ["sqchain","Square chain","वर्ग चेन",4356],
+    ["sqkadi","Square Kadi (standard link²)","वर्ग कड़ी (मानक लिंक²)",0.4356],
+    ["kattha","Kattha (Bihar reference)","कट्ठा (बिहार संदर्भ)",1361.25],
+    ["dhur","Dhur (Bihar reference)","धुर (बिहार संदर्भ)",68.0625],
+    ["bigha","Bigha (Bihar reference)","बीघा (बिहार संदर्भ)",27225],
+    ["biswansi","Biswansi (regional; not standardized)","बिस्वांसी (क्षेत्रीय; मानकीकृत नहीं)",null]
+  ],
+  length: [
+    ["mm","Millimeter (mm)","मिलीमीटर (mm)",1/304.8],
+    ["cm","Centimeter (cm)","सेंटीमीटर (cm)",1/30.48],
+    ["m","Meter (m)","मीटर (m)",1/0.3048],
+    ["km","Kilometer (km)","किलोमीटर (km)",3280.839895],
+    ["inch","Inch (in)","इंच (in)",1/12],
+    ["ft","Foot (ft)","फुट (ft)",1],
+    ["yd","Yard (yd) / Gaj","गज (yd)",3],
+    ["mi","Mile (mi)","मील (mi)",5280],
+    ["kadi","Kadi / Link (standard survey link)","कड़ी / लिंक (मानक सर्वे लिंक)",0.66],
+    ["chain","Chain / Jarib (66 ft)","चेन / जरीब (66 फुट)",66],
+    ["furlong","Furlong","फर्लांग",660],
+    ["rod","Rod / Pole / Perch","रॉड / पोल / पर्च",16.5],
+    ["hath","Hath (reference)","हाथ (संदर्भ)",1.5],
+    ["bitta","Bitta / Span (reference)","बित्ता (संदर्भ)",0.75],
+    ["mutthi","Mutthi (reference)","मुट्ठी (संदर्भ)",0.5],
+    ["karam","Karam (regional reference)","करम (क्षेत्रीय संदर्भ)",5.5],
+    ["lattha","Lattha / Gattha (regional reference)","लट्ठा / गट्ठा (क्षेत्रीय संदर्भ)",8.25]
+  ]
+};
+function renderLandUnits(){
+  const mode=$("unitMode")?.value||"area";
+  const units=LAND_UNITS[mode];
+  ["unitFrom","unitTo"].forEach(id=>{
+    const select=$(id), previous=select.value;
+    select.innerHTML="";
+    units.forEach(u=>{
+      if(u[3]===null)return;
+      const option=document.createElement("option");
+      option.value=String(u[3]);
+      option.dataset.unitKey=u[0];
+      option.dataset.en=u[1];
+      option.dataset.hi=u[2];
+      option.textContent=currentLang==="hi"?u[2]:u[1];
+      select.appendChild(option);
+    });
+    if(Array.from(select.options).some(o=>o.dataset.unitKey===previous)) select.value=previous;
+  });
+  const note=$("unitKadiNote");
+  if(note){
+    const areaNote={en:"Square Kadi is calculated from the standard link: 1 Kadi = 0.66 ft, so 1 square Kadi = 0.4356 sq ft. Traditional/local chain standards may differ.",hi:"वर्ग कड़ी की गणना मानक लिंक से है: 1 कड़ी = 0.66 फुट, इसलिए 1 वर्ग कड़ी = 0.4356 वर्ग फुट। पारंपरिक/स्थानीय जरीब के मान अलग हो सकते हैं।"};
+    const lengthNote={en:"Kadi length reference: 1 Kadi (link) = 0.66 ft = 7.92 in; 100 Kadi = 1 standard 66-ft survey chain (Jarib). Local chains and older records may differ—verify the applicable survey standard.",hi:"कड़ी लंबाई का संदर्भ: 1 कड़ी (लिंक) = 0.66 फुट = 7.92 इंच; 100 कड़ी = 1 मानक 66-फुट की सर्वे जरीब। स्थानीय जरीब और पुराने अभिलेखों में अंतर हो सकता है—लागू सर्वे मानक की पुष्टि करें।"};
+    note.textContent=(mode==="length"?lengthNote:areaNote)[currentLang];
+  }
+  calculate();
+}
 function calculate() {
-  const raw=$("unitValue").value;
-  const value=Number(raw);
-  const from=Number($("unitFrom").value);
-  const to=Number($("unitTo").value);
-  const result=(value*from/to);
-  const selectedUnit=$("unitTo").selectedOptions[0];
-  const unit=selectedUnit?.getAttribute("data-"+currentLang)||selectedUnit?.textContent||"";
+  const raw=$("unitValue").value, value=Number(raw);
+  const from=Number($("unitFrom").value), to=Number($("unitTo").value);
+  const result=value*from/to;
+  const selected=$("unitTo").selectedOptions[0];
+  const unit=selected?.getAttribute("data-"+currentLang)||selected?.textContent||"";
   if(raw.trim()===""||!Number.isFinite(result)){
     $("unitResult").textContent=currentLang==="hi"?"कृपया सही संख्या भरें।":"Please enter a valid number.";
     return;
   }
-  $("unitResult").textContent=result.toLocaleString(currentLang==="hi"?"hi-IN":"en-IN",{maximumFractionDigits:5})+" "+unit;
+  $("unitResult").textContent=result.toLocaleString(currentLang==="hi"?"hi-IN":"en-IN",{maximumFractionDigits:6})+" "+unit;
 }
 ["unitValue","unitFrom","unitTo"].forEach(id=>{ $(id).addEventListener("input",calculate); $(id).addEventListener("change",calculate); });
+$("unitMode").addEventListener("change",renderLandUnits);
+renderLandUnits();
 
 /* Reports */
 $("reportForm").addEventListener("submit",e=>{
