@@ -2297,5 +2297,79 @@ footer{background:linear-gradient(115deg,#1e3b2f,#294b3b)}
 @media(prefers-reduced-motion:reduce){#idmaker *{scroll-behavior:auto!important}}
 </style>
 
+
+<style>
+/* Quick service tiles: vibrant premium finish */
+#quickServices{
+ position:relative;
+ padding:28px 24px 30px!important;
+ border-radius:26px;
+ background:linear-gradient(135deg,rgba(255,255,255,.78),rgba(239,250,246,.94) 48%,rgba(242,244,255,.92))!important;
+ border:1px solid rgba(125,176,255,.25);
+ box-shadow:0 14px 36px rgba(30,59,47,.07);
+ overflow:hidden;
+}
+#quickServices:before{
+ content:"";position:absolute;inset:-45% -20%;pointer-events:none;
+ background:linear-gradient(110deg,transparent 38%,rgba(0,247,255,.10) 48%,rgba(255,0,135,.07) 53%,transparent 63%);
+ transform:translateX(-45%);animation:quickSectionShine 12s ease-in-out infinite;
+}
+#quickServices .section-head,#quickServices .quick-grid{position:relative;z-index:1}
+#quickServices .section-head h2{
+ background:linear-gradient(90deg,#15370D,#007DA8,#7C0E44);
+ -webkit-background-clip:text;background-clip:text;color:transparent!important;
+}
+#quickServices .section-head p{color:#637d78!important}
+#quickServices .quick-grid{gap:14px}
+#quickServices .quick{
+ position:relative;isolation:isolate;overflow:hidden;
+ min-height:112px!important;padding:14px 10px!important;
+ border:1px solid transparent!important;border-radius:20px!important;
+ background:linear-gradient(145deg,#fff 0%,#f0fffc 52%,#f3f5ff 100%) padding-box,
+ linear-gradient(125deg,#00F7FF,#7DB0FF,#FF0087,#B0FFFA,#00F7FF) border-box!important;
+ background-size:auto,260% 260%!important;
+ color:#07516A!important;
+ box-shadow:0 7px 18px rgba(21,55,13,.08),inset 0 1px 0 #fff!important;
+ animation:quickTileBorder 9s ease-in-out infinite,quickTileFloat 5s ease-in-out infinite!important;
+ transition:transform .25s ease,box-shadow .25s ease!important;
+}
+#quickServices .quick:nth-child(2n){animation-delay:-2.2s,-1.5s!important}
+#quickServices .quick:nth-child(3n){animation-delay:-4.4s,-3s!important}
+#quickServices .quick span:first-child{
+ display:block!important;min-height:42px!important;margin:0 auto 8px!important;
+ font-size:31px!important;line-height:1.25!important;
+ transform:translateY(0);filter:drop-shadow(0 4px 3px rgba(12,65,80,.2));
+ transition:transform .28s ease,filter .28s ease!important;
+}
+#quickServices .quick span:last-child{
+ color:#0879b8!important;font-weight:850!important;
+ text-shadow:0 1px 0 #fff;font-size:13px!important;line-height:1.4!important;
+}
+#quickServices .quick:after{
+ content:"";position:absolute;z-index:-1;inset:0;pointer-events:none;
+ background:linear-gradient(115deg,transparent 25%,rgba(255,255,255,.62) 48%,transparent 68%);
+ transform:translateX(-130%);transition:transform .65s ease;
+}
+#quickServices .quick:hover{
+ transform:translateY(-6px) scale(1.025)!important;
+ box-shadow:0 16px 30px rgba(0,125,168,.17),0 0 0 3px rgba(0,247,255,.12)!important;
+}
+#quickServices .quick:hover:after{transform:translateX(130%)}
+#quickServices .quick:hover span:first-child{
+ transform:translateY(-4px) rotate(-5deg) scale(1.12);
+ filter:drop-shadow(0 7px 5px rgba(0,90,156,.25));
+}
+#quickServices .quick:focus-visible{outline:3px solid #FF0087!important;outline-offset:3px}
+@keyframes quickTileBorder{0%,100%{background-position:0 0,0% 50%}50%{background-position:0 0,100% 50%}}
+@keyframes quickTileFloat{0%,100%{box-shadow:0 7px 18px rgba(21,55,13,.08),inset 0 1px 0 #fff}50%{box-shadow:0 10px 23px rgba(0,125,168,.13),inset 0 1px 0 #fff}}
+@keyframes quickSectionShine{0%,70%,100%{transform:translateX(-45%)}85%{transform:translateX(45%)}}
+@media(max-width:600px){#quickServices{padding:20px 14px 24px!important}#quickServices .quick{min-height:102px!important}}
+@media(prefers-reduced-motion:reduce){
+ #quickServices:before{animation:none!important}
+ #quickServices .quick{animation:none!important;transition:none!important}
+ #quickServices .quick:after{display:none!important}
+}
+</style>
+
 </body>
 </html>
