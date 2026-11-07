@@ -1394,6 +1394,11 @@ function getAllSearchItems(){
    const link=card.querySelector("a")?.getAttribute("href")||"";
    items.push({label:title,hiLabel:title,hint:desc,hiHint:desc,terms:[title,desc,link,"government portal","सरकारी पोर्टल"],route:"portals",icon:"🏛️",portalQuery:title,url:link});
  });
+ // Add approved Amin profiles to live local search. Only public profile fields are indexed.
+ read(DB.amins,[]).filter(a=>a&&a.approved&&a.workAllowed!==false).forEach(a=>{
+   const name=String(a.name||"Amin"),uid=String(a.profileId||a.id||"");
+   items.push({label:name+" · "+uid,hiLabel:name+" · "+uid,hint:[a.place,a.district,a.state].filter(Boolean).join(", ")+" · Approved Amin profile",hiHint:[a.place,a.district,a.state].filter(Boolean).join(", ")+" · स्वीकृत अमीन प्रोफ़ाइल",terms:[name,uid,a.phone,a.place,a.district,a.state,a.description,"amin profile","अमीन प्रोफ़ाइल"],route:"find",icon:"👷",aminProfile:uid});
+ });
  // Add all state and UT portal entries; users can search by state or portal name.
  if(Array.isArray(portals)) portals.forEach(p=>items.push({label:p[1]+" — "+p[0],hiLabel:p[1]+" — "+p[0],hint:"Official land-record portal / directory",hiHint:"सरकारी भूमि रिकॉर्ड पोर्टल / निर्देशिका",terms:[p[0],p[1],"land records","bhulekh","भूमि रिकॉर्ड"],route:"portals",icon:"🌐",portalQuery:p[0]}));
  return items;
@@ -1408,7 +1413,9 @@ function renderSmartSearch(){
  box.innerHTML=list.slice(0,18).map((x,i)=>'<button type="button" class="search-result" data-smart-index="'+i+'"><span class="search-result-icon">'+x.icon+'</span><span class="search-result-copy"><strong>'+(hi?x.hiLabel:x.label)+'</strong><small>'+(hi?x.hiHint:x.hint)+'</small></span><span class="search-result-arrow">›</span></button>').join("")||'<p class="search-empty">'+(hi?'कोई सुझाव नहीं मिला। दूसरा शब्द लिखें।':'No results found. Try another search.')+'</p>';
  box.querySelectorAll("[data-smart-index]").forEach(b=>b.addEventListener("click",()=>{
    const item=list[Number(b.dataset.smartIndex)];
-   closeSearch();if(item.url){window.open(item.url,"_blank","noopener");return;}go(item.route);
+   closeSearch();if(item.url){window.open(item.url,"_blank","noopener");return;}
+   go(item.route);
+   if(item.aminProfile){$("aminSearch").value=item.aminProfile;$("aminState").value="";searchAmins();return;}
    if(item.portalQuery&&$("portalSearch")){$("portalSearch").value=item.portalQuery;renderPortals();}
  }));
 }
@@ -2609,6 +2616,59 @@ footer .logo-image{filter:drop-shadow(0 4px 9px rgba(0,0,0,.18))}
  #services:before,#adminHighlights:before,#services .card:before,#adminContentFeed .card:before{animation:none!important}
  #services .card,#adminContentFeed .card,footer a{transition:none!important}
  #services .card:hover,#adminContentFeed .card:hover{transform:none!important}
+}
+</style>
+
+
+<style>
+/* Search My Amin — classic premium animated interface */
+#searchDialog .dialog-box{
+ background:linear-gradient(145deg,#fffdf7 0%,#f2f7ef 52%,#edf7f8 100%);
+ border:1px solid #d5e5d7;box-shadow:0 28px 90px rgba(22,54,42,.28);
+}
+#searchDialog .dialog-head h3{color:#1e3b2f;font-weight:850;letter-spacing:-.7px}
+#searchDialog .search-kicker{color:#71951e;font-weight:850}
+#searchDialog .search-description{color:#65766b}
+#searchDialog .search-input-wrap{
+ background:linear-gradient(120deg,#fffdf7,#f1f8f5);
+ border:1.5px solid #9dbb9e;border-radius:18px;
+ box-shadow:inset 0 1px 0 #fff,0 5px 18px rgba(30,59,47,.06);
+ transition:all .25s ease;
+}
+#searchDialog .search-input-wrap:focus-within{
+ border-color:#71951e;box-shadow:0 0 0 4px rgba(113,149,30,.13),0 9px 25px rgba(30,59,47,.1);
+ transform:translateY(-1px);
+}
+#searchDialog #siteSearch{color:#1e3b2f!important;font-weight:600!important}
+#searchDialog #siteSearch::placeholder{color:#87948a}
+#searchDialog .search-section-label{color:#8b7548;font-weight:850;letter-spacing:1.7px}
+#searchDialog .search-result{
+ background:linear-gradient(135deg,#fff 0%,#f6faf5 100%);
+ border:1px solid #dce8dc;border-radius:16px;
+ box-shadow:0 4px 13px rgba(30,59,47,.045);
+ transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease;
+}
+#searchDialog .search-result:hover,#searchDialog .search-result:focus-visible{
+ background:linear-gradient(135deg,#eef6e9,#e8f6f5);
+ border-color:#9dbb83;transform:translateY(-3px);
+ box-shadow:0 10px 22px rgba(30,59,47,.11);
+}
+#searchDialog .search-result-icon{
+ background:linear-gradient(145deg,#e8efdc,#dff1ed);
+ color:#1e3b2f;box-shadow:inset 0 1px 0 #fff;
+}
+#searchDialog .search-result-copy strong{color:#1e3b2f;font-weight:800}
+#searchDialog .search-result-copy small{color:#718078}
+#searchDialog .search-result-arrow{color:#71951e;font-weight:800}
+#searchDialog .search-submit{
+ background:linear-gradient(120deg,#71951e,#1e3b2f)!important;
+ box-shadow:0 8px 18px rgba(30,59,47,.17);
+}
+#searchDialog .search-submit:hover{transform:translateY(-2px);filter:brightness(1.08)}
+@keyframes searchPanelEnter{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+#searchDialog.show .dialog-box{animation:searchPanelEnter .28s cubic-bezier(.2,.8,.2,1) both}
+@media(prefers-reduced-motion:reduce){
+ #searchDialog .dialog-box,#searchDialog .search-result,#searchDialog .search-input-wrap{animation:none!important;transition:none!important;transform:none!important}
 }
 </style>
 
