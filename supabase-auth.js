@@ -304,7 +304,7 @@ const addGoogleLoginButtons = () => {
         if (admin) sessionStorage.setItem("myamin_admin_google_pending", "1");
         const { error } = await supabase.auth.signInWithOAuth({
           provider: "google",
-          options: { redirectTo: window.location.href, queryParams: { prompt: "select_account" } }
+          options: { redirectTo: "https://naitiksingh7512-csk.github.io/MyAmin.com-/", queryParams: { prompt: "select_account" } }
         });
         if (error) throw error;
       } catch (e) {
@@ -337,6 +337,19 @@ const addGoogleLoginButtons = () => {
   }
 };
 
+const syncAdminAccessUI = async (session) => {
+  const quickLink = $("quickAdminLogin");
+  const panel = $("adminVerifiedPanel");
+  let isActiveAdmin = false;
+  if (session?.user?.app_metadata?.role === "admin") {
+    const { data: membership, error } = await supabase.from("admin_team_members")
+      .select("role,status").eq("user_id", session.user.id).maybeSingle();
+    isActiveAdmin = !error && membership?.role === "admin" && membership?.status === "active";
+  }
+  if (quickLink) quickLink.hidden = isActiveAdmin;
+  if (panel) panel.hidden = !isActiveAdmin;
+  if (isActiveAdmin) renderPasskeyControls(session);
+};
 const handleBooking = async (event) => {
   event.preventDefault();
   event.stopImmediatePropagation();
@@ -383,12 +396,14 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 const { data: initial } = await supabase.auth.getSession();
 await showAuthState(initial.session);
+await syncAdminAccessUI(initial.session);
 if (sessionStorage.getItem("myamin_admin_google_pending") === "1" && initial.session) {
   await verifyAdminOAuthSession(initial.session);
 }
 supabase.auth.onAuthStateChange((_event, session) => {
   queueMicrotask(async () => {
     await showAuthState(session);
+    await syncAdminAccessUI(session);
     if (sessionStorage.getItem("myamin_admin_google_pending") === "1" && session) {
       await verifyAdminOAuthSession(session);
     }
