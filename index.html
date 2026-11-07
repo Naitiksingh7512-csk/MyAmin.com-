@@ -754,6 +754,31 @@ header{background:rgba(255,255,255,.96);box-shadow:0 7px 25px rgba(18,59,50,.07)
 }
 </style>
 
+
+<style id="myamin-header-panel-polish">
+/* Soft color panel behind the header actions; logo is intentionally untouched */
+.navactions{
+  position:relative;
+  padding:7px;
+  gap:9px;
+  border-radius:19px;
+  border:1px solid rgba(123,160,135,.42);
+  background:linear-gradient(125deg,rgba(224,241,228,.98),rgba(245,239,215,.98) 52%,rgba(222,239,239,.98));
+  box-shadow:0 7px 20px rgba(34,83,64,.11),inset 0 1px 0 rgba(255,255,255,.9);
+}
+.navactions:before{
+  content:"";position:absolute;inset:3px;border-radius:15px;
+  background:linear-gradient(110deg,rgba(255,255,255,.35),transparent 48%,rgba(255,255,255,.22));
+  pointer-events:none;
+}
+.navactions>*{position:relative;z-index:1}
+@media(max-width:600px){
+ .navactions{padding:5px;gap:5px;border-radius:15px}
+ .navactions:before{inset:2px;border-radius:12px}
+}
+@media(prefers-reduced-motion:reduce){.navactions{scroll-behavior:auto}}
+</style>
+
 </head>
 
 <body>
