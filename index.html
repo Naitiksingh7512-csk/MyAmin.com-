@@ -1456,9 +1456,14 @@ $("loginForm").addEventListener("submit",e=>{
   toast(currentLang==="hi"?"लॉगिन विवरण इसी डिवाइस में सेव हुए।":"Login details saved on this device.");
 });
 function logout() {
+  // Clear every locally stored signed-in profile on this device.
   localStorage.removeItem(DB.user);
+  localStorage.removeItem(DB.aminProfile);
   updateBookingUser();
-  toast(currentLang==="hi"?"इस डिवाइस से लॉगआउट हो गया।":"You have been logged out on this device.");
+  if(typeof refreshAminMenuProfile==="function") refreshAminMenuProfile();
+  const message=$("loginMessage");
+  if(message){message.textContent="";message.style.display="none";}
+  toast(currentLang==="hi"?"आपका अकाउंट इस डिवाइस से लॉगआउट हो गया।":"Your account has been logged out on this device.");
 }
 function updateBookingUser() {
   const user=read(DB.user,null);
