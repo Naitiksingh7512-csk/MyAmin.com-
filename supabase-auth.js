@@ -55,6 +55,23 @@ const showAuthState = async (session) => {
       .select("profile_uid,display_name,phone,state,district,place,approval_status,photo_path,upi_id,upi_qr_path")
       .eq("user_id", session.user.id).maybeSingle();
     if (a) {
+      if ($("idName")) {
+        $("idName").value = a.display_name || "";
+        $("idNumber").value = a.profile_uid || "";
+        $("idPhone").value = a.phone || "";
+        $("idDistrict").value = (a.district || "") + ", " + (a.state || "");
+        $("idUpiId").value = a.upi_id || "";
+      }
+      if ($("cardPhoto") && a.photo_path) {
+        $("cardPhoto").src = a.photo_path;
+        $("cardPhoto").style.display = "block";
+        $("cardPhotoPlaceholder").style.display = "none";
+      }
+      if ($("cardUpiQr") && a.upi_qr_path) {
+        $("cardUpiQr").src = a.upi_qr_path;
+        $("cardUpiQr").hidden = false;
+        $("cardUpiQrPlaceholder").hidden = true;
+      }
       const local = {
         id: a.profile_uid, profileId: a.profile_uid, name: a.display_name,
         phone: a.phone, state: a.state, district: a.district, place: a.place,
@@ -151,11 +168,18 @@ const handleAminSignup = async (event) => {
   const submit = $("aminForm").querySelector('button[type="submit"]');
   submit.disabled = true;
   try {
-    const { data, error } = await supabase.auth.signUp({
-      email, password,
-      options: { data: { full_name: name, phone, account_type: "amin" } }
-    });
-    if (error) throw error;
+    let data;
+    const existing = await supabase.auth.getUser();
+    if (existing.data?.user && existing.data.user.email?.toLowerCase() === email.toLowerCase()) {
+      data = { user: existing.data.user, session: (await supabase.auth.getSession()).data.session };
+    } else {
+      const result = await supabase.auth.signUp({
+        email, password,
+        options: { data: { full_name: name, phone, account_type: "amin" } }
+      });
+      if (result.error) throw result.error;
+      data = result.data;
+    }
     if (!data.session || !data.user) {
       say("aminRegMessage", "अकाउंट बन गया। ईमेल verification पूरा करें, फिर Customer Login सेक्शन में उसी ईमेल/पासवर्ड से लॉगिन करें। उसके बाद Amin Registration दोबारा भरकर प्रोफ़ाइल सबमिट करें।");
       return;
