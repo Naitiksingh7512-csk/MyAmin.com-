@@ -2741,5 +2741,46 @@ footer .logo-image{filter:drop-shadow(0 4px 9px rgba(0,0,0,.18))}
 @media(prefers-reduced-motion:reduce){#searchDialog *,#searchDialog:before{animation:none!important;transition:none!important}}
 </style>
 
+
+<style id="quick-links-colour-refresh">
+/* Rich, coordinated colour treatment for every Search My Amin quick-link tile */
+#searchDialog .search-suggestions{gap:10px}
+#searchDialog .search-result{
+ position:relative;isolation:isolate;overflow:hidden;
+ border:1px solid rgba(255,255,255,.88);
+ box-shadow:0 5px 15px rgba(31,65,50,.09),inset 0 1px 0 rgba(255,255,255,.8);
+ background:linear-gradient(125deg,#eaf5ed 0%,#dff0e9 52%,#edf4e8 100%);
+}
+#searchDialog .search-result:before{
+ content:"";position:absolute;inset:0;z-index:-1;opacity:.78;
+ background:linear-gradient(112deg,transparent 8%,rgba(255,255,255,.52) 48%,transparent 78%);
+ background-size:220% 100%;background-position:130% 0;
+ transition:background-position .65s ease;
+}
+#searchDialog .search-result:hover:before{background-position:-130% 0}
+#searchDialog .search-result:nth-child(5n+1){background:linear-gradient(125deg,#e2f1e6,#d5ebe3 55%,#e7f0dc)}
+#searchDialog .search-result:nth-child(5n+2){background:linear-gradient(125deg,#e6edf9,#dce9f5 55%,#e7f2ed)}
+#searchDialog .search-result:nth-child(5n+3){background:linear-gradient(125deg,#f8efdc,#f3e7cf 55%,#e8f0df)}
+#searchDialog .search-result:nth-child(5n+4){background:linear-gradient(125deg,#e8eafa,#e5e3f5 55%,#eaf1ed)}
+#searchDialog .search-result:nth-child(5n){background:linear-gradient(125deg,#f7e9e1,#f4e5dc 55%,#e9f0e7)}
+#searchDialog .search-result:hover,#searchDialog .search-result:focus-visible{
+ border-color:#9ab99f;transform:translateY(-3px) scale(1.008);
+ box-shadow:0 12px 24px rgba(31,65,50,.15),inset 0 1px 0 #fff;
+}
+#searchDialog .search-result-icon{
+ width:39px;height:39px;flex-basis:39px;border:1px solid rgba(255,255,255,.85);
+ background:linear-gradient(145deg,rgba(255,255,255,.92),rgba(222,238,226,.9));
+ box-shadow:0 3px 9px rgba(32,72,53,.09),inset 0 1px 0 #fff;
+}
+#searchDialog .search-result:nth-child(5n+2) .search-result-icon{background:linear-gradient(145deg,#fff,#dceafa)}
+#searchDialog .search-result:nth-child(5n+3) .search-result-icon{background:linear-gradient(145deg,#fff,#f5e8c9)}
+#searchDialog .search-result:nth-child(5n+4) .search-result-icon{background:linear-gradient(145deg,#fff,#e5e1f6)}
+#searchDialog .search-result:nth-child(5n) .search-result-icon{background:linear-gradient(145deg,#fff,#f3dfd5)}
+#searchDialog .search-result-copy strong{color:#193c30;font-size:13.5px;font-weight:800;letter-spacing:-.12px}
+#searchDialog .search-result-copy small{color:#536e61;font-weight:600}
+#searchDialog .search-result-arrow{color:#477b62;text-shadow:0 1px 0 rgba(255,255,255,.8)}
+@media(prefers-reduced-motion:reduce){#searchDialog .search-result:before{transition:none}}
+</style>
+
 </body>
 </html>
