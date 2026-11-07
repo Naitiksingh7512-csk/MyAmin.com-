@@ -39,38 +39,9 @@ const currentUser = async () => {
   if (error) throw error;
   return data.user;
 };
-const renderPasskeyControls = (session) => {
-  const box = $("authStatus");
-  if (!box) return;
-  const controls = document.createElement("div");
-  controls.style.cssText = "display:flex;gap:8px;flex-wrap:wrap;margin-top:10px";
-  const button = (label, action) => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "btn btn-outline";
-    b.textContent = label;
-    b.addEventListener("click", action);
-    controls.appendChild(b);
-  };
-  if (session?.user) {
-    button("Set up fingerprint passkey · Touch ID", async () => {
-      try {
-        const { error } = await supabase.auth.registerPasskey();
-        if (error) throw error;
-        say("loginMessage", "Passkey registered. Your device may use Touch ID or its secure passcode.");
-      } catch (e) { say("loginMessage", e.message || "Passkey setup is not enabled yet.", true); }
-    });
-  } else {
-    button("Sign in with fingerprint · Passkey", async () => {
-      try {
-        const { data, error } = await supabase.auth.signInWithPasskey();
-        if (error) throw error;
-        await showAuthState(data.session);
-        say("loginMessage", "Passkey sign-in successful.");
-      } catch (e) { say("loginMessage", e.message || "Passkey sign-in is not available yet.", true); }
-    });
-  }
-  box.appendChild(controls);
+const renderPasskeyControls = (_session) => {
+  // Passkey sign-in/setup controls are intentionally hidden from the public interface.
+  // Secure account status and the normal sign-out control remain available.
 };
 const showAuthState = async (session) => {
   const box = $("authStatus");
