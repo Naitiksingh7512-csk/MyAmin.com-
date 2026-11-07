@@ -24,12 +24,25 @@ Deno.serve(async (req: Request) => {
   const { data: auth, error: authError } = await callerClient.auth.getUser(jwt);
   if (authError || !auth.user || auth.user.app_metadata?.role !== "admin") return reply({ error: "Admin only" }, 403);
   const caller = auth.user;
-  const { data: membership } = await root.from("admin_team_members").select("role,status").eq("user_id", caller.id).maybeSingle();
-  if (membership?.role !== "admin" || membership?.status !== "active") return reply({ error: "Active admin membership required" }, 403);
-
   let body: Record<string, unknown>;
   try { body = await req.json(); } catch { return reply({ error: "Invalid JSON" }, 400); }
   const action = String(body.action || "");
+
+  if (action === "verify_card") {
+    const token = String(body.card_token || "");
+    if (token.length < 30 || token.length > 100) return reply({ error: "Invalid card link" }, 400);
+    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
+    const tokenHash = Array.from(new Uint8Array(digest)).map(x=>x.toString(16).padStart(2,"0")).join("");
+    const { data: member, error } = await root.from("admin_team_members")
+      .select("full_name,email,role,status,permissions,must_change_password")
+      .eq("user_id", caller.id).eq("card_token_hash", tokenHash).maybeSingle();
+    if (error || !member || member.status !== "active") return reply({ error: "This card is invalid or the account is inactive." }, 403);
+    await root.from("admin_team_members").update({ last_login_at: new Date().toISOString() }).eq("user_id", caller.id);
+    return reply({ success: true, member });
+  }
+
+  const { data: membership } = await root.from("admin_team_members").select("role,status").eq("user_id", caller.id).maybeSingle();
+  if (caller.app_metadata?.role !== "admin" || membership?.role !== "admin" || membership?.status !== "active") return reply({ error: "Active admin membership required" }, 403);
 
   if (action === "create_member") {
     const name = String(body.full_name || "").trim().slice(0, 120);
