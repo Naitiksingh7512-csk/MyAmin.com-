@@ -1404,6 +1404,14 @@ function applyLanguage(lang){
       el.innerHTML=lang==="en"?'Find the Right <span>Amin</span> for Your Land.':'अपनी जमीन के लिए सही <span>Amin</span> खोजें।';
     } else if(el.children.length===0) el.textContent=el.dataset[lang];
   });
+  // Keep calculator option labels explicitly synchronized with the selected language.
+  ["unitFrom","unitTo"].forEach(id=>{
+    const select=$(id);
+    if(select) Array.from(select.options).forEach(option=>{
+      const label=option.getAttribute("data-"+lang);
+      if(label!==null) option.textContent=label;
+    });
+  });
   const states=$("aminState");
   if(states) Array.from(states.options).forEach((o,i)=>{if(i>0){o.value=["Bihar","Jharkhand","Uttar Pradesh","West Bengal"][i-1];o.textContent=lang==="hi"?["बिहार","झारखंड","उत्तर प्रदेश","पश्चिम बंगाल"][i-1]:o.value;}});
   const portalSearch=$("portalSearch");
@@ -1693,7 +1701,8 @@ function calculate() {
   const from=Number($("unitFrom").value);
   const to=Number($("unitTo").value);
   const result=(value*from/to);
-  const unit=$("unitTo").selectedOptions[0]?.textContent||"";
+  const selectedUnit=$("unitTo").selectedOptions[0];
+  const unit=selectedUnit?.getAttribute("data-"+currentLang)||selectedUnit?.textContent||"";
   if(raw.trim()===""||!Number.isFinite(result)){
     $("unitResult").textContent=currentLang==="hi"?"कृपया सही संख्या भरें।":"Please enter a valid number.";
     return;
