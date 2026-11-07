@@ -215,6 +215,40 @@ const handleAminSignup = async (event) => {
   } catch (e) { say("aminRegMessage", e.message || "Amin registration असफल हुआ।", true); }
   finally { submit.disabled = false; }
 };
+
+const handleAdminLogin = async (event) => {
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  const button = $("adminLoginForm")?.querySelector('button[type="submit"]');
+  const message = $("adminLoginMessage");
+  const verified = $("adminVerifiedPanel");
+  if (button) button.disabled = true;
+  if (verified) verified.hidden = true;
+  try {
+    const email = $("adminEmail").value.trim();
+    const password = $("adminPassword").value;
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    const user = data.user;
+    const trustedRole = user?.app_metadata?.role === "admin";
+    const { data: membership, error: memberError } = await supabase
+      .from("admin_team_members").select("role,status").eq("user_id", user.id).maybeSingle();
+    if (memberError) throw memberError;
+    const activeMember = membership && membership.status === "active" &&
+      ["admin","owner"].includes(membership.role);
+    if (!trustedRole || !activeMember) {
+      await supabase.auth.signOut();
+      throw new Error("यह अकाउंट Admin के रूप में स्वीकृत नहीं है। Admin access केवल अधिकृत टीम द्वारा दिया जा सकता है।");
+    }
+    if (message) { message.textContent = "Admin verification successful."; message.style.display = "block"; }
+    if (verified) verified.hidden = false;
+  } catch (e) {
+    if (message) { message.textContent = e.message || "Admin login असफल हुआ।"; message.style.display = "block"; message.style.color = "#a12626"; }
+  } finally {
+    if (button) button.disabled = false;
+  }
+};
+
 const handleBooking = async (event) => {
   event.preventDefault();
   event.stopImmediatePropagation();
@@ -255,6 +289,7 @@ document.addEventListener("DOMContentLoaded", () => {
   $("loginForm")?.addEventListener("submit", handleCustomerLogin, true);
   $("aminForm")?.addEventListener("submit", handleAminSignup, true);
   $("bookingForm")?.addEventListener("submit", handleBooking, true);
+  $("adminLoginForm")?.addEventListener("submit", handleAdminLogin, true);
   $("loginForm")?.querySelector('button[onclick="logout()"]')?.addEventListener("click", window.logout);
 });
 const { data: initial } = await supabase.auth.getSession();
