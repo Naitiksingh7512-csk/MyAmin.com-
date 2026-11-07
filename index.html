@@ -846,7 +846,8 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
   <!-- CALCULATOR -->
   <section id="calculator" class="panel">
     <h2>📐 Land Unit Calculator | भूमि कैलकुलेटर</h2>
-    <p data-en="Length and area are different measurements. Use this tool to convert area units." data-hi="लंबाई और क्षेत्रफल अलग-अलग माप हैं। इस टूल से क्षेत्रफल की इकाइयों का रूपांतरण करें।">लंबाई और क्षेत्रफल अलग-अलग माप हैं। इस टूल से क्षेत्रफल की इकाइयों का रूपांतरण करें।</p>
+    <p data-en="Convert land area units. Square Kadi is an approximate traditional reference; local survey standards may differ." data-hi="जमीन के क्षेत्रफल की इकाइयों का रूपांतरण करें। वर्ग कड़ी एक अनुमानित पारंपरिक मान है; स्थानीय सर्वे के मान अलग हो सकते हैं।">जमीन के क्षेत्रफल की इकाइयों का रूपांतरण करें। वर्ग कड़ी एक अनुमानित पारंपरिक मान है; स्थानीय सर्वे के मान अलग हो सकते हैं।</p>
+    <p id="unitKadiNote" style="font-size:13px;color:#64748b;margin-top:-6px" data-en="Reference only: 1 decimal ≈ 1,000 square Kadi, so 1 square Kadi ≈ 0.4356 sq ft. Verify the local chain/measurement before using it for official land work." data-hi="केवल संदर्भ हेतु: 1 डिसमिल ≈ 1,000 वर्ग कड़ी, इसलिए 1 वर्ग कड़ी ≈ 0.4356 वर्ग फुट। सरकारी नापी या रजिस्ट्री से पहले स्थानीय जरीब/माप की पुष्टि करें।">केवल संदर्भ हेतु: 1 डिसमिल ≈ 1,000 वर्ग कड़ी, इसलिए 1 वर्ग कड़ी ≈ 0.4356 वर्ग फुट। सरकारी नापी या रजिस्ट्री से पहले स्थानीय जरीब/माप की पुष्टि करें।</p>
     <div class="form-grid">
       <div class="field"><label for="unitValue" data-en="Number" data-hi="संख्या">Number</label><input id="unitValue" type="number" min="0" step="any" value="1" aria-label="Number"></div>
       <div class="field"><label for="unitFrom" data-en="From unit" data-hi="किस इकाई से">From unit</label><select id="unitFrom">
@@ -859,6 +860,7 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
         <option value="1361.25" data-en="Kattha (local reference)" data-hi="कट्ठा (स्थानीय मान)">Kattha (local reference)</option>
         <option value="68.0625" data-en="Dhur (local reference)" data-hi="धुर (स्थानीय मान)">Dhur (local reference)</option>
         <option value="27225" data-en="Bigha (local reference)" data-hi="बीघा (स्थानीय मान)">Bigha (local reference)</option>
+        <option value="0.4356" data-en="Square Kadi (approx.)" data-hi="वर्ग कड़ी (अनुमानित)">वर्ग कड़ी (अनुमानित)</option>
       </select></div>
       <div class="field"><label for="unitTo" data-en="To unit" data-hi="किस इकाई में">To unit</label><select id="unitTo">
         <option value="1" data-en="Square feet (sq ft)" data-hi="वर्ग फुट (sq ft)">Square feet (sq ft)</option>
@@ -870,6 +872,7 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
         <option value="1361.25" data-en="Kattha (local reference)" data-hi="कट्ठा (स्थानीय मान)">Kattha (local reference)</option>
         <option value="68.0625" data-en="Dhur (local reference)" data-hi="धुर (स्थानीय मान)">Dhur (local reference)</option>
         <option value="27225" data-en="Bigha (local reference)" data-hi="बीघा (स्थानीय मान)">Bigha (local reference)</option>
+        <option value="0.4356" data-en="Square Kadi (approx.)" data-hi="वर्ग कड़ी (अनुमानित)">वर्ग कड़ी (अनुमानित)</option>
       </select></div>
     </div>
     <div class="card" style="margin-top:16px;background:#f0f8f1">
@@ -1388,6 +1391,29 @@ function translateDynamic(root){
     });
   });
 }
+function syncCalculatorLanguage(lang){
+  const labels = {
+    en:{unitValue:"Number",unitFrom:"From unit",unitTo:"To unit"},
+    hi:{unitValue:"संख्या",unitFrom:"किस इकाई से",unitTo:"किस इकाई में"}
+  };
+  Object.entries(labels[lang]).forEach(([id,label])=>{
+    const el=$(id);
+    const field=el?.closest(".field");
+    const labelEl=field?.querySelector('label[for="'+id+'"]');
+    if(labelEl) labelEl.textContent=label;
+    if(id==="unitValue" && el) el.setAttribute("aria-label",label);
+  });
+  ["unitFrom","unitTo"].forEach(id=>{
+    const select=$(id);
+    if(!select)return;
+    Array.from(select.options).forEach(option=>{
+      const translated=option.getAttribute("data-"+lang);
+      if(translated!==null) option.textContent=translated;
+    });
+  });
+  const note=$("unitKadiNote");
+  if(note) note.textContent=note.getAttribute("data-"+lang)||note.textContent;
+}
 function applyLanguage(lang){
   currentLang=lang;
   document.documentElement.lang=lang;
@@ -1429,6 +1455,9 @@ function applyLanguage(lang){
   translateDynamic(document.getElementById("statePortals"));
   translateDynamic(document.getElementById("aminResults"));
   translateDynamic(document.body);
+  // Re-apply calculator labels after global phrase translation to prevent language reversal.
+  syncCalculatorLanguage(lang);
+  if($("unitValue"))calculate();
 }
 window.toggleMyAminLanguage=function(){
   applyLanguage(currentLang==="en"?"hi":"en");
