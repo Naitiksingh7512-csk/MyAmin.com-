@@ -69,11 +69,12 @@ const showAuthState = async (session) => {
   if (!box) return;
   if (!session?.user) {
     box.textContent = "Secure account: signed out";
+    if (typeof window.refreshCustomerMenuProfile === "function") window.refreshCustomerMenuProfile();
     renderPasskeyControls(null);
     return;
   }
   const { data: p, error: profileError } = await supabase.from("user_profiles")
-    .select("full_name,account_type").eq("id", session.user.id).maybeSingle();
+    .select("full_name,account_type,phone,district").eq("id", session.user.id).maybeSingle();
   if (profileError) throw profileError;
   const { data: a, error: aminError } = await supabase.from("amin_profiles")
     .select("profile_uid,display_name,phone,state,district,place,approval_status,photo_path,upi_id,upi_qr_path")
@@ -111,7 +112,8 @@ const showAuthState = async (session) => {
   } else {
     localStorage.setItem("myamin_demo_user_v1", JSON.stringify({
       id: session.user.id, name: p?.full_name || session.user.email,
-      phone: session.user.phone || "", email: session.user.email || ""
+      phone: p?.phone || session.user.phone || "", district: p?.district || "",
+      email: session.user.email || ""
     }));
     localStorage.removeItem("myamin_demo_logged_in_amin_v1");
   }
@@ -386,6 +388,7 @@ window.logout = async () => {
   await supabase.auth.signOut();
   localStorage.removeItem("myamin_demo_user_v1");
   localStorage.removeItem("myamin_demo_logged_in_amin_v1");
+  if (typeof window.refreshCustomerMenuProfile === "function") window.refreshCustomerMenuProfile();
   if (typeof window.updateBookingUser === "function") window.updateBookingUser();
   say("loginMessage", "आप सुरक्षित रूप से Logout हो गए।");
 };
