@@ -149,7 +149,7 @@ const ensureCustomerFields = () => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email: emailValue, password,
-        options: { data: { full_name: name, phone, account_type: "customer" } }
+        options: { emailRedirectTo: "https://naitiksingh7512-csk.github.io/MyAmin.com-/", data: { full_name: name, phone, account_type: "customer" } }
       });
       if (error) throw error;
       if (data.session) await showAuthState(data.session);
@@ -203,7 +203,7 @@ const handleAminSignup = async (event) => {
     } else {
       const result = await supabase.auth.signUp({
         email, password,
-        options: { data: { full_name: name, phone, account_type: "amin" } }
+        options: { emailRedirectTo: "https://naitiksingh7512-csk.github.io/MyAmin.com-/", data: { full_name: name, phone, account_type: "amin" } }
       });
       if (result.error) throw result.error;
       data = result.data;
