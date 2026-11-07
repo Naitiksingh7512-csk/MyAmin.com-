@@ -925,9 +925,9 @@ header{
     <div class="notice">अब ईमेल और पासवर्ड से सुरक्षित ऑनलाइन अकाउंट में लॉगिन करें। नया Customer अकाउंट बनाने का विकल्प भी उपलब्ध है।</div>
     <form id="loginForm">
       <div class="form-grid">
-        <div class="field"><label for="customerName">पूरा नाम / Full Name *</label><input id="customerName" autocomplete="name" maxlength="80" required></div>
-        <div class="field"><label for="customerPhone">मोबाइल नंबर *</label><input id="customerPhone" type="tel" inputmode="tel" autocomplete="tel" minlength="10" maxlength="18" required pattern="[0-9+() -]{10,18}" title="Enter a valid phone number."></div>
-        <div class="field"><label for="customerEmail">ईमेल (वैकल्पिक)</label><input id="customerEmail" type="email"></div>
+        <div class="field"><label for="customerName">पूरा नाम / Full Name *</label><input id="customerName" autocomplete="name" maxlength="80"></div>
+        <div class="field"><label for="customerPhone">मोबाइल नंबर *</label><input id="customerPhone" type="tel" inputmode="tel" autocomplete="tel" minlength="10" maxlength="18" pattern="[0-9+() -]{10,18}" title="Enter a valid phone number."></div>
+        <div class="field"><label for="customerEmail">ईमेल *</label><input id="customerEmail" type="email" autocomplete="email" required></div>
         <div class="field"><label for="customerDistrict">जिला / District</label><input id="customerDistrict"></div>
       </div>
       <div class="form-actions"><button class="btn btn-green" type="submit">Login / Continue</button><button class="btn btn-outline" type="button" onclick="logout()">Logout</button></div>
