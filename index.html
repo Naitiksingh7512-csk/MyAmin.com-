@@ -621,7 +621,58 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
 @keyframes cardRise{from{opacity:.55;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .amin-social-row,.amin-action-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}.amin-social-row a{font-size:12px;font-weight:800;color:var(--green);text-decoration:underline}
 @media(prefers-reduced-motion:reduce){.quick-grid .quick,#services .card{animation:none!important}}
-</style></head>
+</style><style>
+
+/* My Amin classic palette refinement — preserve existing layout and logo */
+:root{
+ --green:#71951e;--dark:#1e3b2f;--light:#f5f0e6;--gold:#c8b48a;
+ --text:#26382f;--muted:#718078;--border:#e5dfd2;
+ --shadow:0 12px 32px rgba(30,59,47,.08);
+}
+body{background:#f5f0e6;color:#26382f}
+header{background:rgba(245,240,230,.96);border-bottom-color:#ded6c5}
+.hero{background:linear-gradient(118deg,#e7eddf 0%,#f5f0e6 58%,#e0edf0 100%);border-color:#d8dfd0}
+.eyebrow{background:#e6eadc;color:#1e3b2f;border-color:#cbd5bc}
+h1,h2,.section h2,.panel h2{color:#1e3b2f}
+h1 span{color:#71951e}
+.btn-green{background:linear-gradient(135deg,#71951e,#1e3b2f)}
+.btn-light{background:#e8eadf;color:#1e3b2f}
+.btn-outline,.lang,.iconbtn{border-color:#d8d1c2}
+.card,.panel,.portal,.list-item{border-color:#e5dfd2;box-shadow:0 8px 24px rgba(30,59,47,.055)}
+.card-icon{background:linear-gradient(145deg,#e5eadc,#d7e3d8);border-color:#cbd8c7}
+.quick{background:linear-gradient(145deg,#fffdf8,#edf1e8);border-color:#d9dfd1}
+.quick:hover{background:#eaf0e6;border-color:#7f8c6a}
+input:focus,select:focus,textarea:focus{border-color:#71951e;box-shadow:0 0 0 3px rgba(113,149,30,.12)}
+.pill{background:#e8eddf;color:#405b24;border-color:#d6dfc8}
+.notice{background:#fbf1dd;border-color:#e8d7b4;color:#73551e}
+footer{background:linear-gradient(115deg,#09251c,#1e3b2f 65%,#005a9c)}
+/* small photo panels replace decorative emoji in service tiles; logo is untouched */
+.quick-grid .quick{min-height:100px;padding:10px 8px;gap:5px}
+.quick-grid .quick span:first-child{display:block;width:100%;height:43px;margin:0 auto 5px;font-size:0;color:transparent;background-size:cover;background-position:center;border-radius:10px;box-shadow:inset 0 0 0 1px rgba(30,59,47,.10)}
+.quick-grid .quick:nth-child(1) span:first-child{background-image:linear-gradient(0deg,#1e3b2f22,#1e3b2f22),url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=420&auto=format&fit=crop')}
+.quick-grid .quick:nth-child(2) span:first-child{background-image:linear-gradient(0deg,#1e3b2f22,#1e3b2f22),url('https://images.unsplash.com/photo-1473448912268-2022ce9509d8?w=420&auto=format&fit=crop')}
+.quick-grid .quick:nth-child(3) span:first-child{background-image:linear-gradient(0deg,#1e3b2f22,#1e3b2f22),url('https://images.unsplash.com/photo-150ing?auto=format&fit=crop')}
+.quick-grid .quick:nth-child(4) span:first-child{background-image:linear-gradient(0deg,#1e3b2f22,#1e3b2f22),url('https://images.unsplash.com/photo-1589998059171-988d887df646?w=420&auto=format&fit=crop')}
+.quick-grid .quick:nth-child(5) span:first-child{background-image:linear-gradient(0deg,#1e3b2f22,#1e3b2f22),url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=420&auto=format&fit=crop')}
+.quick-grid .quick:nth-child(6) span:first-child{background-image:linear-gradient(0deg,#1e3b2f22,#1e3b2f22),url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=420&auto=format&fit=crop')}
+.quick-grid .quick:nth-child(7) span:first-child{background-image:linear-gradient(0deg,#1e3b2f22,#1e3b2f22),url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=420&auto=format&fit=crop')}
+.quick-grid .quick:nth-child(8) span:first-child{background-image:linear-gradient(0deg,#1e3b2f22,#1e3b2f22),url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=420&auto=format&fit=crop')}
+.quick-grid .quick:nth-child(9) span:first-child{background-image:linear-gradient(0deg,#1e3b2f22,#1e3b2f22),url('https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=420&auto=format&fit=crop')}
+#services .card-icon{width:100%;height:112px;border-radius:13px;background-size:cover;background-position:center;color:transparent;font-size:0}
+#services .card:nth-child(1) .card-icon{background-image:url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=640&auto=format&fit=crop')}
+#services .card:nth-child(2) .card-icon{background-image:url('https://images.unsplash.com/photo-150ing?auto=format&fit=crop')}
+#services .card:nth-child(3) .card-icon{background-image:url('https://images.unsplash.com/photo-1589998059171-988d887df646?w=640&auto=format&fit=crop')}
+#services .card:nth-child(4) .card-icon{background-image:url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=640&auto=format&fit=crop')}
+#services .card:nth-child(5) .card-icon{background-image:url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=640&auto=format&fit=crop')}
+#services .card:nth-child(6) .card-icon{background-image:url('https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=640&auto=format&fit=crop')}
+.card,.portal,.list-item{transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease}
+#services .card:hover,.portal:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(30,59,47,.11)}
+.hero .map-card{animation:maFloat 7s ease-in-out infinite}
+@keyframes maFloat{0%,100%{transform:rotate(-2deg) translateY(0)}50%{transform:rotate(-1deg) translateY(-5px)}}
+@media(prefers-reduced-motion:reduce){.hero .map-card{animation:none!important}}
+
+</style>
+</head>
 
 <body>
 <div class="topline"></div>
