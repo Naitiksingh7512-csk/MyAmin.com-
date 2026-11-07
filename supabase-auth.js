@@ -8,6 +8,9 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
 window.myAminSupabase = supabase;
 
 const $ = (id) => document.getElementById(id);
+// Keep internal authentication status out of the public page UI.
+const hideAuthStatus = () => { const el = $("authStatus"); if (el) { el.hidden = true; el.style.display = "none"; el.setAttribute("aria-hidden", "true"); } };
+hideAuthStatus();
 const say = (id, message, error = false) => {
   const el = $(id);
   if (!el) return;
@@ -45,6 +48,7 @@ const renderPasskeyControls = (_session) => {
 };
 const showAuthState = async (session) => {
   const box = $("authStatus");
+  hideAuthStatus();
   if (!box) return;
   if (!session?.user) {
     box.textContent = "Secure account: signed out";
