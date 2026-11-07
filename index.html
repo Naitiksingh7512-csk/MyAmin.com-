@@ -1754,23 +1754,7 @@ function loadAmins() {
   const records=read(DB.amins,[]).filter(a=>a.approved&&a.workAllowed!==false);
   renderAmins(records);
 }
-function renderAmins(records) {
-  const box=$("aminResults");
-  if(!records.length) {
-    box.innerHTML=currentLang==="hi"?'<div class="list-item"><strong>अभी कोई स्वीकृत अमीन प्रोफ़ाइल नहीं मिली।</strong><p>अमीन के आवेदन एडमिन द्वारा मंजूर होने के बाद उनकी प्रोफ़ाइल और ID यहाँ दिखाई देगी।</p></div>':'<div class="list-item"><strong>No approved Amin profiles found yet.</strong><p>Approved Amin profiles and their IDs will appear here after Admin approval.</p></div>';
-    translateDynamic(box);
-    return;
-  }
-  box.innerHTML=records.map(a=>`
-    <div class="list-item">
-      <span class="pill">Approved profile</span>
-      <h3>${safe(a.name)}</h3>
-      <p><strong>Profile ID:</strong> ${safe(a.profileId||a.id||"Not assigned")}<br>📍 ${safe(a.place)}, ${safe(a.district)}, ${safe(a.state)}<br>
-      📞 ${safe(a.phone)}<br>${safe(a.description||"भूमि मापी सेवाएँ")}</p>
-      <button class="btn btn-green btn-small" onclick="prefillBooking('${safe(a.name).replace(/'/g,"&#39;")}')">अपॉइंटमेंट माँगें</button>
-    </div>`).join("");
-  translateDynamic(box);
-}
+/* Obsolete renderer removed; the enhanced renderer is defined later. */
 function prefillBooking(name) {
   $("bookingAmin").value=name;
   go("booking");
