@@ -57,7 +57,25 @@ body{background:radial-gradient(ellipse at 10% 0,#e4f3e9 0,transparent 35%),#f2f
 @media(max-width:760px){.wrap{margin:15px auto}.panel{padding:15px}.stats{gap:9px}.stat{padding:13px}.stat strong{font-size:26px}.tabs{top:0}.top{padding:14px 16px}}
 @media(max-width:520px){#websiteControls .control-grid{grid-template-columns:1fr}.head{align-items:start}.head h1{font-size:25px}.brand img{width:112px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
-</style></head>
+</style><style>
+
+/* My Amin Admin — matching classic Natural Earth palette */
+:root{--green:#71951e;--deep:#1e3b2f;--mint:#e8eddf;--ink:#26382f;--muted:#718078;--line:#e5dfd2;--bg:#f5f0e6;--blue:#005a9c}
+body{background:#f5f0e6;color:#26382f}
+.top{background:linear-gradient(115deg,#09251c,#1e3b2f 68%,#005a9c)}
+.tabs{background:#f5f0e6ed}
+.tab.active{background:linear-gradient(120deg,#1e3b2f,#71951e)}
+.primary{background:linear-gradient(120deg,#71951e,#1e3b2f)}
+.stat strong{color:#1e3b2f}
+.stat:after{background:#e8eddf}
+.panel,.summary-card,.team-form,.team-card{border-color:#e5dfd2}
+.notice,.warning{border-radius:14px}
+.btn,.tab,.team-card{transition:transform .18s ease,box-shadow .18s ease}
+.tab:hover,.btn:hover{transform:translateY(-1px)}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+
+</style>
+</head>
 <body>
 <header class="top"><div class="brand"><img src="assets/myamin-logo.svg" alt="My Amin logo"><div><strong data-en="Administration" data-hi="प्रशासन">Administration</strong><small data-en="My Amin control centre" data-hi="My Amin नियंत्रण केंद्र">My Amin control centre</small></div></div><div class="top-actions"><button id="langBtn" type="button">हिंदी</button><button type="button" onclick="location.href='index.html'" data-en="← Website" data-hi="← वेबसाइट">← Website</button></div></header>
 <main class="wrap">
