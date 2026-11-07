@@ -695,6 +695,65 @@ footer{background:linear-gradient(115deg,#09251c,#1e3b2f 65%,#005a9c)}
 @media(prefers-reduced-motion:reduce){.hero .map-card{animation:none!important}}
 
 </style>
+
+<style id="myamin-header-polish">
+/* Header controls refresh — original My Amin logo asset and dimensions stay untouched */
+header{background:rgba(255,255,255,.96);box-shadow:0 7px 25px rgba(18,59,50,.07)}
+.nav{gap:16px}
+.navactions{gap:10px}
+#menuBtn{
+  color:#fff;background:linear-gradient(145deg,#167f68,#105342);
+  border:1px solid #0d604b;box-shadow:0 5px 14px rgba(16,83,66,.18);
+  font-size:21px;font-weight:800
+}
+#navLoginBtn{
+  color:#fff;background:linear-gradient(135deg,#087f5b,#07533f);
+  border:1px solid rgba(7,83,63,.18);box-shadow:0 6px 16px rgba(8,127,91,.2);
+  letter-spacing:.2px
+}
+#searchBtn{
+  color:#174c3c;background:linear-gradient(145deg,#fff4d7,#f1d58b);
+  border:1px solid #e8ce8d;box-shadow:0 5px 14px rgba(174,132,44,.15)
+}
+#searchBtn svg{width:21px;height:21px;stroke:#174c3c;stroke-width:2.1}
+#languageBtn{
+  color:#14533f;background:linear-gradient(135deg,#e8f7ef,#d9f0e6);
+  border:1px solid #c5e4d2;border-radius:13px;
+  box-shadow:0 4px 13px rgba(18,90,65,.07);font-weight:850
+}
+#menuBtn,#navLoginBtn,#searchBtn,#languageBtn{
+  position:relative;overflow:hidden;
+  transition:transform .22s ease,box-shadow .22s ease,filter .22s ease,border-color .22s ease
+}
+#menuBtn:hover,#navLoginBtn:hover,#searchBtn:hover,#languageBtn:hover{
+  transform:translateY(-2px);filter:saturate(1.08);
+  box-shadow:0 9px 21px rgba(18,59,50,.16)
+}
+#menuBtn:active,#navLoginBtn:active,#searchBtn:active,#languageBtn:active{transform:scale(.96)}
+#menuBtn:focus-visible,#navLoginBtn:focus-visible,#searchBtn:focus-visible,#languageBtn:focus-visible{
+  outline:3px solid rgba(217,154,50,.48);outline-offset:3px
+}
+#menuBtn:before,#navLoginBtn:before,#searchBtn:before,#languageBtn:before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(115deg,transparent 20%,rgba(255,255,255,.28) 48%,transparent 72%);
+  transform:translateX(-130%);transition:transform .65s ease
+}
+#menuBtn:hover:before,#navLoginBtn:hover:before,#searchBtn:hover:before,#languageBtn:hover:before{transform:translateX(130%)}
+.navlinks a{padding:9px 11px;border-radius:10px;transition:color .2s ease,background .2s ease}
+.navlinks a:hover{color:#08785b;background:#eaf5ed}
+@media(max-width:600px){
+ .nav{gap:7px}
+ .navactions{gap:6px}
+ #menuBtn{width:39px;height:39px;border-radius:12px}
+ #searchBtn{width:39px;height:39px;border-radius:12px}
+ #navLoginBtn{padding:10px 12px;border-radius:12px;font-size:12px}
+ #languageBtn{padding:9px 7px;border-radius:11px;font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){
+ #menuBtn,#navLoginBtn,#searchBtn,#languageBtn,#menuBtn:before,#navLoginBtn:before,#searchBtn:before,#languageBtn:before{transition:none!important}
+}
+</style>
+
 </head>
 
 <body>
