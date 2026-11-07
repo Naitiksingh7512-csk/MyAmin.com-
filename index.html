@@ -2160,5 +2160,40 @@ footer{background:linear-gradient(115deg,#1e3b2f,#294b3b)}
 #services .card-icon{transition:background-size .35s ease,filter .25s ease}
 #services .card:hover .card-icon{filter:saturate(1.08) contrast(1.03)}
 </style>
-\n</body>
+\n
+<style>
+/* My Amin: distinct Color Hunt palettes for navigation tabs */
+.navlinks a{border-radius:12px;padding:9px 12px;transition:background .25s ease,color .25s ease,transform .25s ease,box-shadow .25s ease}
+.navlinks a:nth-child(1){color:#15370D;background:rgba(114,142,109,.16)}
+.navlinks a:nth-child(2){color:#1B365D;background:rgba(96,193,229,.17)}
+.navlinks a:nth-child(3){color:#1E3B2F;background:rgba(200,180,138,.22)}
+.navlinks a:nth-child(4){color:#7C0E44;background:rgba(212,154,154,.20)}
+.navlinks a:hover,.navlinks a:focus-visible{transform:translateY(-2px);box-shadow:0 5px 14px rgba(30,59,47,.12)}
+.navlinks a:nth-child(1):hover,.navlinks a:nth-child(1):focus-visible{background:#15370D;color:#FFF2B4}
+.navlinks a:nth-child(2):hover,.navlinks a:nth-child(2):focus-visible{background:#005A9C;color:#A0E0EF}
+.navlinks a:nth-child(3):hover,.navlinks a:nth-child(3):focus-visible{background:#1E3B2F;color:#F5F0E6}
+.navlinks a:nth-child(4):hover,.navlinks a:nth-child(4):focus-visible{background:#7C0E44;color:#F2DACE}
+.navlinks a:active{transform:scale(.97)}
+.menu-link[data-go="home"]{background:rgba(114,142,109,.15);color:#15370D}
+.menu-link[data-go="find"]{background:rgba(96,193,229,.15);color:#1B365D}
+.menu-link[data-go="registerAmin"],.menu-link[data-go="idmaker"]{background:rgba(200,180,138,.2);color:#1E3B2F}
+.menu-link[data-go="booking"]{background:rgba(212,154,154,.2);color:#7C0E44}
+.menu-link[data-go="calculator"]{background:rgba(243,210,175,.32);color:#A55704}
+.menu-link[data-go="portals"]{background:rgba(114,142,109,.2);color:#09251C}
+.menu-link[data-go="report"],.menu-link[data-go="help"]{background:rgba(170,94,122,.13);color:#7C0E44}
+.menu-link{transition:transform .22s ease,filter .22s ease,box-shadow .22s ease}
+.menu-link:hover,.menu-link:focus-visible{transform:translateX(-3px);filter:saturate(1.12);box-shadow:0 4px 12px rgba(30,59,47,.09)}
+.menu-link:active{transform:scale(.985)}
+@media(max-width:760px){.navlinks a{padding:8px 9px;font-size:12px}}
+@media(prefers-reduced-motion:reduce){.navlinks a,.menu-link{transition:none!important;transform:none!important}}
+/* Subtle animation for service image cards */
+#services .card{transition:transform .32s ease,box-shadow .32s ease}
+#services .card-icon{animation:servicePhotoIn .7s ease both;transition:transform .5s ease,filter .35s ease!important}
+#services .card:hover{transform:translateY(-5px);box-shadow:0 14px 30px rgba(30,59,47,.13)}
+#services .card:hover .card-icon{transform:scale(1.025);filter:saturate(1.12) contrast(1.04)}
+@keyframes servicePhotoIn{from{opacity:.6;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){#services .card,#services .card-icon{animation:none!important;transition:none!important;transform:none!important}}
+</style>
+
+</body>
 </html>
