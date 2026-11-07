@@ -42,9 +42,26 @@ const currentUser = async () => {
   if (error) throw error;
   return data.user;
 };
-const renderPasskeyControls = (_session) => {
-  // Passkey sign-in/setup controls are intentionally hidden from the public interface.
-  // Secure account status and the normal sign-out control remain available.
+const renderPasskeyControls = (session) => {
+  const panel = $("adminVerifiedPanel");
+  if (!panel || !session?.user || session.user.app_metadata?.role !== "admin") return;
+  if (panel.querySelector("#registerAdminPasskey")) return;
+  const button = document.createElement("button");
+  button.type = "button";
+  button.id = "registerAdminPasskey";
+  button.className = "btn btn-outline";
+  button.textContent = "Enable Touch ID / Passkey for this Admin account";
+  button.addEventListener("click", async () => {
+    button.disabled = true;
+    try {
+      const { data, error } = await supabase.auth.registerPasskey();
+      if (error) throw error;
+      say("adminLoginMessage", "Passkey registered. Next time, use Touch ID / your device passkey to sign in.");
+    } catch (e) {
+      say("adminLoginMessage", e.message || "Passkey registration failed. Check Supabase Passkeys settings.", true);
+    } finally { button.disabled = false; }
+  });
+  panel.appendChild(button);
 };
 const showAuthState = async (session) => {
   const box = $("authStatus");
@@ -242,6 +259,7 @@ const handleAdminLogin = async (event) => {
     }
     if (message) { message.textContent = "Admin verification successful."; message.style.display = "block"; }
     if (verified) verified.hidden = false;
+    renderPasskeyControls(data.session);
   } catch (e) {
     if (message) { message.textContent = e.message || "Admin login असफल हुआ।"; message.style.display = "block"; message.style.color = "#a12626"; }
   } finally {
@@ -264,6 +282,7 @@ const verifyAdminOAuthSession = async (session) => {
     }
     if (message) { message.textContent = "Google Admin verification successful."; message.style.display = "block"; message.style.color = ""; }
     if (panel) panel.hidden = false;
+    renderPasskeyControls(session);
     sessionStorage.removeItem("myamin_admin_google_pending");
   } catch (e) {
     if (message) { message.textContent = e.message || "Admin verification failed."; message.style.display = "block"; message.style.color = "#a12626"; }
@@ -298,6 +317,24 @@ const addGoogleLoginButtons = () => {
   };
   add("loginForm", false);
   add("adminLoginForm", true);
+  const adminForm = $("adminLoginForm");
+  if (adminForm && !adminForm.querySelector(".myamin-passkey-login")) {
+    const passkey = document.createElement("button");
+    passkey.type = "button";
+    passkey.className = "btn btn-outline myamin-passkey-login";
+    passkey.textContent = "Sign in with Touch ID / Passkey";
+    passkey.addEventListener("click", async () => {
+      passkey.disabled = true;
+      try {
+        const { data, error } = await supabase.auth.signInWithPasskey();
+        if (error) throw error;
+        await verifyAdminOAuthSession(data.session);
+      } catch (e) {
+        say("adminLoginMessage", e.message || "Passkey sign-in failed.", true);
+      } finally { passkey.disabled = false; }
+    });
+    (adminForm.querySelector(".form-actions") || adminForm).appendChild(passkey);
+  }
 };
 
 const handleBooking = async (event) => {
