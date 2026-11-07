@@ -2097,5 +2097,37 @@ window.addEventListener("storage",e=>{if(e.key==="myamin_site_settings_v1")apply
 
 </style>
 
+
+<style>
+/* My Amin — restrained Natural Earth finish; layout, logo and existing behavior preserved */
+:root{
+ --green:#1e3b2f;--dark:#1e3b2f;--light:#f5f0e6;--gold:#c8b48a;
+ --text:#26382f;--muted:#71806f;--border:#e2e5d9;
+ --shadow:0 14px 38px rgba(30,59,47,.085);
+}
+body{background:#f5f0e6;color:#26382f}
+header{background:rgba(250,249,244,.96);border-bottom-color:#e2e5d9}
+.topline{background:linear-gradient(90deg,#1e3b2f 0 35%,#7f8c6a 35% 68%,#c8b48a 68%)}
+.btn-green{background:linear-gradient(135deg,#1e3b2f,#315d49);box-shadow:0 5px 14px rgba(30,59,47,.13)}
+.btn-green:hover{background:#173126}
+.btn-light,.eyebrow,.card-icon,.pill{background:#e8eee4;color:#1e3b2f;border-color:#d7e1d2}
+.hero{background:linear-gradient(118deg,#e9eee5 0%,#fbfaf6 58%,#f5f0e6 100%);border-color:#dfe5d9}
+.hero:before{background:radial-gradient(circle,rgba(200,180,138,.22),transparent 70%)}
+h1 span{color:#58745e}
+.map-art{background:radial-gradient(circle,#dce7d9 0,#f5f0e6 52%,transparent 74%)}
+.plot{background:linear-gradient(145deg,#e7eadb,#cbd9c5);border-color:#c8d5c0}
+.card,.panel,.portal,.list-item{border-color:#e2e5d9}
+.quick-grid .quick{background:linear-gradient(135deg,#fffdf8,#eef2e9 65%,#f5f0e6);background-image:linear-gradient(135deg,#fffdf8,#eef2e9 65%,#f5f0e6),linear-gradient(115deg,#1e3b2f,#7f8c6a,#c8b48a,#1e3b2f);box-shadow:0 6px 16px rgba(30,59,47,.06)}
+#services .card{background:linear-gradient(#fffdf9,#fffdf9) padding-box,linear-gradient(120deg,#1e3b2f,#7f8c6a,#c8b48a,#1e3b2f) border-box}
+input:focus,select:focus,textarea:focus{border-color:#7f8c6a;box-shadow:0 0 0 4px rgba(127,140,106,.13)}
+footer{background:linear-gradient(115deg,#1e3b2f,#294b3b)}
+/* gentle entrance and hover motion; respects reduced-motion settings */
+@keyframes aminSoftRise{from{opacity:.0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+.hero,.section-head,.quick-grid,.section>.grid{animation:aminSoftRise .55s ease both}
+.card,.portal,.btn,.iconbtn{transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease}
+.card:hover,.portal:hover{transform:translateY(-3px);box-shadow:0 13px 28px rgba(30,59,47,.09)}
+@media(prefers-reduced-motion:reduce){.hero,.section-head,.quick-grid,.section>.grid{animation:none!important}.card,.portal,.btn,.iconbtn{transition:none!important}}
+</style>
+
 </body>
 </html>
