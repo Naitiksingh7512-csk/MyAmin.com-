@@ -235,7 +235,7 @@ const handleAdminLogin = async (event) => {
       .from("admin_team_members").select("role,status").eq("user_id", user.id).maybeSingle();
     if (memberError) throw memberError;
     const activeMember = membership && membership.status === "active" &&
-      ["admin","owner"].includes(membership.role);
+      membership.role === "admin";
     if (!trustedRole || !activeMember) {
       await supabase.auth.signOut();
       throw new Error("यह अकाउंट Admin के रूप में स्वीकृत नहीं है। Admin access केवल अधिकृत टीम द्वारा दिया जा सकता है।");
