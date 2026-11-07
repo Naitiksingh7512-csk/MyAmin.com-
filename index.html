@@ -922,7 +922,7 @@ header{
   <section id="login" class="panel">
     <h2>👤 Customer Login / ग्राहक लॉगिन</h2>
     <p>बुकिंग से पहले अपना नाम और संपर्क विवरण भरें।</p>
-    <div class="notice">जानकारी अभी इसी डिवाइस के ब्राउज़र में सेव होती है। यह सुरक्षित ऑनलाइन अकाउंट नहीं है।</div>
+    <div class="notice">अब ईमेल और पासवर्ड से सुरक्षित ऑनलाइन अकाउंट में लॉगिन करें। नया Customer अकाउंट बनाने का विकल्प भी उपलब्ध है।</div>
     <form id="loginForm">
       <div class="form-grid">
         <div class="field"><label for="customerName">पूरा नाम / Full Name *</label><input id="customerName" autocomplete="name" maxlength="80" required></div>
@@ -959,7 +959,7 @@ header{
   <!-- AMIN REGISTRATION -->
   <section id="registerAmin" class="panel">
     <h2>👷 Amin Registration | अमीन रजिस्ट्रेशन</h2>
-    <p data-en="Submit your details for review. Your application is currently saved on this device only. Online review and public publishing will start after secure account services are connected." data-hi="जाँच के लिए अपनी जानकारी भेजें। अभी आवेदन इसी डिवाइस पर सेव होता है। सुरक्षित ऑनलाइन अकाउंट सेवा जुड़ने के बाद ही ऑनलाइन जाँच और सार्वजनिक प्रकाशन शुरू होगा।">Submit your details for review. Your application is currently saved on this device only. Online review and public publishing will start after secure account services are connected.</p>
+    <p data-en="Create a secure Amin account with email and password. Your application and profile details are saved online for review; public listing starts only after approval." data-hi="ईमेल और पासवर्ड से सुरक्षित Amin अकाउंट बनाएँ। आपकी प्रोफ़ाइल ऑनलाइन जाँच के लिए सेव होगी और अनुमति मिलने के बाद ही सार्वजनिक होगी।">Submit your details for review. Your application is currently saved on this device only. Online review and public publishing will start after secure account services are connected.</p>
     <form id="aminForm">
       <div class="form-grid">
         <div class="field"><label for="regName">पूरा नाम *</label><input id="regName" autocomplete="name" maxlength="80" required><small>आपकी Profile ID: <strong id="regProfileIdPreview">पहला नाम@12345678</strong></small></div>
@@ -969,7 +969,7 @@ header{
         <div class="field"><label for="regState">राज्य *</label><input id="regState" value="Bihar" required></div>
         <div class="field"><label for="regDistrict">जिला *</label><input id="regDistrict" maxlength="80" required></div>
         <div class="field"><label for="regPlace">गाँव / शहर *</label><input id="regPlace" maxlength="100" required></div><div class="field"><label for="regUpiId">UPI ID (वैकल्पिक / Optional)</label><input id="regUpiId" maxlength="120" placeholder="name@bank"></div><div class="field"><label for="regUpiQr">Enter your UPI QR code (वैकल्पिक)</label><input id="regUpiQr" type="file" accept="image/*"><small>अपना payment QR image चुनें। इसे खाली छोड़ सकते हैं।</small><img id="regUpiQrPreview" alt="UPI QR preview" hidden style="width:110px;height:110px;object-fit:contain;background:white;padding:6px;border:1px solid #ddd;border-radius:8px"></div>
-        <div class="field"><label for="regPhoto">Profile photo / DP</label><input id="regPhoto" type="file" accept="image/*"><div class="reg-photo-preview"><img id="regPhotoPreview" alt="Profile photo preview" hidden><span id="regPhotoPlaceholder">👤</span></div><small>Clear face photo. Currently saved only in this browser on this device.</small></div>
+        <div class="field"><label for="regPhoto">Profile photo / DP</label><input id="regPhoto" type="file" accept="image/*"><div class="reg-photo-preview"><img id="regPhotoPreview" alt="Profile photo preview" hidden><span id="regPhotoPlaceholder">👤</span></div><small>Clear face photo. It is uploaded to your secure Amin profile after account verification.</small></div>
         <div class="field"><label for="regInstagram">Instagram profile link (Optional)</label><input id="regInstagram" type="url" placeholder="https://instagram.com/yourprofile"></div><div class="field"><label for="regFacebook">Facebook profile link (Optional)</label><input id="regFacebook" type="url" placeholder="https://facebook.com/yourprofile"></div><div class="field"><label for="regYouTube">YouTube channel link (Optional)</label><input id="regYouTube" type="url" placeholder="https://youtube.com/@yourchannel"></div><div class="field full"><label for="regDescription">अनुभव और सेवाएँ</label><textarea id="regDescription" placeholder="अपने अनुभव और सेवाओं का विवरण लिखें।"></textarea></div>
       </div>
       <div class="notice" data-en="This form is an application and does not verify professional identity or credentials. Do not upload sensitive identity documents. Your request is currently stored only in this browser on this device; secure online submission is not connected yet." data-hi="यह आवेदन फॉर्म पेशेवर पहचान या प्रमाण-पत्र का सत्यापन नहीं करता। संवेदनशील पहचान दस्तावेज़ अपलोड न करें। सुरक्षित ऑनलाइन सबमिशन जुड़ने तक आवेदन इसी डिवाइस के ब्राउज़र में रहेगा।">This form is an application and does not verify professional identity or credentials. Do not upload sensitive identity documents. Your request is currently stored only in this browser on this device; secure online submission is not connected yet.</div>
@@ -989,7 +989,7 @@ header{
         <div class="field"><label for="idPhone">संपर्क नंबर</label><input id="idPhone" type="tel" inputmode="tel" maxlength="18" pattern="[0-9+() -]{10,18}" title="Enter a valid contact number or leave blank."></div>
         <div class="field"><label for="idDistrict">जिला और राज्य</label><input id="idDistrict" placeholder="जिला, राज्य"></div><div class="field"><label for="idUpiId">UPI ID (Optional)</label><input id="idUpiId" maxlength="120" placeholder="name@bank" autocomplete="off"><small>Optional. Add the UPI ID where customers can pay you.</small></div><div class="field"><label for="idUpiQrUpload">UPI QR Code (Optional)</label><input id="idUpiQrUpload" type="file" accept="image/*"><small>Upload your payment QR. If you do not upload one, a QR can be created from your UPI ID.</small><img id="idUpiQrPreview" alt="UPI QR preview" hidden style="width:100px;height:100px;object-fit:contain;background:white;padding:6px;border:1px solid #ddd;border-radius:8px"></div>
         <div class="field"><label for="idRole">काम / भूमिका</label><input id="idRole" value="Land Measurement Service"></div>
-        <div class="field"><label for="idPhoto">Profile Photo / DP</label><input id="idPhoto" type="file" accept="image/*"><small>अपनी साफ़ फोटो चुनें। फोटो केवल इस ब्राउज़र में कार्ड पर दिखाई जाएगी।</small></div>
+        <div class="field"><label for="idPhoto">Profile Photo / DP</label><input id="idPhoto" type="file" accept="image/*"><small>अपनी साफ़ फोटो चुनें। लॉगिन के बाद फोटो आपके Amin प्रोफ़ाइल Storage में सेव होगी।</small></div>
       </div>
       <div class="form-actions"><button class="btn btn-green" type="submit">Professional ID बनाएँ</button><button class="btn btn-outline" id="downloadAminCard" type="button" disabled>Download ID Card (PNG)</button><button class="btn btn-outline" type="button" onclick="window.print()">Print / Save PDF</button></div>
     </form>
