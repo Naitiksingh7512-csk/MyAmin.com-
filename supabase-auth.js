@@ -249,6 +249,57 @@ const handleAdminLogin = async (event) => {
   }
 };
 
+
+const verifyAdminOAuthSession = async (session) => {
+  const message = $("adminLoginMessage");
+  const panel = $("adminVerifiedPanel");
+  try {
+    const user = session?.user || await currentUser();
+    const { data: membership, error } = await supabase.from("admin_team_members")
+      .select("role,status").eq("user_id", user.id).maybeSingle();
+    if (error) throw error;
+    if (user.app_metadata?.role !== "admin" || membership?.role !== "admin" || membership?.status !== "active") {
+      await supabase.auth.signOut();
+      throw new Error("This Google account is not approved as an administrator.");
+    }
+    if (message) { message.textContent = "Google Admin verification successful."; message.style.display = "block"; message.style.color = ""; }
+    if (panel) panel.hidden = false;
+    sessionStorage.removeItem("myamin_admin_google_pending");
+  } catch (e) {
+    if (message) { message.textContent = e.message || "Admin verification failed."; message.style.display = "block"; message.style.color = "#a12626"; }
+    sessionStorage.removeItem("myamin_admin_google_pending");
+  }
+};
+const addGoogleLoginButtons = () => {
+  const add = (formId, admin = false) => {
+    const form = $(formId);
+    if (!form || form.querySelector(".myamin-google-login")) return;
+    const target = form.querySelector(".form-actions") || form;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "btn btn-outline myamin-google-login";
+    button.textContent = admin ? "Continue with Google · Admin" : "Continue with Google";
+    button.addEventListener("click", async () => {
+      button.disabled = true;
+      try {
+        if (admin) sessionStorage.setItem("myamin_admin_google_pending", "1");
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: { redirectTo: window.location.href, queryParams: { prompt: "select_account" } }
+        });
+        if (error) throw error;
+      } catch (e) {
+        sessionStorage.removeItem("myamin_admin_google_pending");
+        say(admin ? "adminLoginMessage" : "loginMessage", e.message || "Google login could not start.", true);
+        button.disabled = false;
+      }
+    });
+    target.appendChild(button);
+  };
+  add("loginForm", false);
+  add("adminLoginForm", true);
+};
+
 const handleBooking = async (event) => {
   event.preventDefault();
   event.stopImmediatePropagation();
@@ -286,6 +337,7 @@ window.logout = async () => {
 document.addEventListener("DOMContentLoaded", () => {
   ensureCustomerFields();
   ensureAminFields();
+  addGoogleLoginButtons();
   $("loginForm")?.addEventListener("submit", handleCustomerLogin, true);
   $("aminForm")?.addEventListener("submit", handleAminSignup, true);
   $("bookingForm")?.addEventListener("submit", handleBooking, true);
@@ -294,8 +346,16 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 const { data: initial } = await supabase.auth.getSession();
 await showAuthState(initial.session);
+if (sessionStorage.getItem("myamin_admin_google_pending") === "1" && initial.session) {
+  await verifyAdminOAuthSession(initial.session);
+}
 supabase.auth.onAuthStateChange((_event, session) => {
-  queueMicrotask(() => showAuthState(session));
+  queueMicrotask(async () => {
+    await showAuthState(session);
+    if (sessionStorage.getItem("myamin_admin_google_pending") === "1" && session) {
+      await verifyAdminOAuthSession(session);
+    }
+  });
 });
 
 window.refreshBookings = async () => {
