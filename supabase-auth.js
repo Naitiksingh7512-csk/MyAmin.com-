@@ -227,3 +227,23 @@ await showAuthState(initial.session);
 supabase.auth.onAuthStateChange((_event, session) => {
   queueMicrotask(() => showAuthState(session));
 });
+
+window.refreshBookings = async () => {
+  const box = $("myBookings");
+  if (!box) return;
+  try {
+    const user = await currentUser();
+    const { data, error } = await supabase.from("bookings")
+      .select("id,service,state,district,place,preferred_date,preferred_time,status,confirmed_date,confirmed_time,created_at")
+      .eq("customer_user_id", user.id).order("created_at", { ascending: false });
+    if (error) throw error;
+    if (!data?.length) { box.innerHTML = "<p>अभी कोई ऑनलाइन Booking नहीं है।</p>"; return; }
+    box.innerHTML = data.map(b => {
+      const safe = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+      return '<div class="list-item"><strong>' + safe(b.service) + '</strong><p>Booking: ' + safe(b.id) +
+        '<br>Location: ' + safe(b.place) + ', ' + safe(b.district) + ', ' + safe(b.state) +
+        '<br>Date: ' + safe(b.preferred_date) + ' · ' + safe(b.preferred_time || "Any time") +
+        '<br>Status: ' + safe(b.status) + '</p></div>';
+    }).join("");
+  } catch (e) { box.textContent = e.message || "Booking list load नहीं हुई।"; }
+};
