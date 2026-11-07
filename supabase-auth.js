@@ -115,6 +115,7 @@ const showAuthState = async (session) => {
     }));
     localStorage.removeItem("myamin_demo_logged_in_amin_v1");
   }
+  if (typeof window.refreshCustomerMenuProfile === "function") window.refreshCustomerMenuProfile();
   if (typeof window.updateBookingUser === "function") window.updateBookingUser();
   renderPasskeyControls(session);
 };
@@ -183,6 +184,7 @@ const handleCustomerLogin = async (event) => {
     if (error) throw error;
     await showAuthState(data.session);
     say("loginMessage", "सुरक्षित Customer Login सफल।");
+    setTimeout(() => window.location.reload(), 450);
   } catch (e) { say("loginMessage", e.message || "Login असफल हुआ।", true); }
 };
 const handleAminSignup = async (event) => {
@@ -297,7 +299,10 @@ const addGoogleLoginButtons = () => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "btn btn-outline myamin-google-login";
-    button.textContent = admin ? "Continue with Google · Admin" : "Continue with Google";
+    button.style.display = "inline-flex";
+    button.style.alignItems = "center";
+    button.style.gap = "10px";
+    button.innerHTML = '<svg aria-hidden="true" viewBox="0 0 48 48" width="20" height="20" focusable="false"><path fill="#4285F4" d="M43.6 24.5c0-1.4-.1-2.8-.4-4.1H24v7.8h11a9.4 9.4 0 0 1-4.1 6.2v5.1h6.7c3.9-3.6 6-8.9 6-15z"/><path fill="#34A853" d="M24 44c5.5 0 10.1-1.8 13.5-4.9l-6.7-5.1c-1.8 1.2-4 1.9-6.8 1.9-5.2 0-9.6-3.5-11.2-8.2H5.9v5.3A20 20 0 0 0 24 44z"/><path fill="#FBBC05" d="M12.8 27.7a12 12 0 0 1 0-7.4V15H5.9a20 20 0 0 0 0 18z"/><path fill="#EA4335" d="M24 12.1c3 0 5.7 1 7.8 3.1l5.9-5.9C34.1 6 29.5 4 24 4A20 20 0 0 0 5.9 15l6.9 5.3c1.6-4.7 6-8.2 11.2-8.2z"/></svg><span>' + (admin ? "Continue with Google · Admin" : "Continue with Google") + '</span>';
     button.addEventListener("click", async () => {
       button.disabled = true;
       try {
