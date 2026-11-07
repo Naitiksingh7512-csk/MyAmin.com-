@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>My Amin · Team Portal</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font:15px/1.55 system-ui,-apple-system,Segoe UI,sans-serif;color:#172d26;background:radial-gradient(circle at 10% 0,#dff7ee,transparent 35%),linear-gradient(135deg,#f5f8ff,#f2fbf6);padding:24px}
+main{max-width:760px;margin:6vh auto}.card{background:#fff;border:1px solid #dcebe3;border-radius:22px;padding:24px;box-shadow:0 18px 55px #183d2b12;margin-bottom:16px}
+h1{margin:0 0 5px;font-size:27px}p{color:#64776d}.field{display:grid;gap:6px;margin:13px 0}.field input{width:100%;padding:13px;border:1px solid #cbded2;border-radius:11px;font:inherit}
+button{border:0;border-radius:11px;padding:12px 16px;font:700 14px system-ui;cursor:pointer;background:linear-gradient(110deg,#146344,#188a68);color:#fff}button:disabled{opacity:.55;cursor:wait}.secondary{background:#eaf4ef;color:#205d43}.row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}.task{padding:14px;border:1px solid #e1ece5;border-radius:13px;margin:10px 0}.task strong{display:block}.pill{font-size:12px;color:#27664a;background:#e8f6ee;border-radius:30px;padding:3px 9px}.msg{min-height:24px;color:#a12626}.hidden{display:none!important}small{color:#718078}
+</style>
+</head>
+<body>
+<main>
+<section class="card" id="loginCard">
+<h1>My Amin Team Portal</h1><p>Scan your team ID card, then sign in with the email and password provided by your administrator.</p>
+<div class="field"><label for="email">Team email</label><input id="email" type="email" autocomplete="username" required></div>
+<div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required></div>
+<button id="login">Secure sign in</button><div class="msg" id="message" role="status"></div>
+<small>The QR code only opens this portal. It does not grant account access. Your password and active team membership are still required.</small>
+</section>
+<section class="card hidden" id="dashboard">
+<div class="row" style="justify-content:space-between"><div><h1 id="memberName">Team member</h1><p id="memberRole"></p></div><button class="secondary" id="logout">Sign out</button></div>
+<div class="row" id="permissions"></div><hr style="border:0;border-top:1px solid #e4eee8;margin:18px 0">
+<h2>My assigned work</h2><div id="tasks"><p>Loading tasks…</p></div>
+</section>
+</main>
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.105.0";
+const supabase=createClient("https://cxchbvygydfrtkdmkmpa.supabase.co","sb_publishable_2xA7HmAgyn6Sr_kdpeTNZA_XIGBpZ-l",{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const $=id=>document.getElementById(id);
+const cardToken=new URLSearchParams(location.search).get("card")||"";
+const say=t=>$("message").textContent=t;
+const safe=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+async function openPortal(session){
+ if(!cardToken){say("Open this page by scanning the QR code on your team ID card.");return}
+ const {data,error}=await supabase.functions.invoke("admin-team",{body:{action:"verify_card",card_token:cardToken}});
+ if(error||!data?.success){await supabase.auth.signOut();say(data?.error||error?.message||"Team card verification failed.");return}
+ $("loginCard").classList.add("hidden");$("dashboard").classList.remove("hidden");
+ $("memberName").textContent=data.member.full_name||session.user.email;
+ $("memberRole").textContent=(data.member.role||"team_member")+" · Active team account";
+ $("permissions").innerHTML=Object.entries(data.member.permissions||{}).filter(([,v])=>v===true).map(([k])=>'<span class="pill">'+safe(k)+'</span>').join(" ")||'<span class="pill">Assigned tasks only</span>';
+ if(data.member.must_change_password){
+   const next=prompt("For account safety, change the temporary password now. Enter a new password with at least 12 characters.");
+   if(next){if(next.length<12){alert("Use at least 12 characters. You can change it from account settings after signing in.");}else{const {error:e}=await supabase.auth.updateUser({password:next});if(e)alert(e.message);}}
+ }
+ await loadTasks();
+}
+async function loadTasks(){
+ const {data,error}=await supabase.from("team_member_tasks").select("id,title,description,module,status,due_at,created_at").order("created_at",{ascending:false});
+ if(error){$("tasks").textContent=error.message;return}
+ $("tasks").innerHTML=data?.length?data.map(t=>'<article class="task"><div class="row" style="justify-content:space-between"><strong>'+safe(t.title)+'</strong><span class="pill">'+safe(t.status)+'</span></div><p>'+safe(t.description)+'</p><small>'+safe(t.module)+' · '+safe(t.due_at||"No due date")+'</small><div class="row" style="margin-top:10px"><select aria-label="Task status" data-task="'+safe(t.id)+'"><option value="pending" '+(t.status==="pending"?"selected":"")+'>Pending</option><option value="in_progress" '+(t.status==="in_progress"?"selected":"")+'>In progress</option><option value="completed" '+(t.status==="completed"?"selected":"")+'>Completed</option></select><button class="secondary" data-save="'+safe(t.id)+'">Update</button></div></article>').join(""):"<p>No tasks assigned yet.</p>";
+ document.querySelectorAll("[data-save]").forEach(b=>b.addEventListener("click",async()=>{const id=b.dataset.save;const value=document.querySelector('[data-task="'+CSS.escape(id)+'"]').value;const {error}=await supabase.from("team_member_tasks").update({status:value}).eq("id",id);if(error)alert(error.message);else await loadTasks()}));
+}
+$("login").addEventListener("click",async()=>{const {data,error}=await supabase.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});if(error){say(error.message);return}await openPortal(data.session)});
+$("logout").addEventListener("click",async()=>{await supabase.auth.signOut();location.reload()});
+const {data}=await supabase.auth.getSession();if(data.session)await openPortal(data.session);
+</script>
+</body></html>
