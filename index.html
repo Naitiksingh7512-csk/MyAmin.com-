@@ -1148,7 +1148,7 @@ header{
   <div class="dialog-box">
     <div class="dialog-head"><div><span class="search-kicker" data-en="QUICK NAVIGATION" data-hi="त्वरित खोज">QUICK NAVIGATION</span><h3 data-en="Search My Amin" data-hi="My Amin खोजें">Search My Amin</h3></div><button class="closebtn" type="button" onclick="closeSearch()" aria-label="Close search">✕</button></div>
     <p class="search-description" data-en="Find services, profiles and pages in one place." data-hi="सेवाएँ, प्रोफ़ाइल और पेज आसानी से खोजें।">Find services, profiles and pages in one place.</p>
-    <div class="search-input-wrap"><span aria-hidden="true">⌕</span><input id="siteSearch" placeholder="Search services or Profile ID…" autocomplete="off"></div>
+    <div class="search-input-wrap"><span aria-hidden="true">⌕</span><input id="siteSearch" placeholder="Search services, Amin name or UID…" autocomplete="off"></div>
     <div class="search-section-label" data-en="QUICK LINKS" data-hi="त्वरित लिंक">QUICK LINKS</div>
     <div id="searchSuggestions" class="list search-suggestions" aria-live="polite"></div>
     <div class="form-actions"><button class="btn btn-green search-submit" onclick="runSearch()" data-en="Open result" data-hi="खोलें">Open result</button></div>
@@ -1363,26 +1363,33 @@ function editDistance(a,b){
 }
 function rankSearchItems(query,items){
  const qTokens=searchTokens(query),qFlat=normalizeSearchText(query);
+ if(!qTokens.length)return [];
  return items.map(item=>{
-   const fields=[item.label,item.hiLabel,item.hint,item.hiHint,...(item.terms||[])];
-   const raw=fields.join(" ");
-   const flat=normalizeSearchText(raw);
-   if(flat.includes(qFlat)||qFlat.includes(flat)&&flat.length>2)return {item,score:0};
-   const candidates=searchTokens(raw);
-   if(!qTokens.length)return {item,score:99};
-   let score=0;
+   const fields=[item.label,item.hiLabel,item.hint,item.hiHint,...(item.terms||[])].filter(Boolean);
+   const candidates=fields.flatMap(v=>searchTokens(String(v)));
+   let score=0,matched=0;
    for(const token of qTokens){
-     let best=99;
+     let best=Infinity;
      for(const candidate of candidates){
-       const d=editDistance(token,candidate);
-       const limit=token.length<=3?1:Math.max(1,Math.floor(token.length*.34));
-       if(d<=limit)best=Math.min(best,d);
+       if(candidate===token){best=0;break;}
+       if(candidate.startsWith(token)||token.startsWith(candidate)){
+         best=Math.min(best,Math.abs(candidate.length-token.length)+0.15);
+         continue;
+       }
+       const distance=editDistance(token,candidate);
+       const allowed=token.length<=3?1:Math.max(1,Math.ceil(token.length*.45));
+       if(distance<=allowed)best=Math.min(best,distance+0.35);
      }
-     if(best===99)return {item,score:99};
-     score+=best;
+     if(best!==Infinity){matched++;score+=best;}
    }
-   return {item,score};
- }).filter(x=>x.score<99).sort((a,b)=>a.score-b.score).map(x=>x.item);
+   // Permit one imperfect token in a multi-word query, while ranking exact matches first.
+   const required=qTokens.length===1?1:qTokens.length-1;
+   if(matched<required)return {item,score:Infinity};
+   const coverage=matched/qTokens.length;
+   const exactPhrase=fields.some(v=>normalizeSearchText(String(v)).includes(qFlat));
+   return {item,score:score+(1-coverage)*2+(exactPhrase?-2:0)};
+ }).filter(x=>Number.isFinite(x.score))
+   .sort((a,b)=>a.score-b.score).map(x=>x.item);
 }
 function getAllSearchItems(){
  const items=[...smartSearchItems];
@@ -2670,6 +2677,68 @@ footer .logo-image{filter:drop-shadow(0 4px 9px rgba(0,0,0,.18))}
 @media(prefers-reduced-motion:reduce){
  #searchDialog .dialog-box,#searchDialog .search-result,#searchDialog .search-input-wrap{animation:none!important;transition:none!important;transform:none!important}
 }
+</style>
+
+
+<style id="search-premium-refresh">
+/* Premium search panel: warm ivory, deep forest, jade and restrained champagne */
+#searchDialog{backdrop-filter:blur(10px);background:rgba(12,31,25,.58)}
+#searchDialog .dialog-box{
+ position:relative;isolation:isolate;overflow:hidden;
+ background:linear-gradient(138deg,#fffdf6 0%,#f1f7ef 42%,#eaf5f1 76%,#f8f2e4 100%);
+ border:1px solid rgba(255,255,255,.88);
+ box-shadow:0 28px 90px rgba(7,35,25,.34),inset 0 1px 0 #fff;
+ color:#193b30;
+}
+#searchDialog .dialog-box:before{
+ content:"";position:absolute;z-index:-1;pointer-events:none;
+ width:360px;height:240px;right:-140px;top:-145px;border-radius:50%;
+ background:linear-gradient(120deg,rgba(193,165,91,.28),rgba(73,164,135,.22),rgba(104,158,190,.16));
+ filter:blur(24px);animation:searchGlowDrift 9s ease-in-out infinite alternate;
+}
+#searchDialog .dialog-box:after{
+ content:"";position:absolute;z-index:-1;pointer-events:none;
+ width:300px;height:190px;left:-160px;bottom:-130px;border-radius:50%;
+ background:linear-gradient(120deg,rgba(72,153,125,.18),rgba(210,185,123,.18));
+ filter:blur(25px);animation:searchGlowDrift 11s ease-in-out infinite alternate-reverse;
+}
+#searchDialog .dialog-head h3{color:#173c30;font-size:25px;font-weight:850;letter-spacing:-.8px}
+#searchDialog .search-kicker{color:#9a7839;font-weight:850;letter-spacing:2px}
+#searchDialog .search-description{color:#65786d;font-size:13.5px;font-weight:550}
+#searchDialog .search-input-wrap{
+ position:relative;border:1px solid transparent;border-radius:18px;padding:2px 15px;
+ background:linear-gradient(115deg,#fffdf8,#eaf5ef,#eef4f8,#fff7e8) padding-box,
+ linear-gradient(110deg,#9dba83,#4e9d83,#9cb8c4,#c8a96c) border-box;
+ background-size:220% 220%;animation:searchGradientFlow 9s ease infinite;
+ box-shadow:0 8px 24px rgba(24,66,49,.10),inset 0 1px 0 #fff;
+ transition:box-shadow .25s ease,transform .25s ease;
+}
+#searchDialog .search-input-wrap:focus-within{box-shadow:0 0 0 4px rgba(73,145,113,.15),0 12px 28px rgba(24,66,49,.15);transform:translateY(-2px)}
+#searchDialog .search-input-wrap>span{color:#397c63;text-shadow:0 2px 8px rgba(57,124,99,.18)}
+#searchDialog #siteSearch{font-weight:650!important;color:#193b30!important;letter-spacing:.1px}
+#searchDialog #siteSearch::placeholder{color:#87948b;font-weight:500}
+#searchDialog .search-section-label{color:#987b46;font-weight:850;letter-spacing:1.8px}
+#searchDialog .search-result{
+ background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(241,248,242,.95));
+ border:1px solid rgba(191,215,198,.8);border-radius:16px;
+ box-shadow:0 5px 15px rgba(27,65,49,.055);
+ transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease,background .22s ease;
+}
+#searchDialog .search-result:hover,#searchDialog .search-result:focus-visible{
+ background:linear-gradient(125deg,#edf6e9,#e5f4ef,#f8f1df);
+ border-color:#9ebd9d;transform:translateY(-3px);
+ box-shadow:0 12px 25px rgba(27,65,49,.13);outline:none;
+}
+#searchDialog .search-result-icon{background:linear-gradient(145deg,#e5efd9,#dcefe9);color:#245d48;box-shadow:inset 0 1px 0 #fff}
+#searchDialog .search-result-copy strong{color:#193b30;font-weight:800}
+#searchDialog .search-result-copy small{color:#718278}
+#searchDialog .search-result-arrow{color:#a1844c}
+#searchDialog .search-empty{padding:16px;border:1px dashed #b8cdbd;border-radius:14px;background:rgba(255,255,255,.48)}
+#searchDialog .search-submit{background:linear-gradient(110deg,#315f49,#1c4435)!important;box-shadow:0 8px 18px rgba(28,68,53,.2);transition:transform .2s,box-shadow .2s}
+#searchDialog .search-submit:hover{transform:translateY(-2px);box-shadow:0 12px 23px rgba(28,68,53,.25)}
+@keyframes searchGradientFlow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes searchGlowDrift{from{transform:translate3d(-8px,0,0) scale(.94)}to{transform:translate3d(12px,10px,0) scale(1.08)}}
+@media(prefers-reduced-motion:reduce){#searchDialog *,#searchDialog:before{animation:none!important;transition:none!important}}
 </style>
 
 </body>
