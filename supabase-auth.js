@@ -1,9 +1,9 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.105.0";
 
 const SUPABASE_URL = "https://cxchbvygydfrtkdmkmpa.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_2xA7HmAgyn6Sr_kdpeTNZA_XIGBpZ-l";
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, experimental: { passkey: true } }
 });
 window.myAminSupabase = supabase;
 
@@ -39,56 +39,92 @@ const currentUser = async () => {
   if (error) throw error;
   return data.user;
 };
+const renderPasskeyControls = (session) => {
+  const box = $("authStatus");
+  if (!box) return;
+  const controls = document.createElement("div");
+  controls.style.cssText = "display:flex;gap:8px;flex-wrap:wrap;margin-top:10px";
+  const button = (label, action) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "btn btn-outline";
+    b.textContent = label;
+    b.addEventListener("click", action);
+    controls.appendChild(b);
+  };
+  if (session?.user) {
+    button("Set up fingerprint passkey · Touch ID", async () => {
+      try {
+        const { error } = await supabase.auth.registerPasskey();
+        if (error) throw error;
+        say("loginMessage", "Passkey registered. Your device may use Touch ID or its secure passcode.");
+      } catch (e) { say("loginMessage", e.message || "Passkey setup is not enabled yet.", true); }
+    });
+  } else {
+    button("Sign in with fingerprint · Passkey", async () => {
+      try {
+        const { data, error } = await supabase.auth.signInWithPasskey();
+        if (error) throw error;
+        await showAuthState(data.session);
+        say("loginMessage", "Passkey sign-in successful.");
+      } catch (e) { say("loginMessage", e.message || "Passkey sign-in is not available yet.", true); }
+    });
+  }
+  box.appendChild(controls);
+};
 const showAuthState = async (session) => {
   const box = $("authStatus");
   if (!box) return;
   if (!session?.user) {
     box.textContent = "Secure account: signed out";
+    renderPasskeyControls(null);
     return;
   }
-  const { data: p } = await supabase.from("user_profiles")
+  const { data: p, error: profileError } = await supabase.from("user_profiles")
     .select("full_name,account_type").eq("id", session.user.id).maybeSingle();
+  if (profileError) throw profileError;
+  const { data: a, error: aminError } = await supabase.from("amin_profiles")
+    .select("profile_uid,display_name,phone,state,district,place,approval_status,photo_path,upi_id,upi_qr_path")
+    .eq("user_id", session.user.id).maybeSingle();
+  if (aminError) throw aminError;
   box.textContent = "Secure account: " + (p?.full_name || session.user.email) +
-    " · " + (p?.account_type === "amin" ? "Amin" : "Customer");
-  if (p?.account_type === "amin") {
-    const { data: a } = await supabase.from("amin_profiles")
-      .select("profile_uid,display_name,phone,state,district,place,approval_status,photo_path,upi_id,upi_qr_path")
-      .eq("user_id", session.user.id).maybeSingle();
-    if (a) {
-      if ($("idName")) {
-        $("idName").value = a.display_name || "";
-        $("idNumber").value = a.profile_uid || "";
-        $("idPhone").value = a.phone || "";
-        $("idDistrict").value = (a.district || "") + ", " + (a.state || "");
-        $("idUpiId").value = a.upi_id || "";
-      }
-      if ($("cardPhoto") && a.photo_path) {
-        $("cardPhoto").src = a.photo_path;
-        $("cardPhoto").style.display = "block";
-        $("cardPhotoPlaceholder").style.display = "none";
-      }
-      if ($("cardUpiQr") && a.upi_qr_path) {
-        $("cardUpiQr").src = a.upi_qr_path;
-        $("cardUpiQr").hidden = false;
-        $("cardUpiQrPlaceholder").hidden = true;
-      }
-      const local = {
-        id: a.profile_uid, profileId: a.profile_uid, name: a.display_name,
-        phone: a.phone, state: a.state, district: a.district, place: a.place,
-        approved: a.approval_status === "approved", photo: a.photo_path || "",
-        upiId: a.upi_id || "", upiQr: a.upi_qr_path || ""
-      };
-      localStorage.setItem("myamin_demo_logged_in_amin_v1", JSON.stringify(local));
-      if (typeof window.refreshAminMenuProfile === "function") window.refreshAminMenuProfile();
+    " · " + (a ? "Amin" : "Customer");
+  if (a) {
+    if ($("idName")) {
+      $("idName").value = a.display_name || "";
+      $("idNumber").value = a.profile_uid || "";
+      $("idPhone").value = a.phone || "";
+      $("idDistrict").value = (a.district || "") + ", " + (a.state || "");
+      $("idUpiId").value = a.upi_id || "";
     }
-  }
-  if (p?.account_type === "customer") {
+    if ($("cardPhoto") && a.photo_path) {
+      $("cardPhoto").src = a.photo_path;
+      $("cardPhoto").style.display = "block";
+      $("cardPhotoPlaceholder").style.display = "none";
+    }
+    if ($("cardUpiQr") && a.upi_qr_path) {
+      $("cardUpiQr").src = a.upi_qr_path;
+      $("cardUpiQr").hidden = false;
+      $("cardUpiQrPlaceholder").hidden = true;
+    }
+    const local = {
+      id: a.profile_uid, profileId: a.profile_uid, name: a.display_name,
+      phone: a.phone, state: a.state, district: a.district, place: a.place,
+      approved: a.approval_status === "approved", photo: a.photo_path || "",
+      upiId: a.upi_id || "", upiQr: a.upi_qr_path || ""
+    };
+    localStorage.setItem("myamin_demo_logged_in_amin_v1", JSON.stringify(local));
+    localStorage.removeItem("myamin_demo_user_v1");
+    if (typeof window.refreshAminMenuProfile === "function") window.refreshAminMenuProfile();
+  } else {
     localStorage.setItem("myamin_demo_user_v1", JSON.stringify({
-      id: session.user.id, name: p.full_name || session.user.email,
+      id: session.user.id, name: p?.full_name || session.user.email,
       phone: session.user.phone || "", email: session.user.email || ""
     }));
+    localStorage.removeItem("myamin_demo_logged_in_amin_v1");
   }
   if (typeof window.updateBookingUser === "function") window.updateBookingUser();
+  renderPasskeyControls(session);
 };
 const ensureCustomerFields = () => {
   const form = $("loginForm");
