@@ -128,6 +128,8 @@ const ensureCustomerFields = () => {
   const email = $("customerEmail");
   email.required = true;
   email.autocomplete = "email";
+  if ($("customerName")) $("customerName").required = false;
+  if ($("customerPhone")) $("customerPhone").required = false;
   email.placeholder = "name@example.com";
   const pass = document.createElement("div");
   pass.className = "field";
@@ -139,6 +141,25 @@ const ensureCustomerFields = () => {
   create.className = "btn btn-outline";
   create.textContent = "Create Customer Account / नया अकाउंट";
   form.querySelector(".form-actions").prepend(create);
+  const forgot = document.createElement("button");
+  forgot.type = "button";
+  forgot.id = "forgotCustomerPassword";
+  forgot.className = "btn btn-outline";
+  forgot.textContent = "Forgot password? / पासवर्ड भूल गए?";
+  form.querySelector(".form-actions").appendChild(forgot);
+  forgot.addEventListener("click", async () => {
+    const emailValue = email.value.trim().toLowerCase();
+    if (!emailValue) { say("loginMessage", "पहले अपना Customer Email भरें।", true); email.focus(); return; }
+    forgot.disabled = true;
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(emailValue, {
+        redirectTo: "https://naitiksingh7512-csk.github.io/MyAmin.com-/"
+      });
+      if (error) throw error;
+      say("loginMessage", "यदि इस ईमेल पर अकाउंट है, तो Password Reset लिंक भेज दिया गया है। Inbox और Spam फ़ोल्डर देखें।");
+    } catch (e) { say("loginMessage", e.message || "Password reset email नहीं भेजा जा सका।", true); }
+    finally { forgot.disabled = false; }
+  });
   create.addEventListener("click", async () => {
     const name = $("customerName").value.trim();
     const phone = $("customerPhone").value.trim();
@@ -179,15 +200,21 @@ const ensureAminFields = () => {
 const handleCustomerLogin = async (event) => {
   event.preventDefault();
   event.stopImmediatePropagation();
-  const email = $("customerEmail").value.trim();
+  const email = $("customerEmail").value.trim().toLowerCase();
   const password = $("customerPassword").value;
+  if (!email || !password) { say("loginMessage", "अपना ईमेल और पासवर्ड भरें।", true); return; }
   try {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
     await showAuthState(data.session);
     say("loginMessage", "सुरक्षित Customer Login सफल।");
     setTimeout(() => window.location.reload(), 450);
-  } catch (e) { say("loginMessage", e.message || "Login असफल हुआ।", true); }
+  } catch (e) {
+    const message = e?.code === "invalid_credentials" || /invalid login credentials/i.test(e?.message || "")
+      ? "ईमेल या पासवर्ड मेल नहीं खा रहा। ईमेल जाँचें या Forgot password से नया पासवर्ड सेट करें।"
+      : (e.message || "Login असफल हुआ।");
+    say("loginMessage", message, true);
+  }
 };
 const handleAminSignup = async (event) => {
   event.preventDefault();
