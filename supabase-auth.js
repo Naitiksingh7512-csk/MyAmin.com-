@@ -465,6 +465,7 @@ await showAuthState(initial.session);
 await syncAdminAccessUI(initial.session);
 if (typeof window.renderAdminContentFeed === "function") await window.renderAdminContentFeed();
 if (typeof window.applyLocalWebsiteSettings === "function") await window.applyLocalWebsiteSettings();
+if (typeof window.loadAmins === "function") await window.loadAmins();
 if (sessionStorage.getItem("myamin_admin_google_pending") === "1" && initial.session) {
   await verifyAdminOAuthSession(initial.session);
 }
