@@ -280,10 +280,22 @@ const handleAminSignup = async (event) => {
       upi_id: $("regUpiId").value.trim() || previousProfile?.upi_id || null,
       upi_qr_path: upiQr, approval_status: previousProfile?.approval_status || "pending"
     };
-    const { error: profileError } = await supabase.from("amin_profiles").upsert(record, { onConflict: "user_id" });
-    if (profileError) throw profileError;
+    if (previousProfile) {
+      const { data: updated, error: profileError } = await supabase.functions.invoke("admin-team", { body: {
+        action: "update_amin_profile", display_name: name, phone,
+        whatsapp: $("regWhatsApp").value.trim(), state: $("regState").value.trim(),
+        district: $("regDistrict").value.trim(), place: $("regPlace").value.trim(),
+        business_reference: $("regBusinessId").value.trim(), photo_path: photo,
+        upi_id: $("regUpiId").value.trim() || previousProfile.upi_id, upi_qr_path: upiQr
+      }});
+      if (profileError) throw profileError;
+      if (!updated?.success) throw new Error(updated?.error || "Amin profile update failed.");
+    } else {
+      const { error: profileError } = await supabase.from("amin_profiles").insert(record);
+      if (profileError) throw profileError;
+    }
     await showAuthState(data.session);
-    say("aminRegMessage", "Amin अकाउंट और ऑनलाइन प्रोफ़ाइल बन गई। Profile ID: " + uid + " · Status: Pending approval.");
+    say("aminRegMessage", "Amin profile saved. Profile ID: " + uid + " · Status: " + (previousProfile?.approval_status || "pending") + ".");
   } catch (e) { say("aminRegMessage", e.message || "Amin registration असफल हुआ।", true); }
   finally { submit.disabled = false; }
 };
