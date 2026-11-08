@@ -167,54 +167,66 @@ const handleCustomerLogin = async (event) => {
   event.stopImmediatePropagation();
   const form = $("loginForm");
   const mode = form.dataset.authMode || "signup";
-  const name = $("customerName").value.trim();
-  const username = $("customerUsername").value.trim().toLowerCase();
-  const password = $("customerPassword").value;
+  const name = $("customerName")?.value.trim() || "";
+  const username = $("customerUsername")?.value.trim().toLowerCase() || "";
+  const password = $("customerPassword")?.value || "";
   if (!/^[a-z0-9][a-z0-9._-]{2,23}$/.test(username)) {
-    say("loginMessage", "Username 3–24 अक्षरों का हो और English letters, numbers, dot, _ या - से बने।", true);
+    say("loginMessage", "Username 3–24 अक्षरों का हो: English letters, numbers, dot, underscore या hyphen।", true);
     return;
   }
-  if (password.length < 8) { say("loginMessage", "पासवर्ड कम-से-कम 8 अक्षरों का होना चाहिए।", true); return; }
-  if (mode === "signup" && !name) { say("loginMessage", "कृपया अपना पूरा नाम भरें।", true); return; }
+  if (password.length < 8 || password.length > 72) {
+    say("loginMessage", "पासवर्ड 8 से 72 अक्षरों का होना चाहिए।", true);
+    return;
+  }
+  if (mode === "signup" && !name) {
+    say("loginMessage", "कृपया अपना पूरा नाम भरें।", true);
+    return;
+  }
   const button = form.querySelector('button[type="submit"]');
   button.disabled = true;
+  button.textContent = mode === "signup" ? "Creating account…" : "Logging in…";
   try {
-    // Supabase Auth has no native username/password identity. A reserved,
-    // non-deliverable email alias maps each unique username to email/password Auth.
     const authEmail = username + "@login.myamin.invalid";
-    let data, error;
+    let result;
     if (mode === "signup") {
-      const result = await supabase.auth.signUp({
+      result = await supabase.auth.signUp({
         email: authEmail,
         password,
         options: { data: { full_name: name, username, account_type: "customer" } }
       });
-      data = result.data; error = result.error;
-      if (error) throw error;
-      if (!data.session || !data.user) {
-        throw new Error("अकाउंट बन गया हो सकता है, लेकिन Login session नहीं मिला। पहले Supabase Auth में Email confirmations OFF करना ज़रूरी है। अभी दोबारा Create Account न दबाएँ।");
-      }
     } else {
-      const result = await supabase.auth.signInWithPassword({ email: authEmail, password });
-      data = result.data; error = result.error;
-      if (error) throw error;
+      result = await supabase.auth.signInWithPassword({ email: authEmail, password });
     }
-    if (!data?.user || !data?.session) throw new Error("Login session नहीं मिला। Supabase Auth settings जाँचें।");
-    const profile = {
-      id: data.user.id,
-      full_name: mode === "signup" ? name : (data.user.user_metadata?.full_name || "Customer"),
-      phone: null,
-      district: null,
-      account_type: "customer"
-    };
-    const { error: profileError } = await supabase.from("user_profiles").upsert(profile, { onConflict: "id" });
-    if (profileError) throw profileError;
-    await showAuthState(data.session);
-    say("loginMessage", mode === "signup" ? "आपका अकाउंट बन गया और Login सफल है।" : "Login सफल। आपका अकाउंट खुल गया।");
-    setTimeout(() => window.location.reload(), 700);
+    if (result.error) throw result.error;
+    const user = result.data?.user;
+    const session = result.data?.session;
+    if (!user || !session) {
+      throw new Error("Supabase ने login session नहीं दिया। Confirm Email OFF होने की पुष्टि करें; अभी दोबारा अकाउंट न बनाएँ।");
+    }
+    const profileName = mode === "signup" ? name : (user.user_metadata?.full_name || username);
+    // Persist the menu profile immediately; the menu can render without a page/API round trip.
+    localStorage.setItem("myamin_demo_user_v1", JSON.stringify({
+      id: user.id, name: profileName, username, phone: "", district: "", email: username
+    }));
+    localStorage.removeItem("myamin_demo_logged_in_amin_v1");
+    if (typeof window.refreshCustomerMenuProfile === "function") window.refreshCustomerMenuProfile();
+    if (typeof window.updateBookingUser === "function") window.updateBookingUser();
+    say("loginMessage", mode === "signup" ? "अकाउंट बन गया और Login सफल है। पेज अभी reload होगा।" : "Login सफल। पेज अभी reload होगा।");
+    // Keep profile-table sync best-effort; an optional profile table issue must not undo Auth login.
+    try {
+      const { error: profileError } = await supabase.from("user_profiles").upsert({
+        id: user.id, full_name: profileName, phone: null, district: null, account_type: "customer"
+      }, { onConflict: "id" });
+      if (profileError) console.warn("Customer profile sync:", profileError.message);
+    } catch (profileError) {
+      console.warn("Customer profile sync:", profileError);
+    }
+    window.location.reload();
   } catch (e) {
     say("loginMessage", e.message || "Login पूरा नहीं हो सका।", true);
-  } finally { button.disabled = false; }
+    button.disabled = false;
+    button.textContent = mode === "signup" ? "Create Account" : "Login";
+  }
 };
 const handleAminSignup = async (event) => {
   event.preventDefault();
