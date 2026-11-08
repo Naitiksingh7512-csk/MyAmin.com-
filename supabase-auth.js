@@ -121,26 +121,19 @@ const showAuthState = async (session) => {
   if (typeof window.updateBookingUser === "function") window.updateBookingUser();
   renderPasskeyControls(session);
 };
-const normalizeIndianPhone = (value) => {
-  let digits = String(value || "").replace(/\D/g, "");
-  if (digits.length === 10) digits = "91" + digits;
-  if (digits.length === 12 && digits.startsWith("91")) return "+" + digits;
-  if (String(value || "").trim().startsWith("+") && digits.length >= 10 && digits.length <= 15) return "+" + digits;
-  throw new Error("भारत का सही 10 अंकों का मोबाइल नंबर डालें।");
-};
 const ensureCustomerFields = () => {
   const form = $("loginForm");
   if (!form || $("customerOtp")) return;
   $("customerName").required = true;
-  $("customerPhone").required = true;
-  $("customerPhone").type = "tel";
-  $("customerPhone").inputMode = "numeric";
-  $("customerPhone").placeholder = "10 अंकों का मोबाइल नंबर";
+  $("customerEmail").required = true;
+  $("customerEmail").type = "email";
+  $("customerEmail").autocomplete = "email";
+  $("customerEmail").placeholder = "yourname@example.com";
   const otp = document.createElement("div");
   otp.className = "field full";
-  otp.innerHTML = '<label for="customerOtp">SMS OTP / मोबाइल पर आया OTP *</label><input id="customerOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" pattern="[0-9]{4,8}" placeholder="OTP डालें">';
+  otp.innerHTML = '<label for="customerOtp">Email OTP / ईमेल पर आया 6 अंकों का OTP *</label><input id="customerOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="6 अंकों का OTP">';
   form.querySelector(".form-grid").appendChild(otp);
-  $("verifyCustomerOtp")?.addEventListener("click", verifyCustomerPhoneOtp);
+  $("verifyCustomerOtp")?.addEventListener("click", verifyCustomerEmailOtp);
 };
 const ensureAminFields = () => {
   const form = $("aminForm");
@@ -159,48 +152,49 @@ const handleCustomerLogin = async (event) => {
   event.preventDefault();
   event.stopImmediatePropagation();
   const name = $("customerName").value.trim();
-  let phone;
-  try { phone = normalizeIndianPhone($("customerPhone").value); }
-  catch (e) { say("loginMessage", e.message, true); return; }
+  const email = $("customerEmail").value.trim().toLowerCase();
   if (!name) { say("loginMessage", "कृपया अपना पूरा नाम भरें।", true); return; }
+  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+    say("loginMessage", "कृपया सही ईमेल पता डालें।", true); $("customerEmail").focus(); return;
+  }
   const button = $("loginForm").querySelector('button[type="submit"]');
   button.disabled = true;
   try {
     const { error } = await supabase.auth.signInWithOtp({
-      phone,
+      email,
       options: { shouldCreateUser: true, data: { full_name: name, account_type: "customer" } }
     });
     if (error) throw error;
     sessionStorage.setItem("myamin_pending_customer_name", name);
-    sessionStorage.setItem("myamin_pending_customer_phone", phone);
-    say("loginMessage", "OTP भेजने का अनुरोध सफल हुआ। SMS में आया OTP नीचे भरकर Verify OTP दबाएँ।");
+    sessionStorage.setItem("myamin_pending_customer_email", email);
+    say("loginMessage", "ईमेल पर OTP भेज दिया गया है। Inbox या Spam में 6 अंकों का कोड देखें, फिर Verify OTP दबाएँ।");
     $("customerOtp").focus();
   } catch (e) {
-    say("loginMessage", e.message || "OTP नहीं भेजा जा सका। Supabase में Phone Auth और SMS Provider सेटिंग जाँचें।", true);
+    say("loginMessage", e.message || "ईमेल OTP नहीं भेजा जा सका। थोड़ी देर बाद फिर कोशिश करें।", true);
   } finally { button.disabled = false; }
 };
-const verifyCustomerPhoneOtp = async () => {
+const verifyCustomerEmailOtp = async () => {
   const button = $("verifyCustomerOtp");
   const otp = $("customerOtp")?.value.trim();
-  const phone = sessionStorage.getItem("myamin_pending_customer_phone");
+  const email = sessionStorage.getItem("myamin_pending_customer_email");
   const name = sessionStorage.getItem("myamin_pending_customer_name") || $("customerName").value.trim();
-  if (!phone) { say("loginMessage", "पहले मोबाइल नंबर डालकर Send OTP दबाएँ।", true); return; }
-  if (!otp || !/^\d{4,8}$/.test(otp)) { say("loginMessage", "SMS में आया सही OTP भरें।", true); return; }
+  if (!email) { say("loginMessage", "पहले नाम और ईमेल डालकर Send OTP दबाएँ।", true); return; }
+  if (!otp || !/^\\d{6}$/.test(otp)) { say("loginMessage", "ईमेल में आया 6 अंकों का सही OTP भरें।", true); $("customerOtp").focus(); return; }
   button.disabled = true;
   try {
-    const { data, error } = await supabase.auth.verifyOtp({ phone, token: otp, type: "sms" });
+    const { data, error } = await supabase.auth.verifyOtp({ email, token: otp, type: "email" });
     if (error) throw error;
     if (!data.session || !data.user) throw new Error("OTP सत्यापित हुआ, लेकिन Login session नहीं मिला।");
-    const profile = { id: data.user.id, full_name: name || "Customer", phone, account_type: "customer" };
+    const profile = { id: data.user.id, full_name: name || data.user.user_metadata?.full_name || "Customer", phone: null, account_type: "customer" };
     const { error: profileError } = await supabase.from("user_profiles").upsert(profile, { onConflict: "id" });
     if (profileError) throw profileError;
     await showAuthState(data.session);
     sessionStorage.removeItem("myamin_pending_customer_name");
-    sessionStorage.removeItem("myamin_pending_customer_phone");
-    say("loginMessage", "मोबाइल OTP सत्यापित। Customer Login सफल।");
+    sessionStorage.removeItem("myamin_pending_customer_email");
+    say("loginMessage", "Email OTP सत्यापित। Customer Login सफल।");
     setTimeout(() => window.location.reload(), 600);
   } catch (e) {
-    say("loginMessage", e.message || "OTP सत्यापित नहीं हुआ।", true);
+    say("loginMessage", e.message || "ईमेल OTP सत्यापित नहीं हुआ।", true);
   } finally { button.disabled = false; }
 };
 const handleAminSignup = async (event) => {
