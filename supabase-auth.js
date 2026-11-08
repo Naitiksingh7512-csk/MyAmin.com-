@@ -106,7 +106,7 @@ const showAuthState = async (session) => {
       $("cardUpiQrPlaceholder").hidden = true;
     }
     const local = {
-      id: a.profile_uid, profileId: a.profile_uid, name: a.display_name,
+      id: a.profile_uid, profileId: a.profile_uid, userId: session.user.id, name: a.display_name,
       phone: a.phone, state: a.state, district: a.district, place: a.place,
       approved: a.approval_status === "approved", photo: a.photo_path || "",
       upiId: a.upi_id || "", upiQr: a.upi_qr_path || ""
