@@ -2270,7 +2270,7 @@ async function refreshNearbyAmins(userLat=null,userLng=null){
   const marker=L.marker(point,{icon:nearbyAminIcon()}).addTo(nearbyMapInstance).bindPopup("<strong>"+safe(a.name)+"</strong><br>"+safe([a.place,a.district,a.state].filter(Boolean).join(", "))+"<br><small>Approximate registered area</small>");
   nearbyAminMarkers.push(marker);found.push({a,point});
  }
- list.innerHTML=found.map(x=>'<div class="nearby-card"><strong>'+safe(x.a.name)+'</strong><small>'+safe([x.a.place,x.a.district,x.a.state].filter(Boolean).join(", "))+' · Approximate area</small><br><small>'+""+'</small></div>').join("")||'<div class="nearby-card"><strong>Could not locate Amin areas.</strong><small>Profiles need a recognizable village/city and district, or saved GPS coordinates.</small></div>';
+ list.innerHTML=found.map(x=>'<div class="nearby-card"><strong>'+safe(x.a.name)+'</strong><small>'+safe([x.a.place,x.a.district,x.a.state].filter(Boolean).join(", "))+' · Approximate area</small><br><small>'+""+'</small></div>').join("")||'<div class="nearby-card"><strong>Could not locate Amin areas.</strong><small>Profiles need a recognizable village/city and district so the map can estimate their area.</small></div>';
  if(userLat!==null&&userLng!==null){const bounds=L.latLngBounds([[userLat,userLng],...found.map(x=>x.point)]);nearbyMapInstance.fitBounds(bounds.pad(.18),{maxZoom:13});}
  nearbySetStatus("Showing "+found.length+" of "+records.length+" approved Amin profile(s). Red pins show approximate registered areas, not verified live Amin positions.");
 }
