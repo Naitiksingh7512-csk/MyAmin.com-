@@ -318,36 +318,6 @@ const handleAdminLogin = async (event) => {
  finally{if(button)button.disabled=false;}
 };
 
-const handleAdminPasskeyLogin = async () => {
-  const button = $("adminPasskeyLogin");
-  const message = $("adminLoginMessage");
-  const panel = $("adminVerifiedPanel");
-  const details = $("adminVerifiedDetails");
-  if (button) button.disabled = true;
-  if (panel) panel.hidden = true;
-  if (details) details.hidden = true;
-  try {
-    const { data, error } = await supabase.auth.signInWithPasskey();
-    if (error) throw error;
-    const user = data.user;
-    const { data: member, error: memberError } = await supabase.from("admin_team_members")
-      .select("role,status").eq("user_id", user.id).maybeSingle();
-    if (memberError) throw memberError;
-    if (user.app_metadata?.role !== "admin" || member?.role !== "admin" || member?.status !== "active") {
-      await supabase.auth.signOut();
-      throw new Error("यह Passkey किसी सक्रिय Admin account की नहीं है।");
-    }
-    sessionStorage.setItem("myamin_admin_passkey_verified", user.id);
-    if (panel) panel.hidden = false;
-    if (details) details.hidden = false;
-    say("adminLoginMessage", "Touch ID / Passkey से Admin पहचान verify हो गई। Dashboard खुल रहा है…");
-    setTimeout(() => { window.location.href = "ma-control-9f2c7a61b4e8.html"; }, 700);
-  } catch (e) {
-    say("adminLoginMessage", e.message || "Passkey sign-in पूरा नहीं हुआ।", true);
-  } finally {
-    if (button) button.disabled = false;
-  }
-};
 const verifyAdminOAuthSession = async (session) => {
   const message = $("adminLoginMessage");
   const panel = $("adminVerifiedPanel");
@@ -462,7 +432,6 @@ document.addEventListener("DOMContentLoaded", () => {
   $("aminForm")?.addEventListener("submit", handleAminSignup, true);
   $("bookingForm")?.addEventListener("submit", handleBooking, true);
   $("adminLoginForm")?.addEventListener("submit", handleAdminLogin, true);
-  $("adminPasskeyLogin")?.addEventListener("click", handleAdminPasskeyLogin);
 
   $("loginForm")?.querySelector('button[onclick="logout()"]')?.addEventListener("click", window.logout);
 });
