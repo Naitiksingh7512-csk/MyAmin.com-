@@ -1942,19 +1942,24 @@ $("aminForm").addEventListener("submit",e=>{
 });
 
 /* Amin search/list */
+let publicAminsCache=[];
 function searchAmins() {
   const query=$("aminSearch").value.trim().toLowerCase();
   const state=$("aminState").value.toLowerCase();
-  const records=read(DB.amins,[]).filter(a=>a.approved&&a.workAllowed!==false);
-  const filtered=records.filter(a=>{
-    const combined=[a.name,a.profileId,a.id,a.state,a.district,a.place,a.description].join(" ").toLowerCase();
+  const filtered=publicAminsCache.filter(a=>{
+    const combined=[a.name,a.profileId,a.id,a.state,a.district,a.place,a.description,(a.services||[]).join(" ")].join(" ").toLowerCase();
     return (!query||combined.includes(query))&&(!state||(a.state||"").toLowerCase()===state);
   });
   renderAmins(filtered);
 }
-function loadAmins() {
-  const records=read(DB.amins,[]).filter(a=>a.approved&&a.workAllowed!==false);
-  renderAmins(records);
+async function loadAmins() {
+ try{
+  const client=window.myAminSupabase;if(!client){renderAmins([]);return;}
+  const {data,error}=await client.from("amin_profiles").select("profile_uid,display_name,state,district,place,experience,services,photo_path,approval_status").eq("approval_status","approved");
+  if(error)throw error;
+  publicAminsCache=(data||[]).map(a=>({id:a.profile_uid,profileId:a.profile_uid,name:a.display_name,state:a.state,district:a.district,place:a.place,description:a.experience||"",services:a.services||[],photo:a.photo_path||"",approved:true,workAllowed:true}));
+  searchAmins();
+ }catch(e){$("aminResults").innerHTML='<div class="list-item">Amin directory could not be loaded: '+safe(e.message||"Unknown error")+'</div>';}
 }
 /* Obsolete renderer removed; the enhanced renderer is defined later. */
 function prefillBooking(name) {
@@ -2309,7 +2314,7 @@ $("downloadAminCard").addEventListener("click",downloadAminIdCard);
 /* Initialize saved language after all page features are ready */
 applyLanguage(currentLang);
 
-function renderAmins(records){const box=$("aminResults");if(!records.length){box.innerHTML='<div class="list-item"><strong>No approved Amin profiles found yet.</strong><p>You can submit an Amin registration.</p></div>';return}box.innerHTML=records.map(a=>{const id=safe(a.profileId||a.id||""),phone=safe(a.phone||""),wa=safe(String(a.whatsapp||a.phone||"").replace(/\D/g,"")),name=safe(a.name||"Amin");return '<div class="list-item"><span class="pill">Approved profile</span><h3>'+name+'</h3><p><strong>Profile ID:</strong> '+id+'<br>📍 '+safe(a.place)+', '+safe(a.district)+', '+safe(a.state)+'<br>📞 '+phone+'<br>'+safe(a.description||"भूमि मापी सेवाएँ")+'</p><div class="amin-social-row">'+(a.instagram?'<a href="'+safe(a.instagram)+'" target="_blank" rel="noopener">Instagram</a>':'')+(a.facebook?'<a href="'+safe(a.facebook)+'" target="_blank" rel="noopener">Facebook</a>':'')+(a.youtube?'<a href="'+safe(a.youtube)+'" target="_blank" rel="noopener">YouTube</a>':'')+'</div><div class="amin-action-row"><button class="btn btn-light btn-small" onclick="toggleAminFollow(\''+id+'\')">'+(isAminFollowed(id)?"♥ Following":"♡ Follow")+'</button><a class="btn btn-outline btn-small" href="tel:'+phone+'">Call</a><a class="btn btn-outline btn-small" href="https://wa.me/'+wa+'" target="_blank" rel="noopener">Chat</a><button class="btn btn-green btn-small" onclick="prefillBooking(\''+name.replace(/'/g,"&#39;")+'\')">अपॉइंटमेंट माँगें</button></div></div>'}).join("");translateDynamic(box)}
+function renderAmins(records){const box=$("aminResults");if(!records.length){box.innerHTML='<div class="list-item"><strong>No approved Amin profiles found yet.</strong><p>You can submit an Amin registration.</p></div>';return}box.innerHTML=records.map(a=>{const id=safe(a.profileId||a.id||""),phone=safe(a.phone||""),wa=safe(String(a.whatsapp||a.phone||"").replace(/\D/g,"")),name=safe(a.name||"Amin");return '<div class="list-item"><span class="pill">Approved profile</span><h3>'+name+'</h3><p><strong>Profile ID:</strong> '+id+'<br>📍 '+safe(a.place)+', '+safe(a.district)+', '+safe(a.state)+'<br>'+safe(a.description||"भूमि मापी सेवाएँ")+'</p><div class="amin-social-row"></div><div class="amin-action-row"><button class="btn btn-light btn-small" onclick="toggleAminFollow(\''+id+'\')">'+(isAminFollowed(id)?"♥ Following":"♡ Follow")+'</button>'+(phone?'<a class="btn btn-outline btn-small" href="tel:'+phone+'">Call</a>':'')+(wa?'<a class="btn btn-outline btn-small" href="https://wa.me/'+wa+'" target="_blank" rel="noopener">Chat</a>':'')+'<button class="btn btn-green btn-small" onclick="prefillBooking(\''+name.replace(/'/g,"&#39;")+'\')">अपॉइंटमेंट माँगें</button></div></div>'}).join("");translateDynamic(box)}
 const MYAMIN_FOLLOWS_KEY="myamin_followed_amins_v1";
 function getFollowedAmins(){try{return JSON.parse(localStorage.getItem(MYAMIN_FOLLOWS_KEY)||"[]")}catch(e){return []}}
 function isAminFollowed(id){return getFollowedAmins().includes(String(id||""))}
