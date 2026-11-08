@@ -1259,7 +1259,8 @@ function closeMenu() {
   document.body.style.overflow="";
 }
 $("menuBtn").addEventListener("click",openMenu);
-$("openCustomerAccount")?.addEventListener("click",openCustomerAccount);
+$("openCustomerAccount")?.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();openCustomerAccount();});
+ $("customerMenuProfile")?.addEventListener("click",e=>{if(e.target.closest("button"))return;openCustomerAccount();});
 $("closeCustomerAccount")?.addEventListener("click",()=>$("customerAccountDialog").classList.remove("show"));
  $("customerAdminDashboardLink")?.addEventListener("click",e=>{e.preventDefault();$("customerAccountDialog")?.classList.remove("show");const section=$("adminLogin");if(section){section.classList.add("active");section.scrollIntoView({behavior:"smooth",block:"start"});}setTimeout(()=>$("adminEmail")?.focus({preventScroll:true}),350);});
 $("customerAccountDialog")?.addEventListener("click",e=>{if(e.target===$("customerAccountDialog"))$("customerAccountDialog").classList.remove("show")});
@@ -1281,20 +1282,22 @@ function refreshCustomerMenuProfile(){const u=read(DB.user,null),b=$("customerMe
 refreshCustomerMenuProfile();
 async function openCustomerAccount(){
  const client=window.myAminSupabase;
- if(!client){toast("Backend connection नहीं मिला। पेज reload करके दोबारा खोलें।");return;}
+ closeMenu();
+ const dialog=$("customerAccountDialog");
+ if(dialog)dialog.classList.add("show");
+ $("customerAccountMessage").textContent="प्रोफ़ाइल लोड हो रही है…";
+ $("customerAccountBookings").innerHTML="<p>बुकिंग लोड हो रही है…</p>";
+ $("customerAccountMessages").innerHTML="<p>Messages लोड हो रहे हैं…</p>";
+ if(!client){$("customerAccountMessage").textContent="Backend connection नहीं मिला। पेज reload करके दोबारा खोलें।";return;}
  try{
   const {data:{user},error:userError}=await client.auth.getUser();
   if(userError)throw userError;
-  if(!user){toast("कृपया Customer Login दोबारा करें।");return;}
+  if(!user){dialog?.classList.remove("show");toast("कृपया Customer Login दोबारा करें।");return;}
   const meta=user.user_metadata||{};
   const local=read(DB.user,{})||{};
   const username=local.username||meta.username||meta.name||meta.full_name||"";
-  closeMenu();
-  $("customerAccountDialog").classList.add("show");
-  $("customerAccountMessage").textContent="";
-  $("customerAccountBookings").innerHTML="<p>बुकिंग लोड हो रही है…</p>";
-  $("customerAccountMessages").innerHTML="<p>Messages लोड हो रहे हैं…</p>";
-  const isAdmin=user.app_metadata?.role==="admin";
+  let isAdmin=user.app_metadata?.role==="admin";
+  if(!isAdmin){const {data:membership,error:membershipError}=await client.from("admin_team_members").select("role,status").eq("user_id",user.id).maybeSingle();if(membershipError)throw membershipError;isAdmin=membership?.role==="admin"&&membership?.status==="active";}
   const roleBadge=$("customerAccountRole");
   if(roleBadge)roleBadge.textContent=isAdmin?"Admin · Owner":"Customer account";
   const adminLink=$("customerAdminDashboardLink");
