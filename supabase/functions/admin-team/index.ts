@@ -52,6 +52,31 @@ Deno.serve(async (req: Request) => {
     if (error) return reply({ error: error.message }, 400);
     return reply({ success: true });
   }
+  if (action === "submit_payment") {
+    const requestId = String(body.request_id || "").trim();
+    const transactionReference = String(body.transaction_reference || "").trim().slice(0, 120);
+    const proofPath = String(body.proof_path || "").trim().slice(0, 500);
+    if (!requestId || transactionReference.length < 4) return reply({ error: "A valid request and transaction reference are required." }, 400);
+    if (proofPath && !proofPath.startsWith(caller.id + "/payment-proof/")) return reply({ error: "Invalid payment proof path." }, 400);
+    const { data: request, error: requestError } = await root.from("amin_payment_requests")
+      .select("id,amin_user_id,status").eq("id", requestId).maybeSingle();
+    if (requestError) return reply({ error: requestError.message }, 400);
+    if (!request || request.amin_user_id !== caller.id) return reply({ error: "Payment request not found for this account." }, 404);
+    if (!["requested", "rejected"].includes(request.status)) return reply({ error: "This payment request is not accepting another submission." }, 409);
+    const { error } = await root.from("amin_payment_requests").update({
+      status: "submitted", transaction_reference: transactionReference,
+      proof_path: proofPath || null, updated_at: new Date().toISOString()
+    }).eq("id", requestId);
+    if (error) return reply({ error: error.message }, 400);
+    const { data: admins } = await root.from("admin_team_members").select("user_id").eq("role", "admin").eq("status", "active");
+    if (admins?.length) await root.from("notifications").insert(admins.map(a => ({
+      user_id: a.user_id, title: "Amin payment proof submitted",
+      body: "Amin submitted payment proof for request " + requestId,
+      notification_type: "payment_submission", related_table: "amin_payment_requests", related_id: requestId
+    })));
+    return reply({ success: true });
+  }
+
   if (caller.app_metadata?.role !== "admin" || membership?.role !== "admin" || membership?.status !== "active") {
     return reply({ error: "Active admin membership required" }, 403);
   }
