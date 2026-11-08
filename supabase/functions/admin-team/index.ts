@@ -100,9 +100,18 @@ Deno.serve(async (req: Request) => {
       await root.auth.admin.deleteUser(created.user.id);
       return reply({ error: "Member record failed: " + insertError.message }, 500);
     }
+    const photoUrl = String(body.photo_url || "").trim().slice(0, 2000);
+    const { error: profileError } = await root.from("user_profiles").upsert({
+      id: created.user.id, full_name: name, photo_url: photoUrl || null
+    }, { onConflict: "id" });
+    if (profileError) {
+      await root.from("admin_team_members").delete().eq("user_id", created.user.id);
+      await root.auth.admin.deleteUser(created.user.id);
+      return reply({ error: "Member profile failed: " + profileError.message }, 500);
+    }
     await root.from("admin_audit_logs").insert({
       actor_user_id: caller.id, action: "team_member_created", target_type: "auth_user",
-      target_id: created.user.id, metadata: { email, role, department }
+      target_id: created.user.id, metadata: { email, role, department, photo_added: !!photoUrl }
     });
     return reply({
       success: true, member: { id: created.user.id, name, email, role },
