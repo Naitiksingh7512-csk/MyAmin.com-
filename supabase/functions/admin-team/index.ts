@@ -22,7 +22,7 @@ Deno.serve(async (req: Request) => {
   const callerClient = createClient(url, anon, { auth: { persistSession: false } });
   const root = createClient(url, service, { auth: { persistSession: false } });
   const { data: auth, error: authError } = await callerClient.auth.getUser(jwt);
-  if (authError || !auth.user || auth.user.app_metadata?.role !== "admin") return reply({ error: "Admin only" }, 403);
+  if (authError || !auth.user) return reply({ error: "Valid sign-in required" }, 401);
   const caller = auth.user;
   let body: Record<string, unknown>;
   try { body = await req.json(); } catch { return reply({ error: "Invalid JSON" }, 400); }
@@ -36,11 +36,14 @@ Deno.serve(async (req: Request) => {
     const { data: member, error } = await root.from("admin_team_members")
       .select("full_name,email,role,status,permissions,must_change_password")
       .eq("user_id", caller.id).eq("card_token_hash", tokenHash).maybeSingle();
-    if (error || !member || member.status !== "active") return reply({ error: "This card is invalid or the account is inactive." }, 403);
+    if (error || !member || member.status !== "active" || !["team_member", "moderator", "admin"].includes(member.role)) {
+      return reply({ error: "This card is invalid or the account is inactive." }, 403);
+    }
     await root.from("admin_team_members").update({ last_login_at: new Date().toISOString() }).eq("user_id", caller.id);
     return reply({ success: true, member });
   }
 
+  if (caller.app_metadata?.role !== "admin") return reply({ error: "Admin only" }, 403);
   const { data: membership } = await root.from("admin_team_members").select("role,status").eq("user_id", caller.id).maybeSingle();
   if (caller.app_metadata?.role !== "admin" || membership?.role !== "admin" || membership?.status !== "active") return reply({ error: "Active admin membership required" }, 403);
 
@@ -98,6 +101,22 @@ Deno.serve(async (req: Request) => {
       target_type: "auth_user", target_id: userId, metadata: { status }
     });
     return reply({ success: true });
+  }
+
+  if (action === "delete_amin") {
+    const profileUid = String(body.profile_uid || "").trim().slice(0, 120);
+    if (!profileUid) return reply({ error: "Amin profile ID is required" }, 400);
+    const { data: deleted, error } = await root.from("amin_profiles")
+      .delete().eq("profile_uid", profileUid)
+      .select("user_id,profile_uid,display_name").maybeSingle();
+    if (error) return reply({ error: error.message }, 400);
+    if (!deleted) return reply({ error: "Amin profile not found" }, 404);
+    await root.from("admin_audit_logs").insert({
+      actor_user_id: caller.id, action: "amin_profile_deleted",
+      target_type: "amin_profile", target_id: deleted.profile_uid,
+      metadata: { user_id: deleted.user_id, display_name: deleted.display_name }
+    });
+    return reply({ success: true, deleted: { profile_uid: deleted.profile_uid, display_name: deleted.display_name } });
   }
 
   if (action === "create_task") {
