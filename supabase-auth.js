@@ -381,9 +381,15 @@ const handleBooking = async (event) => {
     const selected = $("bookingAmin").value.trim();
     let aminId = null;
     if (selected) {
-      const { data } = await supabase.from("amin_profiles")
-        .select("user_id").eq("profile_uid", selected).maybeSingle();
-      aminId = data?.user_id || null;
+      const { data, error } = await supabase.from("amin_profiles")
+        .select("user_id,profile_uid,display_name")
+        .eq("approval_status", "approved");
+      if (error) throw error;
+      const match = (data || []).find(a =>
+        String(a.profile_uid || "").toLowerCase() === selected.toLowerCase() ||
+        String(a.display_name || "").trim().toLowerCase() === selected.toLowerCase()
+      );
+      aminId = match?.user_id || null;
     }
     const payload = {
       customer_user_id: user.id, amin_user_id: aminId,
@@ -395,9 +401,12 @@ const handleBooking = async (event) => {
     };
     const { error } = await supabase.from("bookings").insert(payload);
     if (error) throw error;
-    say("bookingMessage", "आपकी Booking सुरक्षित रूप से Database में जमा हो गई है।");
+    say("bookingMessage", aminId
+      ? "आपकी Booking Database में सेव हो गई और चुने गए Amin को assign कर दी गई है।"
+      : "Booking Database में सेव हो गई। Amin match नहीं हुआ, इसलिए Admin इसे assign कर सकता है।");
     $("bookingForm").reset();
     if (typeof window.refreshBookings === "function") await window.refreshBookings();
+    if ($("customerAccountDialog")?.classList.contains("show") && typeof window.openCustomerAccount === "function") await window.openCustomerAccount();
   } catch (e) { say("bookingMessage", e.message || "Booking जमा नहीं हुई। कृपया पहले Login करें।", true); }
 };
 window.logout = async () => {
