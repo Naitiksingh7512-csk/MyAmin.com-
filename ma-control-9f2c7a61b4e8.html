@@ -651,51 +651,33 @@ async function waitForCardImages(card){
 async function renderPrintCardCanvas(source,html2canvas,width,height){
  const wrapper=document.createElement("div");wrapper.style.cssText="position:fixed;left:-16000px;top:0;width:"+width+"px;height:"+height+"px;overflow:hidden;background:#061329;z-index:-1;";
  const clone=source.cloneNode(true);clone.removeAttribute("id");
- for(const [k,v] of Object.entries({display:"block",position:"relative",width:width+"px",height:height+"px",minHeight:height+"px",maxWidth:"none",aspectRatio:"auto",margin:"0",borderRadius:"20px",overflow:"hidden"}))clone.style.setProperty(k.replace(/[A-Z]/g,m=>"-"+m.toLowerCase()),v,"important");
- const top=clone.querySelector(".admin-id-top");if(top){top.style.setProperty("height","15%","important");top.style.setProperty("min-height","0","important");top.style.setProperty("padding","10px 16px","important");}
- const body=clone.querySelector(".admin-id-body");if(body){body.style.setProperty("height","85%","important");body.style.setProperty("min-height","0","important");body.style.setProperty("padding","18px","important");}
+ for(const [k,v] of Object.entries({display:"block",position:"relative",width:width+"px",height:height+"px",minHeight:height+"px",maxWidth:"none",aspectRatio:"auto",margin:"0",borderRadius:"20px",overflow:"hidden",boxSizing:"border-box"}))clone.style.setProperty(k.replace(/[A-Z]/g,m=>"-"+m.toLowerCase()),v,"important");
+ const top=clone.querySelector(".admin-id-top");if(top){top.style.setProperty("height","18%","important");top.style.setProperty("min-height","0","important");top.style.setProperty("flex","0 0 18%","important");top.style.setProperty("padding","8px 14px","important");top.style.setProperty("box-sizing","border-box","important");}
+ const body=clone.querySelector(".admin-id-body");if(body){body.style.setProperty("height","82%","important");body.style.setProperty("min-height","0","important");body.style.setProperty("flex","1 1 auto","important");body.style.setProperty("padding","14px 18px","important");body.style.setProperty("box-sizing","border-box","important");}
  await Promise.all([...clone.querySelectorAll(".admin-id-logo")].map(async img=>{
-  const response=await fetch(new URL(img.getAttribute("src"),document.baseURI).href,{cache:"force-cache"});
-  if(!response.ok)throw new Error("MyAmin logo file could not be loaded.");
-  const svg=await response.text(),data="data:image/svg+xml;charset=utf-8;base64,"+btoa(unescape(encodeURIComponent(svg)));
-  img.src=data;img.style.cssText+=";display:block!important;width:190px!important;height:52px!important;max-width:42%!important;object-fit:contain!important;background:#fff!important;border-radius:7px!important;padding:4px 7px!important;mix-blend-mode:normal!important;filter:none!important";
-  await img.decode();
+  const response=await fetch(new URL(img.getAttribute("src"),document.baseURI).href,{cache:"no-store"});if(!response.ok)throw new Error("MyAmin logo fetch failed (HTTP "+response.status+").");
+  const svg=await response.text(),url=URL.createObjectURL(new Blob([svg],{type:"image/svg+xml;charset=utf-8"}));
+  try{const im=new Image();await new Promise((resolve,reject)=>{im.onload=resolve;im.onerror=()=>reject(new Error("SVG logo decode failed"));im.src=url;});const png=document.createElement("canvas");png.width=1600;png.height=416;const ctx=png.getContext("2d");if(!ctx)throw new Error("PNG canvas unavailable");ctx.fillStyle="#fff";ctx.fillRect(0,0,png.width,png.height);ctx.drawImage(im,0,0,png.width,png.height);img.src=png.toDataURL("image/png");}finally{URL.revokeObjectURL(url);}
+  img.style.setProperty("display","block","important");img.style.setProperty("visibility","visible","important");img.style.setProperty("opacity","1","important");img.style.setProperty("width","220px","important");img.style.setProperty("height","58px","important");img.style.setProperty("max-width","48%","important");img.style.setProperty("object-fit","contain","important");img.style.setProperty("object-position","left center","important");img.style.setProperty("background","#fff","important");img.style.setProperty("border-radius","6px","important");img.style.setProperty("padding","3px 6px","important");img.style.setProperty("mix-blend-mode","normal","important");img.style.setProperty("filter","none","important");await img.decode();
  }));
- const brand=clone.querySelector(".admin-id-brand");if(brand)brand.style.cssText+=";display:flex!important;flex-direction:row!important;align-items:center!important;gap:12px!important;min-width:0!important";
+ const brand=clone.querySelector(".admin-id-brand");if(brand){brand.style.setProperty("display","flex","important");brand.style.setProperty("flex-direction","row","important");brand.style.setProperty("align-items","center","important");brand.style.setProperty("gap","10px","important");brand.style.setProperty("min-width","0","important");brand.style.setProperty("flex","1 1 auto","important");}
  wrapper.appendChild(clone);document.body.appendChild(wrapper);
- try{await waitForCardImages(clone);const canvas=await html2canvas(clone,{backgroundColor:null,scale:2,useCORS:true,allowTaint:false,logging:false,width,height,windowWidth:Math.max(1200,width)});if(!canvas.width||!canvas.height)throw new Error("Card export is empty.");return canvas;}finally{wrapper.remove();}
+ try{await waitForCardImages(clone);const canvas=await html2canvas(clone,{backgroundColor:null,scale:3,useCORS:true,allowTaint:false,logging:false,width,height,windowWidth:Math.max(1200,width)});if(!canvas.width||!canvas.height)throw new Error("Card export is empty");return canvas;}finally{wrapper.remove();}
 }
 async function downloadBusinessCardPrintSheet(){
- const button=$("downloadBusinessCardSheet"),status=$("businessCardDownloadStatus");if(!button||button.disabled)return;
- button.disabled=true;button.textContent="Preparing 20 cards…";
+ const button=$("downloadBusinessCardSheet"),status=$("businessCardDownloadStatus");if(!button||button.disabled)return;button.disabled=true;button.textContent="Preparing 20 cards…";
  try{
-  status.textContent="Embedding MyAmin logo and preparing front…";
-  const {html2canvas,jsPDF}=await loadBusinessCardPdfLibraries(),front=$("adminBusinessCardPreview"),back=$("adminBusinessCardBackPreview");
-  if(!front||!back)throw new Error("Business card front/back preview missing.");
-  const fc=await renderPrintCardCanvas(front,html2canvas,900,500);status.textContent="Preparing back…";
-  const bc=await renderPrintCardCanvas(back,html2canvas,900,500),pdf=new jsPDF({orientation:"portrait",unit:"mm",format:"a4",compress:true});
-  const w=90,h=50,left=10,gx=10,top=10,gy=5;
-  function sheet(canvas){const data=canvas.toDataURL("image/jpeg",.96);for(let row=0;row<5;row++)for(let col=0;col<2;col++){const x=left+col*(w+gx),y=top+row*(h+gy);pdf.addImage(data,"JPEG",x,y,w,h,undefined,"FAST");pdf.setDrawColor(90,125,155);pdf.setLineWidth(.18);const m=1.8;pdf.line(x-m,y,x-.5,y);pdf.line(x,y-m,x,y-.5);pdf.line(x+w+.5,y,x+w+m,y);pdf.line(x+w,y-m,x+w,y-.5);pdf.line(x-m,y+h,x-.5,y+h);pdf.line(x,y+h+.5,x,y+h+m);pdf.line(x+w+.5,y+h,x+w+m,y+h);pdf.line(x+w,y+h+.5,x+w,y+h+m);}}
+  status.textContent="Converting original MyAmin logo to print-ready PNG…";
+  const {html2canvas,jsPDF}=await loadBusinessCardPdfLibraries(),front=$("adminBusinessCardPreview"),back=$("adminBusinessCardBackPreview");if(!front||!back)throw new Error("Business card front/back preview missing.");
+  const fc=await renderPrintCardCanvas(front,html2canvas,1200,400);status.textContent="Front ready. Preparing matching back…";const bc=await renderPrintCardCanvas(back,html2canvas,1200,400);
+  const pdf=new jsPDF({orientation:"portrait",unit:"mm",format:"a4",compress:true}),w=96,h=32,left=7,gx=4,top=10,gy=1;
+  function sheet(canvas){const data=canvas.toDataURL("image/png");for(let row=0;row<5;row++)for(let col=0;col<2;col++){const x=left+col*(w+gx),y=top+row*(h+gy);pdf.addImage(data,"PNG",x,y,w,h,undefined,"FAST");pdf.setDrawColor(90,125,155);pdf.setLineWidth(.15);const m=1.1;pdf.line(x-m,y,x-.25,y);pdf.line(x,y-m,x,y-.25);pdf.line(x+w+.25,y,x+w+m,y);pdf.line(x+w,y-m,x+w,y-.25);pdf.line(x-m,y+h,x-.25,y+h);pdf.line(x,y+h+.25,x,y+h+m);pdf.line(x+w+.25,y+h,x+w+m,y+h);pdf.line(x+w,y+h+.25,x+w,y+h+m);}}
   sheet(fc);pdf.addPage("a4","portrait");sheet(bc);pdf.save("MyAmin-Business-Cards-10-Front-10-Back.pdf");
-  status.textContent="PDF ready: 10 front cards on page 1 and 10 backs on page 2. 90 × 50 mm each. Print at Actual Size / 100% and cut at crop marks.";
+  status.textContent="Ready: 10 front cards on page 1 and 10 backs on page 2. Each 96 × 32 mm; 1 mm row gap, 4 mm centre gap. Front/back positions align for duplex flip-and-stick printing. Print at Actual Size / 100%.";
  }catch(e){status.textContent="PDF download failed: "+(e?.message||"Unknown error");notify(status.textContent);}
  finally{button.disabled=false;button.textContent="⬇ Download 2-Page Business Card PDF (20 cards)";}
 }
 
-async function downloadAdminCardPrintSheet(){
- const button=$("downloadAdminCardSheet"),message=$("adminCardMessage");if(!button||button.disabled)return;
- button.disabled=true;button.textContent="Preparing Admin ID PDF…";
- try{
-  const {html2canvas,jsPDF}=await loadBusinessCardPdfLibraries(),front=$("adminCardPreview"),back=$("adminCardBackPreview");
-  if(!front||!back)throw new Error("Admin ID front/back preview missing.");
-  if(message)message.textContent="Embedding logo and preparing Admin ID front/back…";
-  const fc=await renderPrintCardCanvas(front,html2canvas,900,568),bc=await renderPrintCardCanvas(back,html2canvas,900,568);
-  const pdf=new jsPDF({orientation:"portrait",unit:"mm",format:"a4",compress:true}),w=90,h=56.8,x=60,ys=[48,142];
-  [fc,bc].forEach((canvas,i)=>{const y=ys[i];pdf.addImage(canvas.toDataURL("image/jpeg",.97),"JPEG",x,y,w,h,undefined,"FAST");pdf.setDrawColor(90,125,155);pdf.setLineWidth(.2);const m=2;pdf.line(x-m,y,x-.5,y);pdf.line(x,y-m,x,y-.5);pdf.line(x+w+.5,y,x+w+m,y);pdf.line(x+w,y-m,x+w,y-.5);pdf.line(x-m,y+h,x-.5,y+h);pdf.line(x,y+h+.5,x,y+h+m);pdf.line(x+w+.5,y+h,x+w+m,y+h);pdf.line(x+w,y+h+.5,x+w,y+h+m);});
-  pdf.save("MyAmin-Admin-ID-Card-Front-and-Back.pdf");if(message)message.textContent="Admin ID PDF downloaded: one front and one back face on a single A4 sheet, each 90 × 56.8 mm. Cut and stick back-to-back.";
- }catch(e){if(message)message.textContent="Admin ID PDF failed: "+(e?.message||"Unknown error");notify("Admin ID PDF failed: "+(e?.message||"Unknown error"));}
- finally{button.disabled=false;button.textContent="⬇ Download Admin ID Card PDF (Front + Back)";}
-}
 $("downloadBusinessCardSheet").addEventListener("click",downloadBusinessCardPrintSheet);
 $("downloadAdminCardSheet").addEventListener("click",downloadAdminCardPrintSheet);
 
