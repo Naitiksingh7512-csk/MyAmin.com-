@@ -271,49 +271,6 @@ const handleAminSignup = async (event) => {
   finally { submit.disabled = false; }
 };
 
-const addAdminPasskeyLoginButton = () => {
-  const form = $("adminLoginForm");
-  const actions = form?.querySelector(".form-actions");
-  if (!actions || form.querySelector("#adminPasskeySignIn")) return;
-  const button = document.createElement("button");
-  button.type = "button";
-  button.id = "adminPasskeySignIn";
-  button.className = "btn btn-outline";
-  button.textContent = "Sign in with Touch ID / Passkey";
-  button.addEventListener("click", async () => {
-    button.disabled = true;
-    const message = $("adminLoginMessage");
-    try {
-      const { data, error } = await supabase.auth.signInWithPasskey();
-      if (error) throw error;
-      const user = data.user || await currentUser();
-      const { data: member, error: memberError } = await supabase.from("admin_team_members")
-        .select("role,status").eq("user_id", user.id).maybeSingle();
-      if (memberError) throw memberError;
-      if (user.app_metadata?.role !== "admin" || member?.role !== "admin" || member?.status !== "active") {
-        await supabase.auth.signOut();
-        throw new Error("यह Passkey किसी active Admin Owner account के लिए verified नहीं है।");
-      }
-      const panel = $("adminVerifiedPanel");
-      if (panel) panel.hidden = false;
-      if (message) {
-        message.textContent = "Passkey sign-in successful · Active Admin verified.";
-        message.style.display = "block";
-        message.style.color = "";
-      }
-      renderPasskeyControls(data.session);
-    } catch (e) {
-      if (message) {
-        message.textContent = e.message || "Passkey sign-in failed. पहले Supabase में Passkeys enable करें।";
-        message.style.display = "block";
-        message.style.color = "#a12626";
-      }
-    } finally {
-      button.disabled = false;
-    }
-  });
-  actions.appendChild(button);
-};
 const handleAdminLogin = async (event) => {
  event.preventDefault();event.stopImmediatePropagation();
  const button=$("adminLoginForm")?.querySelector('button[type="submit"]'),message=$("adminLoginMessage"),verified=$("adminVerifiedPanel");
@@ -326,8 +283,29 @@ const handleAdminLogin = async (event) => {
   const user=data.user,trustedRole=user?.app_metadata?.role==="admin";
   const {data:member,error:memberError}=await supabase.from("admin_team_members").select("role,status").eq("user_id",user.id).maybeSingle();if(memberError)throw memberError;
   if(!trustedRole||member?.role!=="admin"||member?.status!=="active"){await supabase.auth.signOut();throw new Error("यह account Admin के रूप में verified नहीं है।");}
-  if(message){message.textContent="Admin verification successful · Owner access active.";message.style.display="block";message.style.color="";}
-  if(verified)verified.hidden=false;renderPasskeyControls(data.session);
+  const { data: savedPasskeys, error: passkeyListError } = await supabase.auth.passkey.list();
+  if (passkeyListError) throw passkeyListError;
+  if (!savedPasskeys?.length) {
+    if (message) { message.textContent = "Password verified. अब इसी account के लिए Touch ID / Passkey register करें।"; message.style.display = "block"; message.style.color = ""; }
+    if (verified) verified.hidden = false;
+    renderPasskeyControls(data.session);
+    return;
+  }
+  if (message) { message.textContent = "Password verified. अब दूसरी सुरक्षा जाँच के लिए Touch ID / Passkey confirm करें।"; message.style.display = "block"; message.style.color = ""; }
+  const { data: biometricData, error: biometricError } = await supabase.auth.signInWithPasskey();
+  if (biometricError) throw biometricError;
+  if (biometricData.user?.id !== user.id) {
+    await supabase.auth.signOut();
+    throw new Error("Passkey दूसरे account की है। उसी Admin Owner account की Passkey इस्तेमाल करें।");
+  }
+  const { data: activeMember, error: activeMemberError } = await supabase.from("admin_team_members").select("role,status").eq("user_id", user.id).maybeSingle();
+  if (activeMemberError) throw activeMemberError;
+  if (biometricData.user?.app_metadata?.role !== "admin" || activeMember?.role !== "admin" || activeMember?.status !== "active") {
+    await supabase.auth.signOut();
+    throw new Error("Passkey के बाद Admin verification असफल हुआ।");
+  }
+  if (message) { message.textContent = "Password और Touch ID / Passkey दोनों verified हैं। Admin Dashboard खोल सकते हैं।"; message.style.display = "block"; message.style.color = ""; }
+  if (verified) verified.hidden = false;
  }catch(e){if(message){message.textContent=e.message||"Admin login असफल हुआ।";message.style.display="block";message.style.color="#a12626";}}
  finally{if(button)button.disabled=false;}
 };
@@ -383,24 +361,7 @@ const addGoogleLoginButtons = () => {
     target.appendChild(button);
   };
   add("adminLoginForm", true);
-  const adminForm = $("adminLoginForm");
-  if (adminForm && !adminForm.querySelector(".myamin-passkey-login")) {
-    const passkey = document.createElement("button");
-    passkey.type = "button";
-    passkey.className = "btn btn-outline myamin-passkey-login";
-    passkey.textContent = "Sign in with Touch ID / Passkey";
-    passkey.addEventListener("click", async () => {
-      passkey.disabled = true;
-      try {
-        const { data, error } = await supabase.auth.signInWithPasskey();
-        if (error) throw error;
-        await verifyAdminOAuthSession(data.session);
-      } catch (e) {
-        say("adminLoginMessage", e.message || "Passkey sign-in failed.", true);
-      } finally { passkey.disabled = false; }
-    });
-    (adminForm.querySelector(".form-actions") || adminForm).appendChild(passkey);
-  }
+
 };
 
 const syncAdminAccessUI = async (session) => {
@@ -467,7 +428,7 @@ document.addEventListener("DOMContentLoaded", () => {
   $("aminForm")?.addEventListener("submit", handleAminSignup, true);
   $("bookingForm")?.addEventListener("submit", handleBooking, true);
   $("adminLoginForm")?.addEventListener("submit", handleAdminLogin, true);
-  addAdminPasskeyLoginButton();
+
   $("loginForm")?.querySelector('button[onclick="logout()"]')?.addEventListener("click", window.logout);
 });
 const { data: initial } = await supabase.auth.getSession();
