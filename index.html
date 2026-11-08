@@ -1096,7 +1096,7 @@ header{
       <div class="form-actions"><button class="btn btn-green" type="submit">रिपोर्ट सेव करें</button></div>
     </form>
     <div id="reportMessage" class="success"></div>
-    <div class="notice" data-en="Reports are currently saved only in this browser on this device. They are not sent to the server or by email yet." data-hi="रिपोर्ट अभी इसी डिवाइस के ब्राउज़र में सेव होती है। अभी सर्वर या ईमेल पर नहीं भेजी जाती।">रिपोर्ट अभी इसी डिवाइस के ब्राउज़र में सेव होती है। अभी सर्वर या ईमेल पर नहीं भेजी जाती।</div>
+    <div class="notice" data-en="Reports are stored securely in Supabase and visible to the Admin team. You must be logged in to submit a report." data-hi="रिपोर्ट Supabase में सुरक्षित सेव होती है और Admin टीम उसे देख सकती है। रिपोर्ट भेजने के लिए लॉगिन जरूरी है।">रिपोर्ट अभी इसी डिवाइस के ब्राउज़र में सेव होती है। अभी सर्वर या ईमेल पर नहीं भेजी जाती।</div>
   </section>
 
   <!-- HELP -->
@@ -2129,22 +2129,20 @@ $("unitMode").addEventListener("change",renderLandUnits);
 renderLandUnits();
 
 /* Reports */
-$("reportForm").addEventListener("submit",e=>{
+$("reportForm").addEventListener("submit",async e=>{
   e.preventDefault();
-  const reports=read(DB.reports,[]);
-  reports.push({
-    id:"RP-"+Date.now().toString().slice(-8),
-    type:$("reportType").value,
-    contact:$("reportContact").value.trim(),
-    title:$("reportTitle").value.trim(),
-    details:$("reportDetails").value.trim(),
-    createdAt:new Date().toISOString()
-  });
-  save(DB.reports,reports);
-  $("reportMessage").textContent=currentLang==="hi"?"रिपोर्ट इसी डिवाइस के ब्राउज़र में सेव हुई। अभी सर्वर या ईमेल पर नहीं भेजी गई है।":"Report saved in this browser on this device. It has not been sent to a server or by email.";
-  $("reportMessage").style.display="block";
-  e.target.reset();
-  toast("रिपोर्ट सेव हुई।");
+  const message=$("reportMessage");message.textContent=currentLang==="hi"?"रिपोर्ट भेजी जा रही है…":"Submitting report…";message.style.display="block";
+  try{
+    const client=window.myAminSupabase;if(!client)throw new Error("Secure database connection is still loading.");
+    const {data:{user},error:userError}=await client.auth.getUser();if(userError)throw userError;
+    if(!user){message.textContent=currentLang==="hi"?"रिपोर्ट भेजने के लिए पहले लॉगिन करें।":"Please log in before submitting a report.";go("login");return;}
+    const type=$("reportType").value,title=$("reportTitle").value.trim(),contact=$("reportContact").value.trim(),details=$("reportDetails").value.trim();
+    const description="Type: "+type+"\nContact: "+(contact||"Not provided")+"\n\n"+details;
+    const {error}=await client.from("support_tickets").insert({user_id:user.id,subject:title,description,priority:type==="Security Concern"?"high":"normal"});
+    if(error)throw error;
+    message.textContent=currentLang==="hi"?"आपकी रिपोर्ट My Amin टीम को सुरक्षित रूप से भेज दी गई है।":"Your report has been securely sent to the My Amin team.";
+    e.target.reset();toast("Report submitted to Supabase.");
+  }catch(err){message.textContent=(currentLang==="hi"?"रिपोर्ट नहीं भेजी जा सकी: ":"Report submission failed: ")+(err.message||"Unknown error");}
 });
 
 /* State / UT portal directory */
