@@ -74,7 +74,7 @@ const showAuthState = async (session) => {
     return;
   }
   const { data: p, error: profileError } = await supabase.from("user_profiles")
-    .select("full_name,account_type,phone,district").eq("id", session.user.id).maybeSingle();
+    .select("full_name,account_type,phone,district,photo_url").eq("id", session.user.id).maybeSingle();
   if (profileError) throw profileError;
   const { data: a, error: aminError } = await supabase.from("amin_profiles")
     .select("profile_uid,display_name,phone,state,district,place,approval_status,photo_path,upi_id,upi_qr_path")
@@ -111,9 +111,10 @@ const showAuthState = async (session) => {
     if (typeof window.refreshAminMenuProfile === "function") window.refreshAminMenuProfile();
   } else {
     localStorage.setItem("myamin_demo_user_v1", JSON.stringify({
-      id: session.user.id, name: p?.full_name || session.user.email,
+      id: session.user.id, name: p?.full_name || session.user.user_metadata?.username || "Customer",
+      username: session.user.user_metadata?.username || "",
       phone: p?.phone || session.user.phone || "", district: p?.district || "",
-      email: session.user.email || ""
+      photo: p?.photo_url || "", email: session.user.user_metadata?.username || ""
     }));
     localStorage.removeItem("myamin_demo_logged_in_amin_v1");
   }
@@ -210,7 +211,7 @@ const handleCustomerLogin = async (event) => {
       id: user.id,
       name: user.user_metadata?.username || username,
       username: user.user_metadata?.username || username,
-      phone: "", district: "", email: user.user_metadata?.username || username
+      phone: "", district: "", photo: "", email: user.user_metadata?.username || username
     }));
     localStorage.removeItem("myamin_demo_logged_in_amin_v1");
     if (typeof window.refreshCustomerMenuProfile === "function") window.refreshCustomerMenuProfile();
