@@ -1310,7 +1310,37 @@ async function sendCustomerBookingMessage(bookingId){
 }
 async function saveCustomerAccount(){const button=$("saveCustomerAccount");button.disabled=true;try{const client=window.myAminSupabase;const {data:{user},error:userError}=await client.auth.getUser();if(error)throw error;if(!user)throw new Error("कृपया दोबारा Login करें।");const full_name=$("customerAccountNameInput").value.trim(),phone=$("customerAccountPhoneInput").value.trim(),district=$("customerAccountDistrictInput").value.trim();if(!full_name)throw new Error("पूरा नाम भरें।");const {error:updateError}=await client.from("user_profiles").update({full_name,phone,district}).eq("id",user.id);if(updateError)throw updateError;const local=read(DB.user,{});save(DB.user,{...local,name:full_name,phone,district,username:local.username||local.name});$("customerAccountName").textContent=full_name;$("customerMenuProfileName").textContent=full_name;$("customerAccountMessage").textContent="प्रोफ़ाइल अपडेट सेव हो गई।";}catch(e){$("customerAccountMessage").textContent=e.message||"अपडेट नहीं हुआ।";}finally{button.disabled=false;}}
 
-function openAminAccount(){const a=read(DB.aminProfile,null);if(!a)return;closeMenu();$("accountFullName").textContent=a.name||"";$("accountProfileId").textContent=a.profileId||"";$("accountPhone").textContent=a.phone||"—";$("accountWhatsApp").textContent=a.whatsapp||"—";$("accountDistrict").textContent=a.district||"—";$("accountState").textContent=a.state||"—";$("accountPlace").textContent=a.place||"—";$("accountBusiness").textContent=a.businessId||"—";$("accountApproval").textContent=a.approved?"Approved":"Pending approval";$("accountAvatar").src=a.photo||"";$("accountAvatar").hidden=!a.photo;$("accountAvatarFallback").hidden=!!a.photo;$("accountUpiId").value=a.upiId||"";$("accountUpiQrPreview").src=a.upiQr||"";$("accountUpiQrPreview").hidden=!a.upiQr;const bs=read(DB.bookings,[]).filter(x=>x.aminId===a.profileId||x.profileId===a.profileId||String(x.amin||"").trim().toLowerCase()===String(a.name||"").trim().toLowerCase());const status=x=>String(x.status||"pending").toLowerCase();const done=bs.filter(x=>["completed","complete","done"].includes(status(x)));const active=bs.filter(x=>["confirmed","accepted","in progress","ongoing","started"].includes(status(x)));const pending=bs.filter(x=>!["completed","complete","done","confirmed","accepted","in progress","ongoing","started","cancelled"].includes(status(x)));$("accountCompletedCount").textContent=done.length;$("accountActiveCount").textContent=active.length;$("accountPendingCount").textContent=pending.length;renderAminBookingList(a,bs);renderAminPaymentNotices(a);$("accountMessages").innerHTML="<p>Messaging will work after backend connection.</p>";$("aminAccountDialog").classList.add("show");}
+function openAminAccount(){const a=read(DB.aminProfile,null);if(!a)return;closeMenu();$("accountFullName").textContent=a.name||"";$("accountProfileId").textContent=a.profileId||"";$("accountPhone").textContent=a.phone||"—";$("accountWhatsApp").textContent=a.whatsapp||"—";$("accountDistrict").textContent=a.district||"—";$("accountState").textContent=a.state||"—";$("accountPlace").textContent=a.place||"—";$("accountBusiness").textContent=a.businessId||"—";$("accountApproval").textContent=a.approved?"Approved":"Pending approval";$("accountAvatar").src=a.photo||"";$("accountAvatar").hidden=!a.photo;$("accountAvatarFallback").hidden=!!a.photo;$("accountUpiId").value=a.upiId||"";$("accountUpiQrPreview").src=a.upiQr||"";$("accountUpiQrPreview").hidden=!a.upiQr;const bs=read(DB.bookings,[]).filter(x=>x.aminId===a.profileId||x.profileId===a.profileId||String(x.amin||"").trim().toLowerCase()===String(a.name||"").trim().toLowerCase());const status=x=>String(x.status||"pending").toLowerCase();const done=bs.filter(x=>["completed","complete","done"].includes(status(x)));const active=bs.filter(x=>["confirmed","accepted","in progress","ongoing","started"].includes(status(x)));const pending=bs.filter(x=>!["completed","complete","done","confirmed","accepted","in progress","ongoing","started","cancelled"].includes(status(x)));$("accountCompletedCount").textContent=done.length;$("accountActiveCount").textContent=active.length;$("accountPendingCount").textContent=pending.length;renderAminBookingList(a,bs);renderAminPaymentNotices(a);$("accountMessages").innerHTML="<p>Loading booking conversations…</p>";loadAminBookingMessages();$("aminAccountDialog").classList.add("show");}
+async function loadAminBookingMessages(){
+ const box=$("accountMessages");if(!box)return;
+ try{
+  const client=window.myAminSupabase;if(!client)throw new Error("Secure backend connection missing.");
+  const {data:{user},error:userError}=await client.auth.getUser();if(userError)throw userError;if(!user)throw new Error("Amin login required.");
+  const {data:bookings,error}=await client.from("bookings").select("id,customer_user_id,service,place,district,state,status,created_at").eq("amin_user_id",user.id).order("created_at",{ascending:false});if(error)throw error;
+  if(!bookings?.length){box.innerHTML="<p>अभी कोई assigned booking conversation नहीं है।</p>";return;}
+  const ids=bookings.map(b=>b.id),customerIds=[...new Set(bookings.map(b=>b.customer_user_id))];
+  const [messagesRes,profilesRes]=await Promise.all([
+   client.from("booking_messages").select("id,booking_id,sender_user_id,message,created_at").in("booking_id",ids).order("created_at",{ascending:true}),
+   client.from("user_profiles").select("id,full_name").in("id",customerIds)
+  ]);
+  if(messagesRes.error)throw messagesRes.error;if(profilesRes.error)throw profilesRes.error;
+  const names=new Map((profilesRes.data||[]).map(p=>[p.id,p.full_name]));
+  const groups=new Map();(messagesRes.data||[]).forEach(m=>{if(!groups.has(m.booking_id))groups.set(m.booking_id,[]);groups.get(m.booking_id).push(m);});
+  box.innerHTML=bookings.map(b=>{
+   const ms=groups.get(b.id)||[];
+   const bubbles=ms.length?ms.map(m=>'<div class="customer-chat-bubble '+(m.sender_user_id===user.id?"mine":"theirs")+'"><small>'+(m.sender_user_id===user.id?"You":"Customer")+' · '+safe(new Date(m.created_at).toLocaleString())+'</small><div>'+safe(m.message)+'</div></div>').join(""):'<p class="muted">अभी कोई message नहीं है।</p>';
+   return '<article class="list-item customer-booking-card"><strong>'+safe(names.get(b.customer_user_id)||"Customer")+' · '+safe(b.service||"Booking")+'</strong><p>'+safe([b.place,b.district,b.state].filter(Boolean).join(", "))+' · '+safe(b.status||"pending")+'<br><small>Booking ID: '+safe(b.id)+'</small></p><div class="customer-chat-list">'+bubbles+'</div><div class="customer-chat-compose"><input maxlength="2000" id="aminMsg-'+safe(b.id)+'" placeholder="Customer को reply लिखें…" aria-label="Reply to customer"><button type="button" class="btn btn-green" onclick="sendAminBookingMessage(\''+safe(b.id)+'\')">Reply</button></div></article>';
+  }).join("");
+ }catch(e){box.textContent=e.message||"Messages load नहीं हुए।";}
+}
+async function sendAminBookingMessage(bookingId){
+ const input=$("aminMsg-"+bookingId),message=input?.value.trim();if(!message)return;
+ try{const client=window.myAminSupabase;const {data:{user},error:userError}=await client.auth.getUser();if(error)throw error;if(!user)throw new Error("Amin login required.");
+ const {error:insertError}=await client.from("booking_messages").insert({booking_id:bookingId,sender_user_id:user.id,message});if(insertError)throw insertError;
+ input.value="";await loadAminBookingMessages();
+ }catch(e){toast(e.message||"Reply भेजा नहीं जा सका।");}
+}
+
 const AMIN_PAYMENT_NOTICES_KEY="myamin_amin_payment_notices_v1";
 function renderAminPaymentNotices(amin){
  const box=$("accountPaymentNotices");if(!box)return;
