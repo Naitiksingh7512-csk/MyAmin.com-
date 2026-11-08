@@ -274,7 +274,7 @@ const handleAminSignup = async (event) => {
 const handleAdminLogin = async (event) => {
  event.preventDefault();event.stopImmediatePropagation();
  const button=$("adminLoginForm")?.querySelector('button[type="submit"]'),message=$("adminLoginMessage"),verified=$("adminVerifiedPanel");
- if(button)button.disabled=true;if(verified)verified.hidden=true;
+ if(button)button.disabled=true;if(verified)verified.hidden=true;const verifiedDetails=$("adminVerifiedDetails");if(verifiedDetails)verifiedDetails.hidden=true;
  try{
   const username=$("adminEmail").value.trim(),password=$("adminPassword").value;
   if(!username)throw new Error("अपना Customer username भरें।");
@@ -306,6 +306,7 @@ const handleAdminLogin = async (event) => {
   }
   if (message) { message.textContent = "Password और Touch ID / Passkey दोनों verified हैं। Admin Dashboard खोल सकते हैं।"; message.style.display = "block"; message.style.color = ""; }
   if (verified) verified.hidden = false;
+  if (verifiedDetails) verifiedDetails.hidden = false;
  }catch(e){if(message){message.textContent=e.message||"Admin login असफल हुआ।";message.style.display="block";message.style.color="#a12626";}}
  finally{if(button)button.disabled=false;}
 };
