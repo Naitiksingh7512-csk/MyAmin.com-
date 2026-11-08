@@ -402,7 +402,7 @@ function renderAdminCardPreview(data={}){
  $("adminCardPreviewInitials").textContent=(name.split(/\s+/).slice(0,2).map(x=>x[0]||"").join("")||"MA").toUpperCase();
  if(data.photo_url){$("adminCardPreviewPhoto").src=data.photo_url;$("adminCardPreviewPhoto").hidden=false;$("adminCardPreviewInitials").hidden=true;}
  else{$("adminCardPreviewPhoto").hidden=true;$("adminCardPreviewInitials").hidden=false;}
- const link="https://naitiksingh7512-csk.github.io/MyAmin.com-/ma-control-9f2c7a61b4e8.html";
+ const link="https://naitiksingh7512-csk.github.io/MyAmin.com-/ma-control-9f2c7a61b4e8.html?reauth=1";
  if(window.QRCode?.toCanvas)QRCode.toCanvas($("adminCardQr"),link,{width:128,margin:1,errorCorrectionLevel:"H"}).catch(()=>{});
 }
 async function loadAdminCard(){
