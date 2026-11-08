@@ -323,8 +323,8 @@ const verifyAdminOAuthSession = async (session) => {
       throw new Error("This Google account is not approved as an administrator.");
     }
     if (message) { message.textContent = "Google Admin verification successful."; message.style.display = "block"; message.style.color = ""; }
-    if (panel) panel.hidden = false;
-    renderPasskeyControls(session);
+    // OAuth sign-in alone must never reveal the verified dashboard panel.
+    if (panel) panel.hidden = true;
     sessionStorage.removeItem("myamin_admin_google_pending");
   } catch (e) {
     if (message) { message.textContent = e.message || "Admin verification failed."; message.style.display = "block"; message.style.color = "#a12626"; }
@@ -367,15 +367,10 @@ const addGoogleLoginButtons = () => {
 const syncAdminAccessUI = async (session) => {
   const quickLink = $("quickAdminLogin");
   const panel = $("adminVerifiedPanel");
-  let isActiveAdmin = false;
-  if (session?.user?.app_metadata?.role === "admin") {
-    const { data: membership, error } = await supabase.from("admin_team_members")
-      .select("role,status").eq("user_id", session.user.id).maybeSingle();
-    isActiveAdmin = !error && membership?.role === "admin" && membership?.status === "active";
-  }
-  if (quickLink) quickLink.hidden = isActiveAdmin;
-  if (panel) panel.hidden = !isActiveAdmin;
-  if (isActiveAdmin) renderPasskeyControls(session);
+  // A signed-in admin session alone is NOT proof of the required password + passkey step.
+  // Keep the dashboard link hidden until handleAdminLogin completes both checks.
+  if (quickLink) quickLink.hidden = true;
+  if (panel) panel.hidden = true;
 };
 const handleBooking = async (event) => {
   event.preventDefault();
