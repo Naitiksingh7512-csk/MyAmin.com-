@@ -445,6 +445,8 @@ document.addEventListener("DOMContentLoaded", () => {
 const { data: initial } = await supabase.auth.getSession();
 await showAuthState(initial.session);
 await syncAdminAccessUI(initial.session);
+if (typeof window.renderAdminContentFeed === "function") await window.renderAdminContentFeed();
+if (typeof window.applyLocalWebsiteSettings === "function") await window.applyLocalWebsiteSettings();
 if (sessionStorage.getItem("myamin_admin_google_pending") === "1" && initial.session) {
   await verifyAdminOAuthSession(initial.session);
 }
@@ -452,6 +454,8 @@ supabase.auth.onAuthStateChange((_event, session) => {
   queueMicrotask(async () => {
     await showAuthState(session);
     await syncAdminAccessUI(session);
+    if (typeof window.renderAdminContentFeed === "function") await window.renderAdminContentFeed();
+    if (typeof window.applyLocalWebsiteSettings === "function") await window.applyLocalWebsiteSettings();
     if (sessionStorage.getItem("myamin_admin_google_pending") === "1" && session) {
       await verifyAdminOAuthSession(session);
     }
