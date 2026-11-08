@@ -272,39 +272,22 @@ const handleAminSignup = async (event) => {
 };
 
 const handleAdminLogin = async (event) => {
-  event.preventDefault();
-  event.stopImmediatePropagation();
-  const button = $("adminLoginForm")?.querySelector('button[type="submit"]');
-  const message = $("adminLoginMessage");
-  const verified = $("adminVerifiedPanel");
-  if (button) button.disabled = true;
-  if (verified) verified.hidden = true;
-  try {
-    const email = $("adminEmail").value.trim();
-    const password = $("adminPassword").value;
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-    const user = data.user;
-    const trustedRole = user?.app_metadata?.role === "admin";
-    const { data: membership, error: memberError } = await supabase
-      .from("admin_team_members").select("role,status").eq("user_id", user.id).maybeSingle();
-    if (memberError) throw memberError;
-    const activeMember = membership && membership.status === "active" &&
-      membership.role === "admin";
-    if (!trustedRole || !activeMember) {
-      await supabase.auth.signOut();
-      throw new Error("यह अकाउंट Admin के रूप में स्वीकृत नहीं है। Admin access केवल अधिकृत टीम द्वारा दिया जा सकता है।");
-    }
-    if (message) { message.textContent = "Admin verification successful."; message.style.display = "block"; }
-    if (verified) verified.hidden = false;
-    renderPasskeyControls(data.session);
-  } catch (e) {
-    if (message) { message.textContent = e.message || "Admin login असफल हुआ।"; message.style.display = "block"; message.style.color = "#a12626"; }
-  } finally {
-    if (button) button.disabled = false;
-  }
+ event.preventDefault();event.stopImmediatePropagation();
+ const button=$("adminLoginForm")?.querySelector('button[type="submit"]'),message=$("adminLoginMessage"),verified=$("adminVerifiedPanel");
+ if(button)button.disabled=true;if(verified)verified.hidden=true;
+ try{
+  const username=$("adminEmail").value.trim(),password=$("adminPassword").value;
+  if(!username)throw new Error("अपना Customer username भरें।");
+  const email=await customerAuthEmail(username);
+  const {data,error}=await supabase.auth.signInWithPassword({email,password});if(error)throw error;
+  const user=data.user,trustedRole=user?.app_metadata?.role==="admin";
+  const {data:member,error:memberError}=await supabase.from("admin_team_members").select("role,status").eq("user_id",user.id).maybeSingle();if(memberError)throw memberError;
+  if(!trustedRole||member?.role!=="admin"||member?.status!=="active"){await supabase.auth.signOut();throw new Error("यह account Admin के रूप में verified नहीं है।");}
+  if(message){message.textContent="Admin verification successful · Owner access active.";message.style.display="block";message.style.color="";}
+  if(verified)verified.hidden=false;renderPasskeyControls(data.session);
+ }catch(e){if(message){message.textContent=e.message||"Admin login असफल हुआ।";message.style.display="block";message.style.color="#a12626";}}
+ finally{if(button)button.disabled=false;}
 };
-
 
 const verifyAdminOAuthSession = async (session) => {
   const message = $("adminLoginMessage");
