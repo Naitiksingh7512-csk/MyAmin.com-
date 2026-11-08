@@ -122,7 +122,7 @@ const showAuthState = async (session) => {
   renderPasskeyControls(session);
 };
 const normalizeIndianPhone = (value) => {
-  let digits = String(value || "").replace(/\\D/g, "");
+  let digits = String(value || "").replace(/\D/g, "");
   if (digits.length === 10) digits = "91" + digits;
   if (digits.length === 12 && digits.startsWith("91")) return "+" + digits;
   if (String(value || "").trim().startsWith("+") && digits.length >= 10 && digits.length <= 15) return "+" + digits;
@@ -185,7 +185,7 @@ const verifyCustomerPhoneOtp = async () => {
   const phone = sessionStorage.getItem("myamin_pending_customer_phone");
   const name = sessionStorage.getItem("myamin_pending_customer_name") || $("customerName").value.trim();
   if (!phone) { say("loginMessage", "पहले मोबाइल नंबर डालकर Send OTP दबाएँ।", true); return; }
-  if (!otp || !/^\\d{4,8}$/.test(otp)) { say("loginMessage", "SMS में आया सही OTP भरें।", true); return; }
+  if (!otp || !/^\d{4,8}$/.test(otp)) { say("loginMessage", "SMS में आया सही OTP भरें।", true); return; }
   button.disabled = true;
   try {
     const { data, error } = await supabase.auth.verifyOtp({ phone, token: otp, type: "sms" });
