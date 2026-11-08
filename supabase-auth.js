@@ -115,11 +115,18 @@ const showAuthState = async (session) => {
     localStorage.removeItem("myamin_demo_user_v1");
     if (typeof window.refreshAminMenuProfile === "function") window.refreshAminMenuProfile();
   } else {
+    const meta = session.user.user_metadata || {};
+    let previous = {};
+    try { previous = JSON.parse(localStorage.getItem("myamin_demo_user_v1") || "{}"); } catch {}
+    const username = meta.username || meta.name || meta.full_name || previous.username || "";
     localStorage.setItem("myamin_demo_user_v1", JSON.stringify({
-      id: session.user.id, name: p?.full_name || session.user.user_metadata?.username || "Customer",
-      username: session.user.user_metadata?.username || "",
-      phone: p?.phone || session.user.phone || "", district: p?.district || "",
-      photo: p?.photo_url || "", email: session.user.user_metadata?.username || ""
+      id: session.user.id,
+      name: p?.full_name || meta.full_name || meta.name || username || previous.name || "Customer",
+      username,
+      phone: p?.phone || meta.phone || session.user.phone || previous.phone || "",
+      district: p?.district || meta.district || previous.district || "",
+      photo: p?.photo_url || meta.avatar_url || meta.photo_url || previous.photo || "",
+      email: username || ""
     }));
     localStorage.removeItem("myamin_demo_logged_in_amin_v1");
   }
