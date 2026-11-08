@@ -803,7 +803,19 @@ header{
 #loginForm [hidden]{display:none!important}
 #loginForm .field.full{grid-column:1/-1}
 </style>
-</head>
+<style id="customer-profile-reliability-polish">
+#customerAccountDialog .dialog-box{width:min(920px,96vw)!important;max-height:92vh!important;overflow-y:auto!important;overscroll-behavior:contain!important}
+#customerAccountDialog .customer-profile-hero{align-items:center!important;min-width:0!important}
+#customerAccountDialog .customer-profile-title{min-width:0!important;flex:1 1 auto!important}
+#customerAccountDialog .customer-profile-title h2{overflow-wrap:anywhere!important}
+#customerAccountDialog .customer-photo-frame{overflow:hidden!important;border-radius:50%!important;background:linear-gradient(145deg,#e4f5eb,#d9e9ff)!important;display:grid!important;place-items:center!important}
+#customerAccountDialog .customer-photo-frame img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:50%!important}
+#customerAccountDialog .form-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px!important}
+#customerAccountDialog .field{min-width:0!important}
+#customerAccountDialog input{max-width:100%!important;min-width:0!important;box-sizing:border-box!important}
+#customerAccountDialog #customerAccountMessage{display:block!important;min-height:44px!important;white-space:normal!important;overflow-wrap:anywhere!important}
+@media(max-width:620px){#customerAccountDialog .dialog-box{width:calc(100vw - 18px)!important;max-height:94vh!important;padding:14px!important}#customerAccountDialog .form-grid{grid-template-columns:minmax(0,1fr)!important}#customerAccountDialog .customer-profile-hero{gap:12px!important;padding:13px!important}#customerAccountDialog .customer-profile-title h2{font-size:19px!important}}
+</style></head>
 
 <body>
 <div class="topline"></div>
@@ -1285,61 +1297,92 @@ async function openCustomerAccount(){
  closeMenu();
  const dialog=$("customerAccountDialog");
  if(dialog)dialog.classList.add("show");
- $("customerAccountMessage").textContent="प्रोफ़ाइल लोड हो रही है…";
- $("customerAccountBookings").innerHTML="<p>बुकिंग लोड हो रही है…</p>";
- $("customerAccountMessages").innerHTML="<p>Messages लोड हो रहे हैं…</p>";
- if(!client){$("customerAccountMessage").textContent="Backend connection नहीं मिला। पेज reload करके दोबारा खोलें।";return;}
+ const status=$("customerAccountMessage"),bookingBox=$("customerAccountBookings"),messageBox=$("customerAccountMessages");
+ if(status)status.textContent="प्रोफ़ाइल लोड हो रही है…";
+ if(bookingBox)bookingBox.innerHTML="<p>बुकिंग लोड हो रही है…</p>";
+ if(messageBox)messageBox.innerHTML="<p>Messages लोड हो रहे हैं…</p>";
+ if(!client){if(status)status.textContent="Secure backend connection नहीं मिला। कृपया पेज reload करें।";return;}
  try{
   const {data:{user},error:userError}=await client.auth.getUser();
   if(userError)throw userError;
-  if(!user){dialog?.classList.remove("show");toast("कृपया Customer Login दोबारा करें।");return;}
-  const meta=user.user_metadata||{};
-  const local=read(DB.user,{})||{};
-  const username=local.username||meta.username||meta.name||meta.full_name||"";
+  if(!user){if(dialog)dialog.classList.remove("show");toast("कृपया Customer Login दोबारा करें।");return;}
+  const meta=user.user_metadata||{},local=read(DB.user,{})||{};
+  const username=local.username||meta.username||meta.name||meta.full_name||user.email||"";
   let isAdmin=user.app_metadata?.role==="admin";
-  if(!isAdmin){const {data:membership,error:membershipError}=await client.from("admin_team_members").select("role,status").eq("user_id",user.id).maybeSingle();if(membershipError)throw membershipError;isAdmin=membership?.role==="admin"&&membership?.status==="active";}
-  const roleBadge=$("customerAccountRole");
-  if(roleBadge)roleBadge.textContent=isAdmin?"Admin · Owner":"Customer account";
-  const adminLink=$("customerAdminDashboardLink");
-  if(adminLink)adminLink.hidden=!isAdmin;
-  const {data:p,error:profileError}=await client.from("user_profiles")
-    .select("full_name,phone,district,photo_url").eq("id",user.id).maybeSingle();
-  if(profileError)throw profileError;
+  if(!isAdmin){
+   try{const {data:membership}=await client.from("admin_team_members").select("role,status").eq("user_id",user.id).maybeSingle();isAdmin=membership?.role==="admin"&&membership?.status==="active";}
+   catch(_){/* Ordinary customers may not have permission to read team membership. */}
+  }
+  const roleBadge=$("customerAccountRole");if(roleBadge)roleBadge.textContent=isAdmin?"Admin · Owner":"Customer account";
+  const adminLink=$("customerAdminDashboardLink");if(adminLink)adminLink.hidden=!isAdmin;
+  let p=null,profileLoadWarning="";
+  try{const result=await client.from("user_profiles").select("full_name,phone,district,photo_url").eq("id",user.id).maybeSingle();if(result.error)throw result.error;p=result.data||null;}
+  catch(error){profileLoadWarning="Profile details could not sync from Supabase: "+(error.message||"permission or network error");}
   const name=p?.full_name||local.name||meta.full_name||meta.name||username||"Customer";
   const phone=p?.phone||local.phone||meta.phone||user.phone||"";
   const district=p?.district||local.district||meta.district||"";
   const photo=p?.photo_url||local.photo||meta.avatar_url||meta.photo_url||"";
-  if(!p){
-    const {error:seedError}=await client.from("user_profiles").upsert({
-      id:user.id,full_name:name,phone:phone||null,district:district||null,
-      photo_url:photo||null
-    },{onConflict:"id"});
-    if(seedError)throw seedError;
-  }
   $("customerAccountName").textContent=name;
-  $("customerAccountEmail").textContent=username?"Username: "+username:"Customer account";
+  $("customerAccountEmail").textContent=user.email|| (username?"Username: "+username:"Customer account");
   $("customerAccountNameInput").value=name;
   $("customerAccountPhoneInput").value=phone;
   $("customerAccountDistrictInput").value=district;
   $("customerAccountUsername").value=username;
   const img=$("customerAccountAvatar"),fallback=$("customerAccountAvatarFallback");
-  if(img){img.src=photo;img.hidden=!photo;}
+  if(img){img.onload=()=>{img.hidden=false;if(fallback)fallback.hidden=true;};img.onerror=()=>{img.hidden=true;if(fallback)fallback.hidden=false;};img.src=photo||"";img.hidden=!photo;}
   if(fallback)fallback.hidden=!!photo;
   save(DB.user,{...local,id:user.id,name,phone,district,photo,username});
   refreshCustomerMenuProfile();
-  const {data:bookings,error:bookingError}=await client.from("bookings").select("id,amin_user_id,service,state,district,place,preferred_date,preferred_time,status,confirmed_date,confirmed_time,details,created_at").eq("customer_user_id",user.id).order("created_at",{ascending:false});if(bookingError)throw bookingError;
-  if(!bookings?.length){$("customerAccountBookings").innerHTML="<p>अभी कोई बुकिंग नहीं है। Booking form से request भेजें।</p>";$("customerAccountMessages").innerHTML="<p>बुकिंग बनने के बाद उसी के अंदर Amin को message कर सकेंगे।</p>";return;}
-  const ids=bookings.map(b=>b.id);const completedPay=bookings.filter(b=>String(b.status||"").toLowerCase()==="completed"&&b.amin_user_id);$("customerPaymentBooking").innerHTML='<option value="">Choose completed booking</option>'+completedPay.map(b=>'<option value="'+safe(b.id)+'" data-amin="'+safe(b.amin_user_id)+'">'+safe(b.service||"Completed service")+' · '+safe(b.preferred_date||"")+"</option>").join("");const completedForReview=bookings.filter(b=>String(b.status||"").toLowerCase()==="completed"&&b.amin_user_id);const {data:myReviews,error:myReviewError}=await client.from("amin_reviews").select("booking_id,rating,review").eq("customer_user_id",user.id).in("booking_id",ids);if(myReviewError)throw myReviewError;const reviewed=new Set((myReviews||[]).map(r=>r.booking_id));$("customerReviewBooking").innerHTML='<option value="">Choose completed booking</option>'+completedForReview.filter(b=>!reviewed.has(b.id)).map(b=>'<option value="'+safe(b.id)+'" data-amin="'+safe(b.amin_user_id)+'">'+safe(b.service||"Completed service")+' · '+safe(b.preferred_date||"")+"</option>").join("");if(!completedForReview.some(b=>!reviewed.has(b.id)))$("customerReviewStatus").textContent="No unrated completed bookings yet.";else $("customerReviewStatus").textContent="Your feedback helps customers find trusted Amins.";
-  const {data:messages,error:messageError}=await client.from("booking_messages").select("id,booking_id,sender_user_id,message,created_at").in("booking_id",ids).order("created_at",{ascending:true});if(messageError)throw messageError;
-  const groups=new Map();(messages||[]).forEach(m=>{if(!groups.has(m.booking_id))groups.set(m.booking_id,[]);groups.get(m.booking_id).push(m);});
-  $("customerAccountBookings").innerHTML=bookings.map(b=>{
+  if(!p){
+   try{const {error}=await client.from("user_profiles").upsert({id:user.id,full_name:name,phone:phone||null,district:district||null,photo_url:photo||null},{onConflict:"id"});if(error)throw error;}
+   catch(error){profileLoadWarning=profileLoadWarning||"Profile is visible, but could not be saved to Supabase: "+(error.message||"unknown error");}
+  }
+  let bookings=[];
+  try{
+   const result=await client.from("bookings").select("id,amin_user_id,service,state,district,place,preferred_date,preferred_time,status,confirmed_date,confirmed_time,details,created_at").eq("customer_user_id",user.id).order("created_at",{ascending:false});
+   if(result.error)throw result.error;bookings=result.data||[];
+  }catch(error){if(bookingBox)bookingBox.innerHTML="<p>Bookings temporarily unavailable: "+safe(error.message||"Please try again.")+"</p>";}
+  if(!bookings.length){
+   if(bookingBox&&!bookingBox.textContent.includes("temporarily unavailable"))bookingBox.innerHTML="<p>अभी कोई बुकिंग नहीं है। Booking form से request भेजें।</p>";
+   if(messageBox)messageBox.innerHTML="<p>बुकिंग बनने के बाद उसी के अंदर Amin को message कर सकेंगे।</p>";
+   if(status)status.textContent=profileLoadWarning||"आपकी प्रोफ़ाइल लोड हो गई है।";
+   return;
+  }
+  const ids=bookings.map(b=>b.id);
+  const completed=bookings.filter(b=>String(b.status||"").toLowerCase()==="completed"&&b.amin_user_id);
+  const paymentSelect=$("customerPaymentBooking"),reviewSelect=$("customerReviewBooking");
+  if(paymentSelect)paymentSelect.innerHTML='<option value="">Choose completed booking</option>'+completed.map(b=>'<option value="'+safe(b.id)+'" data-amin="'+safe(b.amin_user_id)+'">'+safe(b.service||"Completed service")+' · '+safe(b.preferred_date||"")+"</option>").join("");
+  if(reviewSelect)reviewSelect.innerHTML='<option value="">Choose completed booking</option>';
+  try{
+   const {data:myReviews,error}=await client.from("amin_reviews").select("booking_id,rating,review").eq("customer_user_id",user.id).in("booking_id",ids);
+   if(error)throw error;
+   const reviewed=new Set((myReviews||[]).map(r=>r.booking_id));
+   if(reviewSelect)reviewSelect.innerHTML='<option value="">Choose completed booking</option>'+completed.filter(b=>!reviewed.has(b.id)).map(b=>'<option value="'+safe(b.id)+'" data-amin="'+safe(b.amin_user_id)+'">'+safe(b.service||"Completed service")+' · '+safe(b.preferred_date||"")+"</option>").join("");
+   if($("customerReviewStatus"))$("customerReviewStatus").textContent=completed.some(b=>!reviewed.has(b.id))?"Your feedback helps customers find trusted Amins.":"No unrated completed bookings yet.";
+  }catch(error){if($("customerReviewStatus"))$("customerReviewStatus").textContent="Reviews temporarily unavailable: "+(error.message||"");}
+  let messages=[];
+  try{const result=await client.from("booking_messages").select("id,booking_id,sender_user_id,message,created_at").in("booking_id",ids).order("created_at",{ascending:true});if(result.error)throw result.error;messages=result.data||[];}
+  catch(error){if(messageBox)messageBox.innerHTML="<p>Messages temporarily unavailable: "+safe(error.message||"Please try again.")+"</p>";}
+  const groups=new Map();messages.forEach(m=>{if(!groups.has(m.booking_id))groups.set(m.booking_id,[]);groups.get(m.booking_id).push(m);});
+  if(bookingBox)bookingBox.innerHTML=bookings.map(b=>{
    const ms=groups.get(b.id)||[];
    const bubbles=ms.length?ms.map(m=>'<div class="customer-chat-bubble '+(m.sender_user_id===user.id?"mine":"theirs")+'"><small>'+(m.sender_user_id===user.id?"You":"Amin")+' · '+safe(new Date(m.created_at).toLocaleString())+'</small><div>'+safe(m.message)+'</div></div>').join(""):'<p class="muted">अभी कोई message नहीं है।</p>';
    const compose=b.amin_user_id?'<div class="customer-chat-compose"><input maxlength="2000" id="customerMsg-'+safe(b.id)+'" placeholder="Amin को message लिखें…" aria-label="Message Amin"><button type="button" class="btn btn-green" onclick="sendCustomerBookingMessage(\''+safe(b.id)+'\')">Send</button></div>':'<p class="muted">Amin assign होने के बाद messaging शुरू होगी।</p>';
    return '<article class="list-item customer-booking-card"><div class="customer-booking-top"><strong>'+safe(b.service||"Booking")+'</strong><span class="pill">'+safe(b.status||"pending")+'</span></div><p>'+safe([b.place,b.district,b.state].filter(Boolean).join(", "))+'<br>Preferred: '+safe(b.preferred_date||"—")+' · '+safe(b.preferred_time||"Any time")+'<br>Confirmed: '+safe(b.confirmed_date||"Not confirmed")+' · '+safe(b.confirmed_time||"—")+'<br>Request: '+safe(b.details||"—")+'<br><small>Booking ID: '+safe(b.id)+'</small></p><div class="customer-booking-chat"><strong>Messages with Amin</strong><div class="customer-chat-list">'+bubbles+'</div>'+compose+'</div></article>';
   }).join("");
-  $("customerAccountMessages").innerHTML="<p>हर booking का अलग private message thread है। Messages केवल booking के customer और assigned Amin को दिखेंगे।</p>";
- }catch(e){$("customerAccountBookings").textContent=e.message||"बुकिंग लोड नहीं हुई।";$("customerAccountMessages").textContent="Messages लोड नहीं हुए।";}
+  if(messageBox)messageBox.innerHTML="<p>हर booking का अलग private message thread है। Messages केवल booking के customer और assigned Amin को दिखेंगे।</p>";
+  if(status)status.textContent=profileLoadWarning||"आपकी प्रोफ़ाइल सफलतापूर्वक लोड हो गई है।";
+ }catch(error){
+  if(status)status.textContent="Profile load issue: "+(error?.message||"कृपया दोबारा कोशिश करें।");
+  if(bookingBox&&bookingBox.textContent.includes("लोड हो रही"))bookingBox.innerHTML="<p>बुकिंग अभी लोड नहीं हो सकी। प्रोफ़ाइल की बाकी जानकारी उपलब्ध है।</p>";
+  if(messageBox&&messageBox.textContent.includes("लोड हो रहे"))messageBox.innerHTML="<p>Messages अभी लोड नहीं हो सके।</p>";
+  const local=read(DB.user,{})||{};
+  if(local.name){$("customerAccountName").textContent=local.name;$("customerAccountNameInput").value=local.name;}
+  if(local.phone)$("customerAccountPhoneInput").value=local.phone;
+  if(local.district)$("customerAccountDistrictInput").value=local.district;
+  if(local.username)$("customerAccountUsername").value=local.username;
+  if(local.photo){const image=$("customerAccountAvatar");if(image){image.src=local.photo;image.hidden=false;$("customerAccountAvatarFallback").hidden=true;}}
+ }
 }
 async function submitCustomerPaymentRecord(){
  const status=$("customerPaymentStatus");try{
