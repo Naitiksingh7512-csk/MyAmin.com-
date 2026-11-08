@@ -284,7 +284,7 @@ const ADMIN_CARD_SETTING="main_admin_card";
 let secureCreatedTeamMember=null;
 function randomTemporaryPassword(){
  const bytes=new Uint8Array(32);crypto.getRandomValues(bytes);
- return btoa(String.fromCharCode(...bytes)).replace(/\\+/g,"-").replace(/\\//g,"_").replace(/=+$/g,"")+"A7!";
+ return Array.from(bytes).map(x=>x.toString(16).padStart(2,"0")).join("")+"A7!";
 }
 async function createSecureTeamMember(e){
  e.preventDefault();const button=$("secureTeamForm").querySelector('button[type="submit"]');button.disabled=true;
@@ -295,7 +295,7 @@ async function createSecureTeamMember(e){
   if(!name||!email)throw new Error("Name and email are required.");
   let photoUrl="";const file=$("secureTeamPhoto").files[0];
   if(file){
-   if(!/^image\\/(jpeg|png|webp)$/.test(file.type)||file.size>5*1024*1024)throw new Error("Photo must be JPG, PNG or WebP up to 5 MB.");
+   if(!/^image\/(jpeg|png|webp)$/.test(file.type)||file.size>5*1024*1024)throw new Error("Photo must be JPG, PNG or WebP up to 5 MB.");
    const ext=(file.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"");
    const path=user.id+"/team-profile/"+crypto.randomUUID()+"."+ext;
    const {error:uploadError}=await client.storage.from("amin-assets").upload(path,file,{upsert:false,contentType:file.type,cacheControl:"3600"});if(uploadError)throw uploadError;
@@ -313,7 +313,7 @@ async function createSecureTeamMember(e){
   $("teamSecureCardName").textContent=name;$("teamSecureCardRole").textContent=$("secureTeamDepartment").value.trim()||data.member.role;
   $("teamSecureCardContact").textContent=email+($("secureTeamPhone").value.trim()?" · "+$("secureTeamPhone").value.trim():"");
   $("teamSecureCardPhoto").hidden=!photoUrl;$("teamSecureCardPhoto").src=photoUrl;
-  $("teamSecureCardInitials").hidden=!!photoUrl;$("teamSecureCardInitials").textContent=(name.split(/\\s+/).slice(0,2).map(x=>x[0]||"").join("")||"TM").toUpperCase();
+  $("teamSecureCardInitials").hidden=!!photoUrl;$("teamSecureCardInitials").textContent=(name.split(/\s+/).slice(0,2).map(x=>x[0]||"").join("")||"TM").toUpperCase();
   $("teamSecureCardPreview").style.display="grid";
   if(window.QRCode?.toCanvas)await QRCode.toCanvas($("teamSecureCardQr"),data.card_url,{width:128,margin:1,errorCorrectionLevel:"H"});
   const result=$("secureTeamInviteResult");result.hidden=false;result.textContent="Secure account created. Temporary password: "+tempPassword+" · Invite link: "+data.card_url;
