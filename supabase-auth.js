@@ -154,7 +154,7 @@ const handleCustomerLogin = async (event) => {
   const name = $("customerName").value.trim();
   const email = $("customerEmail").value.trim().toLowerCase();
   if (!name) { say("loginMessage", "कृपया अपना पूरा नाम भरें।", true); return; }
-  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     say("loginMessage", "कृपया सही ईमेल पता डालें।", true); $("customerEmail").focus(); return;
   }
   const button = $("loginForm").querySelector('button[type="submit"]');
@@ -179,7 +179,7 @@ const verifyCustomerEmailOtp = async () => {
   const email = sessionStorage.getItem("myamin_pending_customer_email");
   const name = sessionStorage.getItem("myamin_pending_customer_name") || $("customerName").value.trim();
   if (!email) { say("loginMessage", "पहले नाम और ईमेल डालकर Send OTP दबाएँ।", true); return; }
-  if (!otp || !/^\\d{6}$/.test(otp)) { say("loginMessage", "ईमेल में आया 6 अंकों का सही OTP भरें।", true); $("customerOtp").focus(); return; }
+  if (!otp || !/^\d{6}$/.test(otp)) { say("loginMessage", "ईमेल में आया 6 अंकों का सही OTP भरें।", true); $("customerOtp").focus(); return; }
   button.disabled = true;
   try {
     const { data, error } = await supabase.auth.verifyOtp({ email, token: otp, type: "email" });
