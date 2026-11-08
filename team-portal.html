@@ -42,8 +42,14 @@ async function openPortal(session){
  $("memberRole").textContent=(data.member.role||"team_member")+" · Active team account";
  $("permissions").innerHTML=Object.entries(data.member.permissions||{}).filter(([,v])=>v===true).map(([k])=>'<span class="pill">'+safe(k)+'</span>').join(" ")||'<span class="pill">Assigned tasks only</span>';
  if(data.member.must_change_password){
-   const next=prompt("For account safety, change the temporary password now. Enter a new password with at least 12 characters.");
-   if(next){if(next.length<12){alert("Use at least 12 characters. You can change it from account settings after signing in.");}else{const {error:e}=await supabase.auth.updateUser({password:next});if(e)alert(e.message);}}
+   const next=prompt("Security requirement: set a new password now (at least 12 characters). Cancel will sign you out.");
+   if(!next){await supabase.auth.signOut();location.reload();return;}
+   if(next.length<12){alert("Password must be at least 12 characters. Sign in again to retry.");await supabase.auth.signOut();location.reload();return;}
+   const {error:passwordError}=await supabase.auth.updateUser({password:next});
+   if(passwordError){alert(passwordError.message);await supabase.auth.signOut();location.reload();return;}
+   const {data:complete,error:completeError}=await supabase.functions.invoke("admin-team",{body:{action:"complete_password_change"}});
+   if(completeError||!complete?.success){alert(complete?.error||completeError?.message||"Could not confirm password change. Please contact the administrator.");await supabase.auth.signOut();location.reload();return;}
+   say("Temporary password changed successfully.");
  }
  await loadTasks();
 }
