@@ -69,6 +69,26 @@ Deno.serve(async (req: Request) => {
     return reply({ success: true, members: (members || []).map(m => ({ ...m, photo_url: photos.get(m.user_id) || null })) });
   }
 
+  if (action === "rotate_card") {
+    const userId = String(body.user_id || "").trim();
+    if (!userId || userId === caller.id) return reply({ error: "Choose a valid team member." }, 400);
+    const { data: target, error: targetError } = await root.from("admin_team_members")
+      .select("role,status").eq("user_id", userId).maybeSingle();
+    if (targetError) return reply({ error: targetError.message }, 400);
+    if (!target || target.role === "admin" || target.status !== "active") return reply({ error: "Only active non-admin team members can receive a card." }, 403);
+    const token = randomToken();
+    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
+    const tokenHash = Array.from(new Uint8Array(digest)).map(x=>x.toString(16).padStart(2,"0")).join("");
+    const { error } = await root.from("admin_team_members")
+      .update({ card_token_hash: tokenHash, updated_at: new Date().toISOString() }).eq("user_id", userId);
+    if (error) return reply({ error: error.message }, 400);
+    await root.from("admin_audit_logs").insert({
+      actor_user_id: caller.id, action: "team_member_card_rotated", target_type: "auth_user",
+      target_id: userId, metadata: {}
+    });
+    return reply({ success: true, card_url: "https://naitiksingh7512-csk.github.io/MyAmin.com-/team-portal.html?card=" + encodeURIComponent(token) });
+  }
+
   if (action === "create_member") {
     const name = String(body.full_name || "").trim().slice(0, 120);
     const email = String(body.email || "").trim().toLowerCase();
