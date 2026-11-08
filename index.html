@@ -1280,18 +1280,50 @@ function refreshAminMenuProfile(){const a=read(DB.aminProfile,null),b=$("aminMen
 function refreshCustomerMenuProfile(){const u=read(DB.user,null),b=$("customerMenuProfile");if(!b)return;b.style.display=u?"flex":"none";if(u){$("customerMenuProfileName").textContent=u.name||"Customer";$("customerMenuProfileEmail").textContent=u.username?"Username: "+u.username:"Customer account";const img=$("customerMenuAvatar"),fallback=$("customerMenuAvatarFallback");if(img){img.src=u.photo||"";img.hidden=!u.photo;}if(fallback)fallback.hidden=!!u.photo;}}
 refreshCustomerMenuProfile();
 async function openCustomerAccount(){
- const local=read(DB.user,null);if(!local){toast("पहले Customer Login करें।");return;}
- closeMenu();$("customerAccountDialog").classList.add("show");$("customerAccountMessage").textContent="";
- $("customerAccountBookings").innerHTML="<p>बुकिंग लोड हो रही है…</p>";$("customerAccountMessages").innerHTML="<p>Messages लोड हो रहे हैं…</p>";
+ const client=window.myAminSupabase;
+ if(!client){toast("Backend connection नहीं मिला। पेज reload करके दोबारा खोलें।");return;}
  try{
-  const client=window.myAminSupabase;if(!client)throw new Error("Backend connection नहीं मिला। पेज reload करके दोबारा खोलें।");
-  const {data:{user},error:userError}=await client.auth.getUser();if(userError)throw userError;if(!user)throw new Error("कृपया Customer Login दोबारा करें।");const isAdmin=user.app_metadata?.role==="admin";const roleBadge=$("customerAccountRole");if(roleBadge)roleBadge.textContent=isAdmin?"Admin · Owner":"Customer account";const adminLink=$("customerAdminDashboardLink");if(adminLink)adminLink.hidden=!isAdmin;
-  const {data:p,error:profileError}=await client.from("user_profiles").select("full_name,phone,district,photo_url").eq("id",user.id).maybeSingle();if(profileError)throw profileError;
-  const name=p?.full_name||local.name||"Customer",photo=p?.photo_url||local.photo||"";
-  $("customerAccountName").textContent=name;$("customerAccountEmail").textContent="Username: "+(local.username||local.name||"");
-  $("customerAccountNameInput").value=name;$("customerAccountPhoneInput").value=p?.phone||local.phone||"";$("customerAccountDistrictInput").value=p?.district||local.district||"";$("customerAccountUsername").value=local.username||local.name||"";
-  const img=$("customerAccountAvatar"),fallback=$("customerAccountAvatarFallback");if(img){img.src=photo;img.hidden=!photo;}if(fallback)fallback.hidden=!!photo;
-  save(DB.user,{...local,name,phone:p?.phone||local.phone||"",district:p?.district||local.district||"",photo,username:local.username||local.name});refreshCustomerMenuProfile();
+  const {data:{user},error:userError}=await client.auth.getUser();
+  if(userError)throw userError;
+  if(!user){toast("कृपया Customer Login दोबारा करें।");return;}
+  const meta=user.user_metadata||{};
+  const local=read(DB.user,{})||{};
+  const username=local.username||meta.username||meta.name||meta.full_name||"";
+  closeMenu();
+  $("customerAccountDialog").classList.add("show");
+  $("customerAccountMessage").textContent="";
+  $("customerAccountBookings").innerHTML="<p>बुकिंग लोड हो रही है…</p>";
+  $("customerAccountMessages").innerHTML="<p>Messages लोड हो रहे हैं…</p>";
+  const isAdmin=user.app_metadata?.role==="admin";
+  const roleBadge=$("customerAccountRole");
+  if(roleBadge)roleBadge.textContent=isAdmin?"Admin · Owner":"Customer account";
+  const adminLink=$("customerAdminDashboardLink");
+  if(adminLink)adminLink.hidden=!isAdmin;
+  const {data:p,error:profileError}=await client.from("user_profiles")
+    .select("full_name,phone,district,photo_url").eq("id",user.id).maybeSingle();
+  if(profileError)throw profileError;
+  const name=p?.full_name||local.name||meta.full_name||meta.name||username||"Customer";
+  const phone=p?.phone||local.phone||meta.phone||user.phone||"";
+  const district=p?.district||local.district||meta.district||"";
+  const photo=p?.photo_url||local.photo||meta.avatar_url||meta.photo_url||"";
+  if(!p){
+    const {error:seedError}=await client.from("user_profiles").upsert({
+      id:user.id,full_name:name,phone:phone||null,district:district||null,
+      photo_url:photo||null
+    },{onConflict:"id"});
+    if(seedError)throw seedError;
+  }
+  $("customerAccountName").textContent=name;
+  $("customerAccountEmail").textContent=username?"Username: "+username:"Customer account";
+  $("customerAccountNameInput").value=name;
+  $("customerAccountPhoneInput").value=phone;
+  $("customerAccountDistrictInput").value=district;
+  $("customerAccountUsername").value=username;
+  const img=$("customerAccountAvatar"),fallback=$("customerAccountAvatarFallback");
+  if(img){img.src=photo;img.hidden=!photo;}
+  if(fallback)fallback.hidden=!!photo;
+  save(DB.user,{...local,id:user.id,name,phone,district,photo,username});
+  refreshCustomerMenuProfile();
   const {data:bookings,error:bookingError}=await client.from("bookings").select("id,amin_user_id,service,state,district,place,preferred_date,preferred_time,status,confirmed_date,confirmed_time,details,created_at").eq("customer_user_id",user.id).order("created_at",{ascending:false});if(bookingError)throw bookingError;
   if(!bookings?.length){$("customerAccountBookings").innerHTML="<p>अभी कोई बुकिंग नहीं है। Booking form से request भेजें।</p>";$("customerAccountMessages").innerHTML="<p>बुकिंग बनने के बाद उसी के अंदर Amin को message कर सकेंगे।</p>";return;}
   const ids=bookings.map(b=>b.id);
@@ -1313,7 +1345,37 @@ async function sendCustomerBookingMessage(bookingId){
  input.value="";await openCustomerAccount();
  }catch(e){toast(e.message||"Message नहीं भेजा जा सका।");}
 }
-async function saveCustomerAccount(){const button=$("saveCustomerAccount");button.disabled=true;try{const client=window.myAminSupabase;const {data:{user},error:userError}=await client.auth.getUser();if(error)throw error;if(!user)throw new Error("कृपया दोबारा Login करें।");const full_name=$("customerAccountNameInput").value.trim(),phone=$("customerAccountPhoneInput").value.trim(),district=$("customerAccountDistrictInput").value.trim();if(!full_name)throw new Error("पूरा नाम भरें।");const {error:updateError}=await client.from("user_profiles").update({full_name,phone,district}).eq("id",user.id);if(updateError)throw updateError;const local=read(DB.user,{});save(DB.user,{...local,name:full_name,phone,district,username:local.username||local.name});$("customerAccountName").textContent=full_name;$("customerMenuProfileName").textContent=full_name;$("customerAccountMessage").textContent="प्रोफ़ाइल अपडेट सेव हो गई।";}catch(e){$("customerAccountMessage").textContent=e.message||"अपडेट नहीं हुआ।";}finally{button.disabled=false;}}
+async function saveCustomerAccount(){
+ const button=$("saveCustomerAccount");
+ const message=$("customerAccountMessage");
+ if(button)button.disabled=true;
+ try{
+  const client=window.myAminSupabase;
+  const {data:{user},error:userError}=await client.auth.getUser();
+  if(userError)throw userError;
+  if(!user)throw new Error("कृपया दोबारा Login करें।");
+  const full_name=$("customerAccountNameInput").value.trim();
+  const phone=$("customerAccountPhoneInput").value.trim();
+  const district=$("customerAccountDistrictInput").value.trim();
+  if(!full_name)throw new Error("पूरा नाम भरें।");
+  const local=read(DB.user,{})||{};
+  // UPSERT creates a missing profile row; UPDATE alone silently succeeds with zero rows.
+  const {error:saveError}=await client.from("user_profiles").upsert({
+    id:user.id,full_name,phone:phone||null,district:district||null,
+    photo_url:local.photo||null
+  },{onConflict:"id"});
+  if(saveError)throw saveError;
+  const updated={...local,id:user.id,name:full_name,phone,district,
+    username:local.username||user.user_metadata?.username||user.user_metadata?.name||""};
+  save(DB.user,updated);
+  $("customerAccountName").textContent=full_name;
+  $("customerAccountEmail").textContent=updated.username?"Username: "+updated.username:"Customer account";
+  refreshCustomerMenuProfile();
+  if(message)message.textContent="प्रोफ़ाइल की जानकारी सुरक्षित रूप से सेव हो गई।";
+ }catch(e){
+  if(message)message.textContent=e.message||"प्रोफ़ाइल सेव नहीं हुई।";
+ }finally{if(button)button.disabled=false;}
+}
 
 function openAminAccount(){const a=read(DB.aminProfile,null);if(!a)return;closeMenu();$("accountFullName").textContent=a.name||"";$("accountProfileId").textContent=a.profileId||"";$("accountPhone").textContent=a.phone||"—";$("accountWhatsApp").textContent=a.whatsapp||"—";$("accountDistrict").textContent=a.district||"—";$("accountState").textContent=a.state||"—";$("accountPlace").textContent=a.place||"—";$("accountBusiness").textContent=a.businessId||"—";$("accountApproval").textContent=a.approved?"Approved":"Pending approval";$("accountAvatar").src=a.photo||"";$("accountAvatar").hidden=!a.photo;$("accountAvatarFallback").hidden=!!a.photo;$("accountUpiId").value=a.upiId||"";$("accountUpiQrPreview").src=a.upiQr||"";$("accountUpiQrPreview").hidden=!a.upiQr;const bs=read(DB.bookings,[]).filter(x=>x.aminId===a.profileId||x.profileId===a.profileId||String(x.amin||"").trim().toLowerCase()===String(a.name||"").trim().toLowerCase());const status=x=>String(x.status||"pending").toLowerCase();const done=bs.filter(x=>["completed","complete","done"].includes(status(x)));const active=bs.filter(x=>["confirmed","accepted","in progress","ongoing","started"].includes(status(x)));const pending=bs.filter(x=>!["completed","complete","done","confirmed","accepted","in progress","ongoing","started","cancelled"].includes(status(x)));$("accountCompletedCount").textContent=done.length;$("accountActiveCount").textContent=active.length;$("accountPendingCount").textContent=pending.length;renderAminBookingList(a,bs);renderAminPaymentNotices(a);$("accountMessages").innerHTML="<p>Loading booking conversations…</p>";loadAminBookingMessages();$("aminAccountDialog").classList.add("show");}
 async function loadAminBookingMessages(){
@@ -2868,7 +2930,7 @@ footer .logo-image{filter:drop-shadow(0 4px 9px rgba(0,0,0,.18))}
 @media(prefers-reduced-motion:reduce){#searchDialog .search-result:before{transition:none}}
 </style>
 
-<script type="module" src="supabase-auth.js?v=20261108-password-then-passkey-password-then-passkey"></script>
+<script type="module" src="supabase-auth.js?v=20261108-customer-profile-repair"></script>
 <style>
 .customer-menu-card{gap:9px;padding:17px 14px;border:1px solid #dcebe2;background:linear-gradient(145deg,#fff 0%,#f0f8f2 100%);border-radius:20px;box-shadow:0 10px 26px rgba(18,59,50,.08)}
 .customer-menu-card .account-avatar{width:76px;height:76px;flex-basis:76px;border:3px solid #fff;box-shadow:0 0 0 2px #d7b765}
