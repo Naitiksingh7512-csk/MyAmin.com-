@@ -60,7 +60,8 @@ const renderPasskeyControls = (session) => {
       sessionStorage.setItem("myamin_admin_passkey_verified", session.user.id);
       const details = $("adminVerifiedDetails");
       if (details) details.hidden = false;
-      say("adminLoginMessage", "Touch ID / Passkey सफलतापूर्वक register हो गई। अब Admin Dashboard खोल सकते हैं।");
+      say("adminLoginMessage", "Touch ID / Passkey सफलतापूर्वक register हो गई। Admin Dashboard खुल रहा है…");
+      setTimeout(() => { window.location.href = "ma-control-9f2c7a61b4e8.html"; }, 700);
     } catch (e) {
       say("adminLoginMessage", e.message || "Passkey registration failed. Check Supabase Passkeys settings.", true);
     } finally { button.disabled = false; }
@@ -312,6 +313,7 @@ const handleAdminLogin = async (event) => {
   if (message) { message.textContent = "Password और Touch ID / Passkey verified हैं। Admin Dashboard खोल सकते हैं।"; message.style.display = "block"; message.style.color = ""; }
   if (verified) verified.hidden = false;
   if (verifiedDetails) verifiedDetails.hidden = false;
+  setTimeout(() => { window.location.href = "ma-control-9f2c7a61b4e8.html"; }, 700);
  }catch(e){if(message){message.textContent=e.message||"Admin login असफल हुआ।";message.style.display="block";message.style.color="#a12626";}}
  finally{if(button)button.disabled=false;}
 };
@@ -338,7 +340,8 @@ const handleAdminPasskeyLogin = async () => {
     sessionStorage.setItem("myamin_admin_passkey_verified", user.id);
     if (panel) panel.hidden = false;
     if (details) details.hidden = false;
-    say("adminLoginMessage", "Touch ID / Passkey से Admin पहचान सफलतापूर्वक verify हो गई। Dashboard खोल सकते हैं।");
+    say("adminLoginMessage", "Touch ID / Passkey से Admin पहचान verify हो गई। Dashboard खुल रहा है…");
+    setTimeout(() => { window.location.href = "ma-control-9f2c7a61b4e8.html"; }, 700);
   } catch (e) {
     say("adminLoginMessage", e.message || "Passkey sign-in पूरा नहीं हुआ।", true);
   } finally {
