@@ -176,6 +176,13 @@ th{background:linear-gradient(100deg,#edf6ff,#f8efff)}tr:hover td{background:#f7
   <p class="notice">Important: Team members receive access to their assigned Team Portal tasks. The selected permission labels are saved in the database, but they do not yet grant direct access to every Admin Dashboard module.</p>
  </div>
  <div class="panel" style="margin-bottom:20px"><div class="panel-head"><h2>Live Team Directory</h2><button id="secureTeamRefresh" class="btn outline" type="button">Refresh team</button></div><div id="secureTeamMembersList" class="team-list"><div class="empty">Loading secure team members…</div></div></div>
+ <div class="panel" style="margin-bottom:20px"><h2>Assign Supabase Team Tasks</h2><form id="secureTeamTaskForm" class="team-form"><div class="team-fields">
+  <label>Assign to<select id="secureTaskAssignee" required><option value="">Select an active member</option></select></label>
+  <label>Task title<input id="secureTaskTitle" maxlength="160" required></label>
+  <label>Module<input id="secureTaskModule" maxlength="50" value="general"></label>
+  <label>Due date<input id="secureTaskDue" type="date"></label>
+  <label style="grid-column:1/-1">Description<textarea id="secureTaskDescription" maxlength="3000"></textarea></label>
+ </div><div class="actions"><button class="btn primary" type="submit">Assign Task</button><button class="btn outline" type="button" id="secureTaskRefresh">Refresh Tasks</button></div></form><div id="secureTeamTasksList" class="team-list">Loading tasks…</div></div>
  <div class="panel-head"><h2 data-en="Team management" data-hi="टीम मैनेजमेंट">Team management</h2><span class="pill" data-en="Full access by default" data-hi="डिफ़ॉल्ट रूप से पूरा अधिकार">Full access by default</span></div>
  <div class="notice" data-en="Add team members and assign work here. New members receive all Admin-section permissions by default. Block/Delete controls below only change this browser's local team list; they do not create secure accounts or prevent access to this public page. Never add passwords or sensitive identity documents here." data-hi="यहाँ टीम मेंबर जोड़ें और काम सौंपें। नए मेंबर को डिफ़ॉल्ट रूप से सभी Admin सेक्शन का अधिकार मिलेगा। नीचे Block/Delete केवल इसी ब्राउज़र की स्थानीय टीम सूची बदलते हैं; इससे सुरक्षित अकाउंट नहीं बनता और इस सार्वजनिक पेज का एक्सेस बंद नहीं होता। यहाँ पासवर्ड या संवेदनशील पहचान दस्तावेज़ न जोड़ें।">Add team members and assign work here. New members receive all Admin-section permissions by default. Block/Delete controls below only change this browser's local team list; they do not create secure accounts or prevent access to this public page. Never add passwords or sensitive identity documents here.</div>
  <div class="summary-grid">
@@ -277,7 +284,7 @@ async function loadAdminBackend(){
  finally{adminBackendLoading=false;}
 }
 function initAdminBackend(){
-  let tries=0;const timer=setInterval(()=>{tries++;if(window.myAminSupabase){clearInterval(timer);loadAdminBackend();loadAdminCard();loadSecureTeamMembers();}else if(tries>30)clearInterval(timer);},400);
+  let tries=0;const timer=setInterval(()=>{tries++;if(window.myAminSupabase){clearInterval(timer);loadAdminBackend();loadAdminCard();loadSecureTeamMembers();loadSecureTasks();}else if(tries>30)clearInterval(timer);},400);
 }
 let adminCardPhotoPath="";
 const ADMIN_CARD_SETTING="main_admin_card";
@@ -324,12 +331,42 @@ async function createSecureTeamMember(e){
  }catch(err){notify("Team member creation failed: "+(err.message||"Unknown error"));}
  finally{button.disabled=false;}
 }
+let secureTeamMembersCache=[];
+async function createSecureTeamTask(e){
+ e.preventDefault();const btn=$("secureTeamTaskForm").querySelector('button[type="submit"]');btn.disabled=true;
+ try{
+  const client=window.myAminSupabase;const {data:{user},error:userError}=await client.auth.getUser();if(userError)throw userError;if(!user||user.app_metadata?.role!=="admin")throw new Error("Admin login required.");
+  const assigned_to=$("secureTaskAssignee").value,title=$("secureTaskTitle").value.trim();if(!assigned_to||!title)throw new Error("Choose a member and enter a task title.");
+  const dueDate=$("secureTaskDue").value;const due_at=dueDate?new Date(dueDate+"T23:59:00").toISOString():null;
+  const {data,error}=await client.functions.invoke("admin-team",{body:{action:"create_task",assigned_to,title,description:$("secureTaskDescription").value.trim(),module:$("secureTaskModule").value.trim()||"general",due_at}});
+  if(error)throw error;if(!data?.success)throw new Error(data?.error||"Task assignment failed.");
+  $("secureTaskForm").reset();$("secureTaskModule").value="general";await loadSecureTasks();notify("Task saved in Supabase and assigned.");
+ }catch(e){notify("Task assignment failed: "+(e.message||"Unknown error"));}
+ finally{btn.disabled=false;}
+}
+async function loadSecureTasks(){
+ const box=$("secureTeamTasksList");if(!box)return;
+ try{
+  const client=window.myAminSupabase;if(!client)throw new Error("Supabase connection missing.");
+  const {data,error}=await client.from("team_member_tasks").select("id,assigned_to,title,description,module,status,due_at,created_at").order("created_at",{ascending:false});
+  if(error)throw error;
+  const names=new Map(secureTeamMembersCache.map(m=>[m.user_id,m.full_name||m.email]));
+  box.innerHTML=data?.length?data.map(t=>'<article class="team-card"><div class="team-card-top"><div><strong>'+esc(t.title)+'</strong><div class="team-meta">Assigned to: '+esc(names.get(t.assigned_to)||t.assigned_to)+' · '+esc(t.module||"general")+' · Due: '+date(t.due_at)+'</div></div><span class="pill">'+esc(t.status)+'</span></div><p>'+esc(t.description||"")+'</p><div class="team-actions"><select aria-label="Task status" id="secure-task-status-'+esc(t.id)+'"><option value="pending" '+(t.status==="pending"?"selected":"")+'>Pending</option><option value="in_progress" '+(t.status==="in_progress"?"selected":"")+'>In progress</option><option value="completed" '+(t.status==="completed"?"selected":"")+'>Completed</option><option value="cancelled" '+(t.status==="cancelled"?"selected":"")+'>Cancelled</option></select><button class="btn outline" onclick="updateSecureTaskStatus(\\''+esc(t.id)+'\\')">Save status</button></div></article>').join(""):'<div class="empty"><b>No Supabase tasks assigned yet.</b></div>';
+  const select=$("secureTaskAssignee"),old=select.value;select.innerHTML='<option value="">Select an active member</option>'+secureTeamMembersCache.filter(m=>m.status==="active"&&m.role!=="admin").map(m=>'<option value="'+esc(m.user_id)+'">'+esc(m.full_name||m.email)+'</option>').join("");if(secureTeamMembersCache.some(m=>m.user_id===old&&m.status==="active"))select.value=old;
+ }catch(e){box.textContent="Task loading error: "+(e.message||"Unknown error");}
+}
+async function updateSecureTaskStatus(id){
+ try{const client=window.myAminSupabase;const status=$("secure-task-status-"+id).value;const {error}=await client.from("team_member_tasks").update({status,updated_at:new Date().toISOString()}).eq("id",id);if(error)throw error;await loadSecureTasks();notify("Task status saved.");}
+ catch(e){notify("Task update failed: "+(e.message||"Unknown error"));}
+}
+$("secureTeamTaskForm").addEventListener("submit",createSecureTeamTask);
+$("secureTaskRefresh").addEventListener("click",loadSecureTasks);
 async function loadSecureTeamMembers(){
  const box=$("secureTeamMembersList");if(!box)return;
  try{
   const client=window.myAminSupabase;if(!client)throw new Error("Supabase connection missing.");
   const {data,error}=await client.functions.invoke("admin-team",{body:{action:"list_members"}});if(error)throw error;if(!data?.success)throw new Error(data?.error||"Could not load team.");
-  const members=data.members||[];
+  const members=data.members||[];secureTeamMembersCache=members;
   box.innerHTML=members.length?members.map(m=>'<article class="team-card '+(m.status==="blocked"?"blocked":"")+'"><div class="team-card-top"><div class="person">'+(m.photo_url?'<img class="avatar" src="'+esc(m.photo_url)+'" alt="">':'<span class="avatar">👤</span>')+'<div><strong>'+esc(m.full_name||"Team member")+'</strong><div class="team-meta">'+esc(m.email||"")+' · '+esc(m.department||m.role)+'</div></div></div><span class="pill '+(m.role==="admin"||m.status==="removed"?'':(m.status==="active"?'<button class="btn outline" onclick="setSecureMemberStatus(\\''+esc(m.user_id)+'\\',\\'blocked\\')">Block</button>':'<button class="btn soft" onclick="setSecureMemberStatus(\\''+esc(m.user_id)+'\\',\\'active\\')">Unblock</button>'))+(m.role==="admin"||m.status==="removed"?'':'<button class="btn danger" onclick="setSecureMemberStatus(\\''+esc(m.user_id)+'\\',\\'removed\\')">Delete</button>')</div></article>').join(""):'<div class="empty"><b>No secure team members yet</b></div>';
  }catch(e){box.textContent="Team list error: "+(e.message||"Unknown error");}
 }
