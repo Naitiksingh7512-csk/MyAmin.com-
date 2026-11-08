@@ -183,6 +183,7 @@ th{background:linear-gradient(100deg,#edf6ff,#f8efff)}tr:hover td{background:#f7
   <label>Due date<input id="secureTaskDue" type="date"></label>
   <label style="grid-column:1/-1">Description<textarea id="secureTaskDescription" maxlength="3000"></textarea></label>
  </div><div class="actions"><button class="btn primary" type="submit">Assign Task</button><button class="btn outline" type="button" id="secureTaskRefresh">Refresh Tasks</button></div></form><div id="secureTeamTasksList" class="team-list">Loading tasks…</div></div>
+ <div class="panel" style="margin-bottom:20px"><div class="panel-head"><h2>Secure Team Attendance</h2><button id="secureAttendanceRefresh" class="btn outline" type="button">Refresh attendance</button></div><div id="secureAttendanceList" class="team-list">Loading attendance…</div></div>
  <div class="panel-head"><h2 data-en="Team management" data-hi="टीम मैनेजमेंट">Team management</h2><span class="pill" data-en="Full access by default" data-hi="डिफ़ॉल्ट रूप से पूरा अधिकार">Full access by default</span></div>
  <div class="notice" data-en="Legacy local team draft only. Use the Secure Team Member & ID Card Maker above for real Supabase accounts, task assignment, blocking and card generation. These older records are not synchronized and do not grant access to Admin modules." data-hi="यहाँ टीम मेंबर जोड़ें और काम सौंपें। नए मेंबर को डिफ़ॉल्ट रूप से सभी Admin सेक्शन का अधिकार मिलेगा। नीचे Block/Delete केवल इसी ब्राउज़र की स्थानीय टीम सूची बदलते हैं; इससे सुरक्षित अकाउंट नहीं बनता और इस सार्वजनिक पेज का एक्सेस बंद नहीं होता। यहाँ पासवर्ड या संवेदनशील पहचान दस्तावेज़ न जोड़ें।">Add team members and assign work here. New members receive all Admin-section permissions by default. Block/Delete controls below only change this browser's local team list; they do not create secure accounts or prevent access to this public page. Never add passwords or sensitive identity documents here.</div>
  <div class="summary-grid">
@@ -284,7 +285,7 @@ async function loadAdminBackend(){
  finally{adminBackendLoading=false;}
 }
 function initAdminBackend(){
-  let tries=0;const timer=setInterval(()=>{tries++;if(window.myAminSupabase){clearInterval(timer);loadAdminBackend();loadAdminCard();loadSecureTeamMembers();loadSecureTasks();loadWebsiteSettings();renderContentManager();}else if(tries>30)clearInterval(timer);},400);
+  let tries=0;const timer=setInterval(()=>{tries++;if(window.myAminSupabase){clearInterval(timer);loadAdminBackend();loadAdminCard();loadSecureTeamMembers();loadSecureTasks();loadSecureAttendance();loadWebsiteSettings();renderContentManager();}else if(tries>30)clearInterval(timer);},400);
 }
 let adminCardPhotoPath="";
 const ADMIN_CARD_SETTING="main_admin_card";
@@ -332,6 +333,15 @@ async function createSecureTeamMember(e){
  finally{button.disabled=false;}
 }
 let secureTeamMembersCache=[];
+async function loadSecureAttendance(){
+ const box=$("secureAttendanceList");if(!box)return;
+ try{const client=window.myAminSupabase;if(!client)throw new Error("Supabase connection pending.");
+  const {data,error}=await client.from("team_attendance").select("id,member_user_id,work_date,check_in_at,check_out_at,note").order("work_date",{ascending:false}).limit(150);if(error)throw error;
+  const names=new Map(secureTeamMembersCache.map(m=>[m.user_id,m.full_name||m.email]));
+  box.innerHTML=data?.length?data.map(a=>'<article class="team-card"><div class="team-card-top"><strong>'+esc(names.get(a.member_user_id)||a.member_user_id)+'</strong><span class="pill">'+esc(a.work_date)+'</span></div><div class="team-meta">Check in: '+date(a.check_in_at)+' · Check out: '+(a.check_out_at?date(a.check_out_at):"Still checked in")+'</div></article>').join(""):'<div class="empty">No attendance records yet.</div>';
+ }catch(e){box.textContent="Attendance could not be loaded: "+(e.message||"Unknown error");}
+}
+$("secureAttendanceRefresh").addEventListener("click",loadSecureAttendance);
 async function createSecureTeamTask(e){
  e.preventDefault();const btn=$("secureTeamTaskForm").querySelector('button[type="submit"]');btn.disabled=true;
  try{
