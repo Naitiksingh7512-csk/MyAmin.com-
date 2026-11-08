@@ -77,6 +77,42 @@ Deno.serve(async (req: Request) => {
     return reply({ success: true });
   }
 
+  if (action === "update_amin_profile") {
+    const { data: current, error: currentError } = await root.from("amin_profiles")
+      .select("profile_uid").eq("user_id", caller.id).maybeSingle();
+    if (currentError) return reply({ error: currentError.message }, 400);
+    if (!current) return reply({ error: "Amin profile not found for this account." }, 404);
+    const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    const textFields = ["display_name", "phone", "whatsapp", "state", "district", "place", "business_reference", "upi_id"];
+    for (const key of textFields) {
+      if (Object.prototype.hasOwnProperty.call(body, key)) {
+        const value = body[key] == null ? "" : String(body[key]).trim();
+        const limits: Record<string, number> = { display_name: 120, phone: 30, whatsapp: 30, state: 80, district: 80, place: 120, business_reference: 160, upi_id: 120 };
+        if (value.length > limits[key]) return reply({ error: key + " is too long." }, 400);
+        if (key === "display_name" && !value) return reply({ error: "Name cannot be empty." }, 400);
+        patch[key] = value || null;
+      }
+    }
+    const publicAssetPrefix = url + "/storage/v1/object/public/amin-assets/";
+    for (const key of ["photo_path", "upi_qr_path"]) {
+      if (Object.prototype.hasOwnProperty.call(body, key)) {
+        const value = body[key] == null ? null : String(body[key]).trim();
+        if (value && !value.startsWith(publicAssetPrefix)) return reply({ error: "Profile images must be uploaded to the My Amin storage bucket." }, 400);
+        patch[key] = value || null;
+      }
+    }
+    const { data: updated, error } = await root.from("amin_profiles").update(patch)
+      .eq("user_id", caller.id)
+      .select("profile_uid,display_name,phone,whatsapp,state,district,place,business_reference,photo_path,upi_id,upi_qr_path,approval_status")
+      .single();
+    if (error) return reply({ error: error.message }, 400);
+    await root.from("admin_audit_logs").insert({
+      actor_user_id: caller.id, action: "amin_profile_updated",
+      target_type: "amin_profile", target_id: updated.profile_uid, metadata: {}
+    });
+    return reply({ success: true, profile: updated });
+  }
+
   if (caller.app_metadata?.role !== "admin" || membership?.role !== "admin" || membership?.status !== "active") {
     return reply({ error: "Active admin membership required" }, 403);
   }
