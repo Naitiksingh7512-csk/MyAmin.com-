@@ -697,15 +697,15 @@ async function renderPrintCardCanvas(source,html2canvas,width,height){
  try{await waitForCardImages(clone);const canvas=await html2canvas(clone,{backgroundColor:null,scale:3,useCORS:true,allowTaint:false,logging:false,width,height,windowWidth:Math.max(1200,width)});if(!canvas.width||!canvas.height)throw new Error("Card export is empty");return canvas;}finally{wrapper.remove();}
 }
 async function downloadBusinessCardPrintSheet(){
- const button=$("downloadBusinessCardSheet"),status=$("businessCardDownloadStatus");if(!button||button.disabled)return;button.disabled=true;button.textContent="Preparing 20 cards…";
+ const button=$("downloadBusinessCardSheet"),status=$("businessCardDownloadStatus");if(!button||button.disabled)return;button.disabled=true;button.textContent="Preparing 20 full-size cards…";
  try{
   status.textContent="Converting original MyAmin logo to print-ready PNG…";
   const {html2canvas,jsPDF}=await loadBusinessCardPdfLibraries(),front=$("adminBusinessCardPreview"),back=$("adminBusinessCardBackPreview");if(!front||!back)throw new Error("Business card front/back preview missing.");
-  const fc=await renderPrintCardCanvas(front,html2canvas,1200,400);status.textContent="Front ready. Preparing matching back…";const bc=await renderPrintCardCanvas(back,html2canvas,1200,400);
-  const pdf=new jsPDF({orientation:"portrait",unit:"mm",format:"a4",compress:true}),w=96,h=32,left=7,gx=4,top=10,gy=1;
+  const fc=await renderPrintCardCanvas(front,html2canvas,1200,675);status.textContent="Front ready. Preparing matching back…";const bc=await renderPrintCardCanvas(back,html2canvas,1200,675);
+  const pdf=new jsPDF({orientation:"portrait",unit:"mm",format:"a4",compress:true}),w=96,h=54,left=7,gx=4,top=10,gy=1;
   function sheet(canvas){const data=canvas.toDataURL("image/png");for(let row=0;row<5;row++)for(let col=0;col<2;col++){const x=left+col*(w+gx),y=top+row*(h+gy);pdf.addImage(data,"PNG",x,y,w,h,undefined,"FAST");pdf.setDrawColor(90,125,155);pdf.setLineWidth(.15);const m=1.1;pdf.line(x-m,y,x-.25,y);pdf.line(x,y-m,x,y-.25);pdf.line(x+w+.25,y,x+w+m,y);pdf.line(x+w,y-m,x+w,y-.25);pdf.line(x-m,y+h,x-.25,y+h);pdf.line(x,y+h+.25,x,y+h+m);pdf.line(x+w+.25,y+h,x+w+m,y+h);pdf.line(x+w,y+h+.25,x+w,y+h+m);}}
   sheet(fc);pdf.addPage("a4","portrait");sheet(bc);pdf.save("MyAmin-Business-Cards-10-Front-10-Back.pdf");
-  status.textContent="Ready: 10 front cards on page 1 and 10 backs on page 2. Each 96 × 32 mm; 1 mm row gap, 4 mm centre gap. Front/back positions align for duplex flip-and-stick printing. Print at Actual Size / 100%.";
+  status.textContent="Ready: 10 front cards on page 1 and 10 backs on page 2. Each card is 96 × 54 mm (wider/taller full business-card proportion); 1 mm row gap and 4 mm centre gap. Front/back positions align. Print at Actual Size / 100%.";
  }catch(e){status.textContent="PDF download failed: "+(e?.message||"Unknown error");notify(status.textContent);}
  finally{button.disabled=false;button.textContent="⬇ Download 2-Page Business Card PDF (20 cards)";}
 }
