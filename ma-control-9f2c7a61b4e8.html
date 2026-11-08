@@ -268,14 +268,14 @@ async function loadAdminBackend(){
   const {data:{user},error:userError}=await client.auth.getUser();if(userError)throw userError;
   if(!user||user.app_metadata?.role!=="admin")throw new Error("Admin session verification failed.");
   const [aminRes,bookingRes,userRes]=await Promise.all([
-   client.from("amin_profiles").select("user_id,profile_uid,display_name,phone,whatsapp,state,district,place,business_reference,experience,services,photo_path,upi_id,upi_qr_path,approval_status,created_at"),
+   client.from("amin_profiles").select("id,user_id,profile_uid,display_name,phone,whatsapp,state,district,place,business_reference,experience,services,photo_path,upi_id,upi_qr_path,approval_status,created_at"),
    client.from("bookings").select("id,customer_user_id,amin_user_id,service,state,district,place,preferred_date,preferred_time,details,status,confirmed_date,confirmed_time,created_at"),
    client.from("user_profiles").select("id,full_name,phone,district")
   ]);
   if(aminRes.error)throw aminRes.error;if(bookingRes.error)throw bookingRes.error;if(userRes.error)throw userRes.error;
   const users=new Map((userRes.data||[]).map(x=>[x.id,x]));
   const aminByUser=new Map((aminRes.data||[]).map(x=>[x.user_id,x]));
-  const amins=(aminRes.data||[]).map(x=>({id:x.profile_uid,profileId:x.profile_uid,userId:x.user_id,name:x.display_name,phone:x.phone,whatsapp:x.whatsapp,state:x.state,district:x.district,place:x.place,businessId:x.business_reference,experience:x.experience,services:x.services,photo:x.photo_path,upiId:x.upi_id,upiQr:x.upi_qr_path,approved:x.approval_status==="approved",rejected:x.approval_status==="rejected",workAllowed:x.approval_status!=="blocked",approvalStatus:x.approval_status,createdAt:x.created_at}));
+  const amins=(aminRes.data||[]).map(x=>({id:x.profile_uid,recordId:x.id,profileId:x.profile_uid,userId:x.user_id,name:x.display_name,phone:x.phone,whatsapp:x.whatsapp,state:x.state,district:x.district,place:x.place,businessId:x.business_reference,experience:x.experience,services:x.services,photo:x.photo_path,upiId:x.upi_id,upiQr:x.upi_qr_path,approved:x.approval_status==="approved",rejected:x.approval_status==="rejected",workAllowed:x.approval_status!=="blocked",approvalStatus:x.approval_status,createdAt:x.created_at}));
   const bookings=(bookingRes.data||[]).map(x=>{const c=users.get(x.customer_user_id)||{},a=aminByUser.get(x.amin_user_id)||{};return {id:x.id,customer:c.full_name||"Customer",phone:c.phone||"",amin:a.display_name||"Unassigned",aminId:a.profile_uid||"",service:x.service,state:x.state,district:x.district,place:x.place,date:x.preferred_date,preferredTime:x.preferred_time,status:x.status==="in_progress"?"In progress":String(x.status||"pending").replace(/^./,v=>v.toUpperCase()),confirmedDate:x.confirmed_date,confirmedTime:x.confirmed_time,details:x.details,customerUserId:x.customer_user_id,aminUserId:x.amin_user_id,createdAt:x.created_at};});
   write(DB.amins,amins);write(DB.bookings,bookings);
   const badge=document.getElementById("backendStatus");if(badge)badge.textContent="Supabase connected · live bookings and Amins";
@@ -546,25 +546,45 @@ function loadNoticeAminOptions(){
  sel.innerHTML='<option value="">'+(lang==="hi"?"अमीन चुनें":"Select Amin")+'</option>'+amins.map(a=>'<option value="'+esc(a.profileId||a.id||"")+'">'+esc(a.name||"Amin")+' · '+esc(a.profileId||a.id||"")+'</option>').join("");
  if(amins.some(a=>String(a.profileId||a.id)===old))sel.value=old;
 }
-function renderAminNotices(){
- loadNoticeAminOptions();
- const amins=read(DB.amins,[]),list=read(AMIN_PAYMENT_NOTICES_KEY,[]);
- $("aminNoticeList").innerHTML=list.length?list.map(n=>{const amin=amins.find(x=>String(x.profileId||x.id)===String(n.aminId));return '<article class="team-card"><div class="team-card-top"><div><strong>'+esc(n.title)+'</strong><div class="team-meta">'+esc(amin?.name||n.aminName||"Amin")+' · '+date(n.createdAt)+'</div></div><span class="pill approved">'+(lang==="hi"?"भेजा गया":"Sent")+'</span></div><p style="white-space:pre-wrap">'+esc(n.description)+'</p>'+(n.image?'<img src="'+esc(n.image)+'" alt="Notice attachment" style="max-width:220px;max-height:150px;object-fit:contain;border-radius:10px">':'')+'<div class="team-actions"><button class="btn danger" type="button" onclick="deleteAminNotice(\''+esc(n.id)+'\')">'+(lang==="hi"?"डिलीट":"Delete")+'</button></div></article>'}).join(""):'<div class="empty"><b>'+(lang==="hi"?"अभी कोई नोटिस नहीं भेजा गया।":"No notices sent yet.")+'</b></div>';
-}
-function deleteAminNotice(id){if(!confirm(lang==="hi"?"क्या यह नोटिस हटाएँ?":"Delete this notice?"))return;write(AMIN_PAYMENT_NOTICES_KEY,read(AMIN_PAYMENT_NOTICES_KEY,[]).filter(n=>n.id!==id));logAction("Amin notice deleted",id);refresh()}
+async function renderAminNotices(){
+ loadNoticeAminOptions();const box=$("aminNoticeList");
+ try{
+  const client=window.myAminSupabase;if(!client)throw new Error("Supabase connection pending.");
+  const {data,error}=await client.from("notifications").select("id,user_id,title,body,attachment_path,created_at").eq("notification_type","admin_notice").order("created_at",{ascending:false});if(error)throw error;
+  const amins=read(DB.amins,[]);
+  box.innerHTML=data&&data.length?data.map(n=>{const amin=amins.find(x=>x.userId===n.user_id);return '<article class="team-card"><div class="team-card-top"><div><strong>'+esc(n.title)+'</strong><div class="team-meta">'+esc(amin?amin.name:"Amin")+' · '+date(n.created_at)+'</div></div><span class="pill approved">Sent</span></div><p>'+esc(n.body||"")+'</p>'+(n.attachment_path?'<img src="'+esc(n.attachment_path)+'" alt="" style="max-width:220px;max-height:150px;object-fit:contain;border-radius:10px">':'')+'<div class="team-actions"><button class="btn danger" type="button" data-notice-delete="'+esc(n.id)+'">Delete</button></div></article>'}).join(""):'<div class="empty"><b>No notices sent yet.</b></div>';
+  box.querySelectorAll("[data-notice-delete]").forEach(btn=>btn.addEventListener("click",()=>deleteAminNotice(btn.dataset.noticeDelete)));
+ }catch(e){box.textContent="Notices could not be loaded: "+(e.message||"Unknown error");}
+ }
+async function deleteAminNotice(id){
+ if(!confirm("Delete this notice from Supabase?"))return;
+ try{const client=window.myAminSupabase;const {error}=await client.from("notifications").delete().eq("id",id);if(error)throw error;logAction("Amin notice deleted",id);await renderAminNotices();notify("Notice deleted from Supabase.");}
+ catch(e){notify("Notice delete failed: "+(e.message||"Unknown error"));}
+ }
 function resizeNoticeImage(file){
  return new Promise((resolve,reject)=>{if(!file){resolve("");return}if(!file.type.startsWith("image/")){reject(new Error("Choose an image file."));return}
  const reader=new FileReader();reader.onerror=()=>reject(new Error("Could not read image."));
  reader.onload=()=>{const img=new Image();img.onerror=()=>reject(new Error("Could not open image."));img.onload=()=>{const scale=Math.min(1,1000/Math.max(img.width,img.height)),canvas=document.createElement("canvas");canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL("image/jpeg",0.72));};img.src=reader.result;};reader.readAsDataURL(file);});
 }
 async function createAminNotice(e){
- e.preventDefault();const aminId=$("noticeAminSelect").value,amin=read(DB.amins,[]).find(x=>String(x.profileId||x.id)===aminId),title=$("noticeTitle").value.trim(),description=$("noticeDescription").value.trim();
- if(!amin||!title||!description){notify(lang==="hi"?"अमीन, शीर्षक और विवरण भरें।":"Select an Amin and enter a title and description.");return}
- const file=$("noticeImageFile").files[0];let image="";
- try{if(file)image=await resizeNoticeImage(file)}catch(err){notify(err.message);return}
- const list=read(AMIN_PAYMENT_NOTICES_KEY,[]);
- list.unshift({id:"AN-"+Date.now(),aminId,aminName:amin.name||"Amin",title,description,image,createdAt:new Date().toISOString()});
- if(write(AMIN_PAYMENT_NOTICES_KEY,list)){logAction("Payment notice sent to Amin",amin.name+" · "+title);$("aminNoticeForm").reset();$("noticeImagePreview").hidden=true;refresh();notify(lang==="hi"?"नोटिस सेव कर दिया गया।":"Notice saved.");}
+ e.preventDefault();
+ const aminId=$("noticeAminSelect").value,amin=read(DB.amins,[]).find(x=>String(x.profileId||x.id)===aminId);
+ const title=$("noticeTitle").value.trim(),body=$("noticeDescription").value.trim();
+ if(!amin||!title||!body){notify("Select an Amin and enter a title and message.");return;}
+ try{
+  const client=window.myAminSupabase;const {data:{user},error:userError}=await client.auth.getUser();if(userError)throw userError;
+  if(!user||user.app_metadata?.role!=="admin")throw new Error("Admin login required.");
+  let attachment="";const file=$("noticeImageFile").files[0];
+  if(file){
+   if(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>5*1024*1024)throw new Error("Choose JPG, PNG or WebP up to 5 MB.");
+   const ext=(file.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"");
+   const path=user.id+"/admin-notices/"+crypto.randomUUID()+"."+ext;
+   const {error:uploadError}=await client.storage.from("amin-assets").upload(path,file,{upsert:false,contentType:file.type,cacheControl:"3600"});if(uploadError)throw uploadError;
+   attachment=client.storage.from("amin-assets").getPublicUrl(path).data.publicUrl;
+  }
+  const {error}=await client.from("notifications").insert({user_id:amin.userId,title,body,notification_type:"admin_notice",related_table:"amin_profiles",related_id:amin.recordId||null,attachment_path:attachment||null});if(error)throw error;
+  logAction("Amin notice sent",amin.name+" · "+title);$("aminNoticeForm").reset();$("noticeImagePreview").hidden=true;await renderAminNotices();notify("Notice sent to Amin through Supabase.");
+ }catch(err){notify("Notice failed: "+(err.message||"Unknown error"));}
 }
 $("aminNoticeForm").addEventListener("submit",createAminNotice);
 $("noticeImageFile").addEventListener("change",async e=>{const f=e.target.files[0],preview=$("noticeImagePreview");if(!f){preview.hidden=true;return}try{const data=await resizeNoticeImage(f);preview.src=data;preview.hidden=false;}catch(err){preview.hidden=true;notify(err.message)}});
