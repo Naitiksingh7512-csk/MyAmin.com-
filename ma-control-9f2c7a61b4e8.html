@@ -91,7 +91,7 @@ body{background:radial-gradient(ellipse at 8% 4%,#dff3ff 0,transparent 34%),radi
 th{background:linear-gradient(100deg,#edf6ff,#f8efff)}tr:hover td{background:#f7faff}.btn{box-shadow:0 2px 7px #5a68a20b}.btn:hover{box-shadow:0 6px 15px #5969a21c}
 @media(prefers-reduced-motion:no-preference){.stat,.summary-card,.team-card{transition:transform .2s ease,box-shadow .2s ease}.summary-card:hover,.team-card:hover{transform:translateY(-2px);box-shadow:0 9px 22px #6274b51a}}
 </style>
-<style>@media print{body *{visibility:hidden!important}#adminCardPreview,#adminCardPreview *{visibility:visible!important}#adminCardPreview{position:absolute!important;left:0!important;top:0!important;width:100%!important;max-width:100%!important;box-shadow:none!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head>
+<style>@media print{body *{visibility:hidden!important}body[data-print-target="admin"] #adminCardPreview,body[data-print-target="admin"] #adminCardPreview *,body[data-print-target="team"] #teamSecureCardPreview,body[data-print-target="team"] #teamSecureCardPreview *{visibility:visible!important}body[data-print-target="admin"] #adminCardPreview,body[data-print-target="team"] #teamSecureCardPreview{position:absolute!important;left:0!important;top:0!important;width:100%!important;max-width:100%!important;box-shadow:none!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head>
 <body>
 <header class="top"><div class="brand"><img src="assets/myamin-logo.svg" alt="My Amin logo"><div><strong data-en="Administration" data-hi="प्रशासन">Administration</strong><small data-en="My Amin control centre" data-hi="My Amin नियंत्रण केंद्र">My Amin control centre</small></div></div><div class="top-actions"><button id="langBtn" type="button">हिंदी</button><button type="button" onclick="location.href='index.html'" data-en="← Website" data-hi="← वेबसाइट">← Website</button></div></header>
 <main class="wrap">
@@ -145,6 +145,37 @@ th{background:linear-gradient(100deg,#edf6ff,#f8efff)}tr:hover td{background:#f7
  </article>
 </section>
 <section id="team" class="panel hidden">
+ <div class="panel" style="border:2px solid #b9d8c5;margin-bottom:20px">
+  <div class="panel-head"><h2>Secure Team Member &amp; ID Card Maker</h2><span class="pill approved">Supabase connected</span></div>
+  <p class="muted">Create a real team login, assign permissions and generate a QR ID card with a one-time invite link. A temporary password is generated automatically.</p>
+  <form id="secureTeamForm" class="team-form">
+   <div class="team-fields">
+    <label>Full name<input id="secureTeamName" maxlength="120" required></label>
+    <label>Email (required for login)<input id="secureTeamEmail" type="email" maxlength="160" required></label>
+    <label>Phone<input id="secureTeamPhone" maxlength="30" inputmode="tel"></label>
+    <label>Department / position<input id="secureTeamDepartment" maxlength="80" placeholder="Operations / Support"></label>
+    <label>Account role<select id="secureTeamRole"><option value="team_member">Team Member</option><option value="moderator">Moderator</option></select></label>
+    <label>Profile picture (optional)<input id="secureTeamPhoto" type="file" accept="image/jpeg,image/png,image/webp"></label>
+   </div>
+   <div class="permission-grid" id="secureTeamPermissions">
+    <label><input type="checkbox" data-secure-permission="applications" checked> Applications</label>
+    <label><input type="checkbox" data-secure-permission="directory" checked> Amin Directory</label>
+    <label><input type="checkbox" data-secure-permission="bookings" checked> Bookings</label>
+    <label><input type="checkbox" data-secure-permission="reports"> Reports</label>
+    <label><input type="checkbox" data-secure-permission="customers"> Customers</label>
+    <label><input type="checkbox" data-secure-permission="content"> Content</label>
+   </div>
+   <div class="actions"><button class="btn primary" type="submit">＋ Create Secure Member &amp; ID Card</button></div>
+  </form>
+  <div id="secureTeamInviteResult" class="notice" hidden></div>
+  <article id="teamSecureCardPreview" style="display:none;max-width:620px;margin:18px auto;padding:20px;border:3px solid #183f32;border-radius:18px;background:linear-gradient(135deg,#fff,#edf7f0);grid-template-columns:1fr auto;gap:14px;align-items:center">
+   <div><div style="font-size:11px;font-weight:900;letter-spacing:1.5px;color:#08764d">MY AMIN · TEAM ID</div><h2 id="teamSecureCardName" style="margin:10px 0 3px"></h2><strong id="teamSecureCardRole"></strong><p id="teamSecureCardContact" style="font-size:12px;overflow-wrap:anywhere"></p><small>AUTHORIZED TEAM MEMBER</small></div>
+   <div style="text-align:center"><img id="teamSecureCardPhoto" hidden alt="Team member photo" style="width:100px;height:112px;object-fit:cover;border-radius:10px"><div id="teamSecureCardInitials" class="avatar" style="width:100px;height:112px;border-radius:10px;font-size:30px">TM</div><canvas id="teamSecureCardQr" width="128" height="128" style="display:block;margin:10px auto;background:white;padding:4px"></canvas><small style="font-size:10px">SCAN TO OPEN TEAM PORTAL</small></div>
+  </article>
+  <div class="actions"><button id="teamSecureCardPrint" class="btn outline" type="button" disabled>Download / Print Team ID</button><a id="teamSecureWhatsApp" class="btn soft" hidden target="_blank" rel="noopener">Share invite on WhatsApp</a></div>
+  <p class="notice">Important: Team members receive access to their assigned Team Portal tasks. The selected permission labels are saved in the database, but they do not yet grant direct access to every Admin Dashboard module.</p>
+ </div>
+ <div class="panel" style="margin-bottom:20px"><div class="panel-head"><h2>Live Team Directory</h2><button id="secureTeamRefresh" class="btn outline" type="button">Refresh team</button></div><div id="secureTeamMembersList" class="team-list"><div class="empty">Loading secure team members…</div></div></div>
  <div class="panel-head"><h2 data-en="Team management" data-hi="टीम मैनेजमेंट">Team management</h2><span class="pill" data-en="Full access by default" data-hi="डिफ़ॉल्ट रूप से पूरा अधिकार">Full access by default</span></div>
  <div class="notice" data-en="Add team members and assign work here. New members receive all Admin-section permissions by default. Block/Delete controls below only change this browser's local team list; they do not create secure accounts or prevent access to this public page. Never add passwords or sensitive identity documents here." data-hi="यहाँ टीम मेंबर जोड़ें और काम सौंपें। नए मेंबर को डिफ़ॉल्ट रूप से सभी Admin सेक्शन का अधिकार मिलेगा। नीचे Block/Delete केवल इसी ब्राउज़र की स्थानीय टीम सूची बदलते हैं; इससे सुरक्षित अकाउंट नहीं बनता और इस सार्वजनिक पेज का एक्सेस बंद नहीं होता। यहाँ पासवर्ड या संवेदनशील पहचान दस्तावेज़ न जोड़ें।">Add team members and assign work here. New members receive all Admin-section permissions by default. Block/Delete controls below only change this browser's local team list; they do not create secure accounts or prevent access to this public page. Never add passwords or sensitive identity documents here.</div>
  <div class="summary-grid">
@@ -246,10 +277,72 @@ async function loadAdminBackend(){
  finally{adminBackendLoading=false;}
 }
 function initAdminBackend(){
-  let tries=0;const timer=setInterval(()=>{tries++;if(window.myAminSupabase){clearInterval(timer);loadAdminBackend();loadAdminCard();}else if(tries>30)clearInterval(timer);},400);
+  let tries=0;const timer=setInterval(()=>{tries++;if(window.myAminSupabase){clearInterval(timer);loadAdminBackend();loadAdminCard();loadSecureTeamMembers();}else if(tries>30)clearInterval(timer);},400);
 }
 let adminCardPhotoPath="";
 const ADMIN_CARD_SETTING="main_admin_card";
+let secureCreatedTeamMember=null;
+function randomTemporaryPassword(){
+ const bytes=new Uint8Array(32);crypto.getRandomValues(bytes);
+ return btoa(String.fromCharCode(...bytes)).replace(/\\+/g,"-").replace(/\\//g,"_").replace(/=+$/g,"")+"A7!";
+}
+async function createSecureTeamMember(e){
+ e.preventDefault();const button=$("secureTeamForm").querySelector('button[type="submit"]');button.disabled=true;
+ try{
+  const client=window.myAminSupabase;const {data:{user},error:userError}=await client.auth.getUser();if(userError)throw userError;
+  if(!user||user.app_metadata?.role!=="admin")throw new Error("Admin login required.");
+  const name=$("secureTeamName").value.trim(),email=$("secureTeamEmail").value.trim().toLowerCase();
+  if(!name||!email)throw new Error("Name and email are required.");
+  let photoUrl="";const file=$("secureTeamPhoto").files[0];
+  if(file){
+   if(!/^image\\/(jpeg|png|webp)$/.test(file.type)||file.size>5*1024*1024)throw new Error("Photo must be JPG, PNG or WebP up to 5 MB.");
+   const ext=(file.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"");
+   const path=user.id+"/team-profile/"+crypto.randomUUID()+"."+ext;
+   const {error:uploadError}=await client.storage.from("amin-assets").upload(path,file,{upsert:false,contentType:file.type,cacheControl:"3600"});if(uploadError)throw uploadError;
+   photoUrl=client.storage.from("amin-assets").getPublicUrl(path).data.publicUrl;
+  }
+  const permissions={};document.querySelectorAll("[data-secure-permission]").forEach(x=>permissions[x.dataset.securePermission]=x.checked);
+  const tempPassword=randomTemporaryPassword();
+  const {data,error}=await client.functions.invoke("admin-team",{body:{
+   action:"create_member",full_name:name,email,phone:$("secureTeamPhone").value.trim(),
+   department:$("secureTeamDepartment").value.trim(),role:$("secureTeamRole").value,
+   password:tempPassword,permissions,photo_url:photoUrl
+  }});
+  if(error)throw error;if(!data?.success)throw new Error(data?.error||"Could not create team member.");
+  secureCreatedTeamMember={...data,temporary_password:tempPassword,photo_url:photoUrl};
+  $("teamSecureCardName").textContent=name;$("teamSecureCardRole").textContent=$("secureTeamDepartment").value.trim()||data.member.role;
+  $("teamSecureCardContact").textContent=email+($("secureTeamPhone").value.trim()?" · "+$("secureTeamPhone").value.trim():"");
+  $("teamSecureCardPhoto").hidden=!photoUrl;$("teamSecureCardPhoto").src=photoUrl;
+  $("teamSecureCardInitials").hidden=!!photoUrl;$("teamSecureCardInitials").textContent=(name.split(/\\s+/).slice(0,2).map(x=>x[0]||"").join("")||"TM").toUpperCase();
+  $("teamSecureCardPreview").style.display="grid";
+  if(window.QRCode?.toCanvas)await QRCode.toCanvas($("teamSecureCardQr"),data.card_url,{width:128,margin:1,errorCorrectionLevel:"H"});
+  const result=$("secureTeamInviteResult");result.hidden=false;result.textContent="Secure account created. Temporary password: "+tempPassword+" · Invite link: "+data.card_url;
+  const waText="Welcome to My Amin Team. Open your Team ID invite: "+data.card_url+"\nLogin email: "+email+"\nTemporary password: "+tempPassword+"\nYou must set a new password after login.";
+  $("teamSecureWhatsApp").href="https://wa.me/?text="+encodeURIComponent(waText);$("teamSecureWhatsApp").hidden=false;
+  $("teamSecureCardPrint").disabled=false;
+  $("secureTeamForm").reset();await loadSecureTeamMembers();notify("Secure team member and ID card created.");
+ }catch(err){notify("Team member creation failed: "+(err.message||"Unknown error"));}
+ finally{button.disabled=false;}
+}
+async function loadSecureTeamMembers(){
+ const box=$("secureTeamMembersList");if(!box)return;
+ try{
+  const client=window.myAminSupabase;if(!client)throw new Error("Supabase connection missing.");
+  const {data,error}=await client.functions.invoke("admin-team",{body:{action:"list_members"}});if(error)throw error;if(!data?.success)throw new Error(data?.error||"Could not load team.");
+  const members=data.members||[];
+  box.innerHTML=members.length?members.map(m=>'<article class="team-card '+(m.status==="blocked"?"blocked":"")+'"><div class="team-card-top"><div class="person">'+(m.photo_url?'<img class="avatar" src="'+esc(m.photo_url)+'" alt="">':'<span class="avatar">👤</span>')+'<div><strong>'+esc(m.full_name||"Team member")+'</strong><div class="team-meta">'+esc(m.email||"")+' · '+esc(m.department||m.role)+'</div></div></div><span class="pill '+(m.status==="active"?"approved":"rejected")+'">'+esc(m.status)+'</span></div><div class="team-meta">Role: '+esc(m.role)+' · Last login: '+date(m.last_login_at)+' · Must change password: '+(m.must_change_password?"Yes":"No")+'</div><div class="team-badges">'+Object.entries(m.permissions||{}).filter(([,v])=>v===true).map(([k])=>'<span class="pill">'+esc(k)+'</span>').join("")+'</div><div class="team-actions">'+(m.status==="active"?'<button class="btn outline" onclick="setSecureMemberStatus(\''+esc(m.user_id)+'\',\'blocked\')">Block</button>':'<button class="btn soft" onclick="setSecureMemberStatus(\''+esc(m.user_id)+'\',\'active\')">Unblock</button>')+'<button class="btn danger" onclick="setSecureMemberStatus(\''+esc(m.user_id)+'\',\'removed\')">Delete</button></div></article>').join(""):'<div class="empty"><b>No secure team members yet</b></div>';
+ }catch(e){box.textContent="Team list error: "+(e.message||"Unknown error");}
+}
+async function setSecureMemberStatus(userId,status){
+ const action=status==="removed"?"permanently remove":"change status";
+ if(!confirm("Confirm "+action+" for this team member? Their account will be blocked when removed."))return;
+ try{const client=window.myAminSupabase;const {data,error}=await client.functions.invoke("admin-team",{body:{action:"set_member_status",user_id:userId,status}});if(error)throw error;if(!data?.success)throw new Error(data?.error||"Update failed");await loadSecureTeamMembers();notify("Team member status updated in Supabase.");}
+ catch(e){notify("Team update failed: "+(e.message||"Unknown error"));}
+}
+$("secureTeamForm").addEventListener("submit",createSecureTeamMember);
+$("secureTeamRefresh").addEventListener("click",loadSecureTeamMembers);
+$("teamSecureCardPrint").addEventListener("click",()=>{document.body.dataset.printTarget="team";window.print()});
+window.addEventListener("afterprint",()=>{delete document.body.dataset.printTarget;});
 function renderAdminCardPreview(data={}){
  const name=data.name||"Main Administrator";
  $("adminCardPreviewName").textContent=name;$("adminCardPreviewRole").textContent=data.role||"Main Administrator";
@@ -298,7 +391,7 @@ async function saveAdminCard(e){
 }
 $("adminCardForm").addEventListener("submit",saveAdminCard);
 $("adminCardRefresh").addEventListener("click",loadAdminCard);
-$("adminCardPrint").addEventListener("click",()=>window.print());
+$("adminCardPrint").addEventListener("click",()=>{document.body.dataset.printTarget="admin";window.print()});
 ["adminCardName","adminCardRole","adminCardPhone","adminCardEmail"].forEach(id=>$(id).addEventListener("input",()=>renderAdminCardPreview({name:$("adminCardName").value,role:$("adminCardRole").value,phone:$("adminCardPhone").value,email:$("adminCardEmail").value,photo_url:$("adminCardPreviewPhoto").hidden?"":$("adminCardPreviewPhoto").src})));
 
 
