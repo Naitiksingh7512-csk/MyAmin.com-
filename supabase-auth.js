@@ -125,18 +125,16 @@ const ensureCustomerFields = () => {
   const form = $("loginForm");
   if (!form || $("customerUsername")) return;
   const grid = form.querySelector(".form-grid");
+  if (!grid) return;
   grid.innerHTML = `
-    <div class="field"><label for="customerName">पूरा नाम / Full Name *</label><input id="customerName" autocomplete="name" maxlength="80" required></div>
-    <div class="field"><label for="customerUsername">Username *</label><input id="customerUsername" autocomplete="username" minlength="3" maxlength="24" pattern="[A-Za-z0-9._-]+" placeholder="e.g. naitik7512" required><small>3–24 अक्षर: English letters, numbers, dot, _ या -।</small></div>
-    <div class="field full"><label for="customerPassword">पासवर्ड / Password *</label><div class="password-wrap"><input id="customerPassword" type="password" minlength="8" maxlength="72" autocomplete="new-password" required><button type="button" class="password-eye" data-target="customerPassword" aria-label="Show password">👁</button></div><small>कम-से-कम 8 अक्षर रखें।</small></div>`;
+    <div class="field full"><label for="customerUsername">Username / यूज़रनेम</label><input id="customerUsername" type="text" autocomplete="username" maxlength="160" placeholder="Naitik Singh@7512" required></div>
+    <div class="field full"><label for="customerPassword">Password / पासवर्ड</label><div class="password-wrap"><input id="customerPassword" type="password" minlength="8" maxlength="72" autocomplete="new-password" required><button type="button" class="password-eye" data-target="customerPassword" aria-label="Show password">👁</button></div><small>कम-से-कम 8 characters.</small></div>`;
   const actions = form.querySelector(".form-actions");
-  actions.innerHTML = '<button class="btn btn-green" type="submit">Create Account</button><button class="btn btn-outline" type="button" id="customerModeToggle">Already have an account? Login</button><button class="btn btn-outline" type="button" onclick="logout()">Logout</button>';
+  actions.innerHTML = '<button class="btn btn-green" type="submit">Create Account</button><button class="btn btn-outline" type="button" id="customerModeToggle">Already have an account? Login</button>';
   let mode = "signup";
-  const nameField = $("customerName").closest(".field");
   const toggle = $("customerModeToggle");
   toggle.addEventListener("click", () => {
     mode = mode === "signup" ? "login" : "signup";
-    nameField.hidden = mode === "login";
     $("customerPassword").autocomplete = mode === "login" ? "current-password" : "new-password";
     toggle.textContent = mode === "signup" ? "Already have an account? Login" : "Create a new account";
     form.querySelector('button[type="submit"]').textContent = mode === "signup" ? "Create Account" : "Login";
@@ -162,65 +160,61 @@ const ensureAminFields = () => {
   pass.innerHTML = '<label for="aminPassword">Password / पासवर्ड *</label><input id="aminPassword" type="password" minlength="8" maxlength="72" autocomplete="new-password" required><small>कम-से-कम 8 characters.</small>';
   grid.insertBefore(pass, grid.children[1] || null);
 };
+const customerAuthEmail = async (username) => {
+  const key = username.normalize("NFKC").trim().toLocaleLowerCase("en-US");
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(key));
+  const tag = Array.from(new Uint8Array(digest)).map(x => x.toString(16).padStart(2, "0")).join("");
+  return tag + "@login.myamin.invalid";
+};
 const handleCustomerLogin = async (event) => {
   event.preventDefault();
   event.stopImmediatePropagation();
   const form = $("loginForm");
   const mode = form.dataset.authMode || "signup";
-  const name = $("customerName")?.value.trim() || "";
-  const username = $("customerUsername")?.value.trim().toLowerCase() || "";
+  const username = $("customerUsername")?.value.normalize("NFKC").trim() || "";
   const password = $("customerPassword")?.value || "";
-  if (!/^[a-z0-9][a-z0-9._-]{2,23}$/.test(username)) {
-    say("loginMessage", "Username 3–24 अक्षरों का हो: English letters, numbers, dot, underscore या hyphen।", true);
+  if (!username || username.length > 160) {
+    say("loginMessage", "Username खाली न छोड़ें और 160 characters से छोटा रखें।", true);
     return;
   }
   if (password.length < 8 || password.length > 72) {
-    say("loginMessage", "पासवर्ड 8 से 72 अक्षरों का होना चाहिए।", true);
-    return;
-  }
-  if (mode === "signup" && !name) {
-    say("loginMessage", "कृपया अपना पूरा नाम भरें।", true);
+    say("loginMessage", "Password कम-से-कम 8 characters का होना चाहिए।", true);
     return;
   }
   const button = form.querySelector('button[type="submit"]');
   button.disabled = true;
   button.textContent = mode === "signup" ? "Creating account…" : "Logging in…";
   try {
-    const authEmail = username + "@login.myamin.invalid";
-    let result;
+    const authEmail = await customerAuthEmail(username);
     if (mode === "signup") {
-      result = await supabase.auth.signUp({
-        email: authEmail,
-        password,
-        options: { data: { full_name: name, username, account_type: "customer" } }
+      const { data, error } = await supabase.functions.invoke("customer-signup", {
+        body: { username, password }
       });
+      if (error) {
+        let detail = error.message || "Account create नहीं हो पाया।";
+        try { const payload = await error.context?.json(); if (payload?.error) detail = payload.error; } catch {}
+        throw new Error(detail);
+      }
+      if (data?.error) throw new Error(data.error);
+      const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ email: authEmail, password });
+      if (loginError) throw loginError;
+      if (!loginData?.session) throw new Error("Account बन गया, लेकिन login session नहीं मिला। उसी username से Login करें।");
     } else {
-      result = await supabase.auth.signInWithPassword({ email: authEmail, password });
+      const { error } = await supabase.auth.signInWithPassword({ email: authEmail, password });
+      if (error) throw error;
     }
-    if (result.error) throw result.error;
-    const user = result.data?.user;
-    const session = result.data?.session;
-    if (!user || !session) {
-      throw new Error("Supabase ने login session नहीं दिया। Confirm Email OFF होने की पुष्टि करें; अभी दोबारा अकाउंट न बनाएँ।");
-    }
-    const profileName = mode === "signup" ? name : (user.user_metadata?.full_name || username);
-    // Persist the menu profile immediately; the menu can render without a page/API round trip.
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError) throw userError;
+    if (!user) throw new Error("Login session verify नहीं हुआ।");
     localStorage.setItem("myamin_demo_user_v1", JSON.stringify({
-      id: user.id, name: profileName, username, phone: "", district: "", email: username
+      id: user.id,
+      name: user.user_metadata?.username || username,
+      username: user.user_metadata?.username || username,
+      phone: "", district: "", email: user.user_metadata?.username || username
     }));
     localStorage.removeItem("myamin_demo_logged_in_amin_v1");
     if (typeof window.refreshCustomerMenuProfile === "function") window.refreshCustomerMenuProfile();
     if (typeof window.updateBookingUser === "function") window.updateBookingUser();
-    say("loginMessage", mode === "signup" ? "अकाउंट बन गया और Login सफल है। पेज अभी reload होगा।" : "Login सफल। पेज अभी reload होगा।");
-    // Keep profile-table sync best-effort; an optional profile table issue must not undo Auth login.
-    try {
-      const { error: profileError } = await supabase.from("user_profiles").upsert({
-        id: user.id, full_name: profileName, phone: null, district: null, account_type: "customer"
-      }, { onConflict: "id" });
-      if (profileError) console.warn("Customer profile sync:", profileError.message);
-    } catch (profileError) {
-      console.warn("Customer profile sync:", profileError);
-    }
     window.location.reload();
   } catch (e) {
     say("loginMessage", e.message || "Login पूरा नहीं हो सका।", true);
