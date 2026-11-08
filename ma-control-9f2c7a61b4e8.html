@@ -284,6 +284,10 @@ body{font-family:Inter,"SF Pro Display","Segoe UI",Arial,sans-serif}
   </div>
  </article>
  <h3 style="margin:28px 0 8px">My Amin Business Card · Front &amp; Back</h3>
+ <div class="actions" style="margin:12px 0 18px;display:flex;flex-wrap:wrap;gap:10px">
+  <button class="btn primary" id="downloadBusinessCardSheet" type="button">⬇ Download 2-Page Business Card PDF (16 cards)</button>
+ </div>
+ <p id="businessCardDownloadStatus" class="notice" aria-live="polite">PDF में A4 के पहले पेज पर 8 front और दूसरे पेज पर 8 back business cards होंगे। Print करके cut करें।</p>
  <article id="adminBusinessCardPreview" class="admin-id-card admin-print-page">
   <div class="admin-id-top"><div class="admin-id-brand"><img class="admin-id-logo" src="assets/myamin-logo.svg" alt="MyAmin.com logo"><div><strong>MY AMIN</strong><small>LAND SERVICES · DIGITAL INDIA</small></div></div><span class="admin-id-chip">BUSINESS CARD</span></div>
   <div class="admin-id-body"><div class="admin-id-details"><div class="admin-id-eyebrow">FOUNDER</div><h2>Naitik Singh</h2><div class="admin-id-role">Founder · My Amin</div><p>Discover land services and connect with Amin professionals.</p><div class="admin-id-footer"><span>MYAMIN.COM</span><span>LAND SERVICES</span></div></div><div class="admin-id-media"><div class="admin-id-qr-wrap"><div class="admin-id-qr-frame"><img id="businessCardQrImage" alt="Scan to open MyAmin website"></div><small>SCAN TO VISIT WEBSITE</small><span id="businessCardQrStatus">Preparing website QR…</span></div></div></div>
@@ -628,6 +632,66 @@ $("topAdminCardBtn").addEventListener("click",()=>document.querySelector('[data-
 $("adminCardForm").addEventListener("submit",saveAdminCard);
 $("adminCardRefresh").addEventListener("click",loadAdminCard);
 $("adminCardPrint").addEventListener("click",()=>{document.body.dataset.printTarget="admin";window.print()});
+
+async function loadBusinessCardPdfLibraries(){
+ if(!window.html2canvas){
+  await new Promise((resolve,reject)=>{const existing=document.querySelector('script[data-business-html2canvas]');if(existing){if(window.html2canvas)return resolve();existing.addEventListener("load",resolve,{once:true});existing.addEventListener("error",reject,{once:true});return;}const el=document.createElement("script");el.src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js";el.async=true;el.dataset.businessHtml2canvas="1";el.onload=resolve;el.onerror=()=>reject(new Error("Card image renderer could not load. Check your internet connection."));document.head.appendChild(el);});
+ }
+ if(!(window.jspdf?.jsPDF||window.jsPDF)){
+  await new Promise((resolve,reject)=>{const existing=document.querySelector('script[data-business-jspdf]');if(existing){if(window.jspdf?.jsPDF||window.jsPDF)return resolve();existing.addEventListener("load",resolve,{once:true});existing.addEventListener("error",reject,{once:true});return;}const el=document.createElement("script");el.src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js";el.async=true;el.dataset.businessJspdf="1";el.onload=resolve;el.onerror=()=>reject(new Error("PDF generator could not load. Check your internet connection."));document.head.appendChild(el);});
+ }
+ if(!window.html2canvas)throw new Error("Card image renderer is unavailable.");
+ const Pdf=window.jspdf?.jsPDF||window.jsPDF;if(!Pdf)throw new Error("PDF generator is unavailable.");
+ return {html2canvas:window.html2canvas,jsPDF:Pdf};
+}
+async function waitForCardImages(card){
+ const images=[...card.querySelectorAll("img")];
+ await Promise.all(images.map(async img=>{if(!img.complete)await new Promise(resolve=>{img.addEventListener("load",resolve,{once:true});img.addEventListener("error",resolve,{once:true});setTimeout(resolve,10000);});if(img.decode)try{await img.decode()}catch(_){}}));
+}
+async function renderBusinessCardCanvas(source,html2canvas){
+ const wrapper=document.createElement("div");
+ wrapper.style.cssText="position:fixed;left:-12000px;top:0;width:856px;height:540px;overflow:hidden;background:#061329;z-index:-1;";
+ const clone=source.cloneNode(true);clone.removeAttribute("id");
+ clone.style.setProperty("display","block","important");clone.style.setProperty("position","relative","important");clone.style.setProperty("width","856px","important");clone.style.setProperty("height","540px","important");clone.style.setProperty("min-height","540px","important");clone.style.setProperty("max-width","none","important");clone.style.setProperty("aspect-ratio","auto","important");clone.style.setProperty("margin","0","important");clone.style.setProperty("border-radius","24px","important");clone.style.setProperty("overflow","hidden","important");
+ const top=clone.querySelector(".admin-id-top");if(top){top.style.setProperty("height","15%","important");top.style.setProperty("min-height","0","important");}
+ const body=clone.querySelector(".admin-id-body");if(body){body.style.setProperty("height","85%","important");body.style.setProperty("min-height","0","important");body.style.setProperty("padding","30px","important");}
+ wrapper.appendChild(clone);document.body.appendChild(wrapper);
+ try{await waitForCardImages(clone);return await html2canvas(clone,{backgroundColor:null,scale:2,useCORS:true,logging:false,width:856,height:540,windowWidth:1200});}
+ finally{wrapper.remove();}
+}
+async function downloadBusinessCardPrintSheet(){
+ const button=$("downloadBusinessCardSheet"),status=$("businessCardDownloadStatus");
+ if(!button||button.disabled)return;
+ button.disabled=true;button.textContent="Preparing PDF…";
+ try{
+  status.textContent="Preparing front and back artwork. Please keep this page open…";
+  const {html2canvas,jsPDF}=await loadBusinessCardPdfLibraries();
+  const front=$("adminBusinessCardPreview"),back=$("adminBusinessCardBackPreview");
+  if(!front||!back)throw new Error("Business card front/back preview was not found.");
+  await waitForCardImages(front);await waitForCardImages(back);
+  const frontCanvas=await renderBusinessCardCanvas(front,html2canvas);
+  status.textContent="Front page ready. Preparing back page…";
+  const backCanvas=await renderBusinessCardCanvas(back,html2canvas);
+  const pdf=new jsPDF({orientation:"portrait",unit:"mm",format:"a4",compress:true});
+  const cardW=90,cardH=cardW/(85.6/54),left=10,gapX=10,topY=10,gapY=12;
+  function addSheet(canvas){
+   const image=canvas.toDataURL("image/jpeg",0.94);
+   for(let row=0;row<4;row++)for(let col=0;col<2;col++){
+    const x=left+col*(cardW+gapX),y=topY+row*(cardH+gapY);
+    pdf.addImage(image,"JPEG",x,y,cardW,cardH,undefined,"FAST");
+    pdf.setDrawColor(100,135,165);pdf.setLineWidth(0.18);
+    const m=1.8;pdf.line(x-m,y,x-0.5,y);pdf.line(x,y-m,x,y-0.5);pdf.line(x+cardW+0.5,y,x+cardW+m,y);pdf.line(x+cardW,y-m,x+cardW,y-0.5);
+    pdf.line(x-m,y+cardH,x-0.5,y+cardH);pdf.line(x,y+cardH+0.5,x,y+cardH+m);pdf.line(x+cardW+0.5,y+cardH,x+cardW+m,y+cardH);pdf.line(x+cardW,y+cardH+0.5,x+cardW,y+cardH+m);
+   }
+  }
+  addSheet(frontCanvas);pdf.addPage("a4","portrait");addSheet(backCanvas);
+  pdf.save("MyAmin-Business-Cards-8-Front-8-Back.pdf");
+  status.textContent="Your 2-page A4 PDF is ready: 8 front cards on page 1 and 8 back cards on page 2. Print at Actual Size / 100% and cut along the crop marks.";
+ }catch(error){status.textContent="PDF download failed: "+(error?.message||"Unknown error")+". Please check your internet connection and try again.";notify(status.textContent);}
+ finally{button.disabled=false;button.textContent="⬇ Download 2-Page Business Card PDF (16 cards)";}
+}
+$("downloadBusinessCardSheet").addEventListener("click",downloadBusinessCardPrintSheet);
+
 ["adminCardName","adminCardRole","adminCardPhone","adminCardEmail"].forEach(id=>$(id).addEventListener("input",()=>renderAdminCardPreview({name:$("adminCardName").value,role:$("adminCardRole").value,phone:$("adminCardPhone").value,email:$("adminCardEmail").value,photo_url:$("adminCardPreviewPhoto").hidden?"":$("adminCardPreviewPhoto").src})));
 
 function refresh(){const d=allData(),bs=d.bookings;const completed=bs.filter(b=>String(b.status||"pending").toLowerCase()==="completed");$("totalAmins").textContent=d.amins.length;$("pendingAmins").textContent=d.amins.filter(a=>statusOf(a)==="pending").length;$("approvedAmins").textContent=d.amins.filter(a=>statusOf(a)==="approved").length;$("totalBookings").textContent=bs.length;$("overviewCustomers").textContent=customersFrom(bs).length;$("overviewCompleted").textContent=completed.length;$("overviewReports").textContent=d.reports.length;renderApplications();renderDirectory();renderCustomers();renderBookings();renderReports();renderCommission();renderPayments();renderRecent(d);renderActivity();renderTeam();renderPaymentRequests();renderAminNotices();renderContentManager()}
