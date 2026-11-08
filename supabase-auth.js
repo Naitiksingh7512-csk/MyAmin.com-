@@ -263,17 +263,22 @@ const handleAminSignup = async (event) => {
       return;
     }
     const userId = data.user.id;
-    const photo = await uploadPublicAsset(userId, "profile", $("regPhoto").files[0]);
-    const upiQr = await uploadPublicAsset(userId, "upi-qr", $("regUpiQr").files[0]);
-    const uid = profileId(name);
+    const { data: previousProfile, error: previousError } = await supabase.from("amin_profiles")
+      .select("profile_uid,approval_status,photo_path,upi_id,upi_qr_path,services")
+      .eq("user_id", userId).maybeSingle();
+    if (previousError) throw previousError;
+    const photo = await uploadPublicAsset(userId, "profile", $("regPhoto").files[0]) || previousProfile?.photo_path || null;
+    const upiQr = await uploadPublicAsset(userId, "upi-qr", $("regUpiQr").files[0]) || previousProfile?.upi_qr_path || null;
+    const uid = previousProfile?.profile_uid || profileId(name);
     const record = {
       user_id: userId, profile_uid: uid, display_name: name, phone,
       whatsapp: $("regWhatsApp").value.trim() || null,
       state: $("regState").value.trim(), district: $("regDistrict").value.trim(),
       place: $("regPlace").value.trim(),
       business_reference: $("regBusinessId").value.trim() || null,
-      services: [], photo_path: photo, upi_id: $("regUpiId").value.trim() || null,
-      upi_qr_path: upiQr, approval_status: "pending"
+      services: previousProfile?.services || [], photo_path: photo,
+      upi_id: $("regUpiId").value.trim() || previousProfile?.upi_id || null,
+      upi_qr_path: upiQr, approval_status: previousProfile?.approval_status || "pending"
     };
     const { error: profileError } = await supabase.from("amin_profiles").upsert(record, { onConflict: "user_id" });
     if (profileError) throw profileError;
