@@ -56,7 +56,11 @@ const renderPasskeyControls = (session) => {
     try {
       const { data, error } = await supabase.auth.registerPasskey();
       if (error) throw error;
-      say("adminLoginMessage", "Passkey registered. Next time, use Touch ID / your device passkey to sign in.");
+      // Registration completed through the device's biometric/passkey prompt.
+      sessionStorage.setItem("myamin_admin_passkey_verified", session.user.id);
+      const details = $("adminVerifiedDetails");
+      if (details) details.hidden = false;
+      say("adminLoginMessage", "Touch ID / Passkey सफलतापूर्वक register हो गई। अब Admin Dashboard खोल सकते हैं।");
     } catch (e) {
       say("adminLoginMessage", e.message || "Passkey registration failed. Check Supabase Passkeys settings.", true);
     } finally { button.disabled = false; }
@@ -304,13 +308,43 @@ const handleAdminLogin = async (event) => {
     await supabase.auth.signOut();
     throw new Error("Passkey के बाद Admin verification असफल हुआ।");
   }
-  if (message) { message.textContent = "Password और Touch ID / Passkey दोनों verified हैं। Admin Dashboard खोल सकते हैं।"; message.style.display = "block"; message.style.color = ""; }
+  sessionStorage.setItem("myamin_admin_passkey_verified", user.id);
+  if (message) { message.textContent = "Password और Touch ID / Passkey verified हैं। Admin Dashboard खोल सकते हैं।"; message.style.display = "block"; message.style.color = ""; }
   if (verified) verified.hidden = false;
   if (verifiedDetails) verifiedDetails.hidden = false;
  }catch(e){if(message){message.textContent=e.message||"Admin login असफल हुआ।";message.style.display="block";message.style.color="#a12626";}}
  finally{if(button)button.disabled=false;}
 };
 
+const handleAdminPasskeyLogin = async () => {
+  const button = $("adminPasskeyLogin");
+  const message = $("adminLoginMessage");
+  const panel = $("adminVerifiedPanel");
+  const details = $("adminVerifiedDetails");
+  if (button) button.disabled = true;
+  if (panel) panel.hidden = true;
+  if (details) details.hidden = true;
+  try {
+    const { data, error } = await supabase.auth.signInWithPasskey();
+    if (error) throw error;
+    const user = data.user;
+    const { data: member, error: memberError } = await supabase.from("admin_team_members")
+      .select("role,status").eq("user_id", user.id).maybeSingle();
+    if (memberError) throw memberError;
+    if (user.app_metadata?.role !== "admin" || member?.role !== "admin" || member?.status !== "active") {
+      await supabase.auth.signOut();
+      throw new Error("यह Passkey किसी सक्रिय Admin account की नहीं है।");
+    }
+    sessionStorage.setItem("myamin_admin_passkey_verified", user.id);
+    if (panel) panel.hidden = false;
+    if (details) details.hidden = false;
+    say("adminLoginMessage", "Touch ID / Passkey से Admin पहचान सफलतापूर्वक verify हो गई। Dashboard खोल सकते हैं।");
+  } catch (e) {
+    say("adminLoginMessage", e.message || "Passkey sign-in पूरा नहीं हुआ।", true);
+  } finally {
+    if (button) button.disabled = false;
+  }
+};
 const verifyAdminOAuthSession = async (session) => {
   const message = $("adminLoginMessage");
   const panel = $("adminVerifiedPanel");
@@ -410,6 +444,7 @@ const handleBooking = async (event) => {
   } catch (e) { say("bookingMessage", e.message || "Booking जमा नहीं हुई। कृपया पहले Login करें।", true); }
 };
 window.logout = async () => {
+  sessionStorage.removeItem("myamin_admin_passkey_verified");
   await supabase.auth.signOut();
   localStorage.removeItem("myamin_demo_user_v1");
   localStorage.removeItem("myamin_demo_logged_in_amin_v1");
@@ -424,6 +459,7 @@ document.addEventListener("DOMContentLoaded", () => {
   $("aminForm")?.addEventListener("submit", handleAminSignup, true);
   $("bookingForm")?.addEventListener("submit", handleBooking, true);
   $("adminLoginForm")?.addEventListener("submit", handleAdminLogin, true);
+  $("adminPasskeyLogin")?.addEventListener("click", handleAdminPasskeyLogin);
 
   $("loginForm")?.querySelector('button[onclick="logout()"]')?.addEventListener("click", window.logout);
 });
