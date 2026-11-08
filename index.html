@@ -2293,10 +2293,25 @@ const MYAMIN_FOLLOWS_KEY="myamin_followed_amins_v1";
 function getFollowedAmins(){try{return JSON.parse(localStorage.getItem(MYAMIN_FOLLOWS_KEY)||"[]")}catch(e){return []}}
 function isAminFollowed(id){return getFollowedAmins().includes(String(id||""))}
 function toggleAminFollow(id){const key=String(id||"");let list=getFollowedAmins();list=list.includes(key)?list.filter(x=>x!==key):[...list,key];try{localStorage.setItem(MYAMIN_FOLLOWS_KEY,JSON.stringify(list))}catch(e){}toast(list.includes(key)?"You are now following this Amin.":"Amin unfollowed.");if($("aminResults"))searchAmins()}
-function renderAdminContentFeed(){const box=$("adminContentFeed");if(!box)return;let items=[];try{items=JSON.parse(localStorage.getItem("myamin_admin_content_v1")||"[]")}catch(e){}if(items.length)box.innerHTML=items.filter(x=>x.active!==false).map(x=>'<article class="card"><div class="card-icon">'+(x.type==="video"?"▶️":"🔗")+'</div><h3>'+safe(x.title)+'</h3><p>'+safe(x.description||"")+'</p><a class="btn btn-light btn-small" href="'+safe(x.url)+'" target="_blank" rel="noopener">'+(x.type==="video"?"Watch video":"Open link")+' →</a></article>').join("")}
+async function renderAdminContentFeed(){
+ const box=$("adminContentFeed");if(!box)return;
+ try{
+  const client=window.myAminSupabase;if(!client)return;
+  const {data,error}=await client.from("admin_announcements").select("id,title,body,link_url,content_type,image_url,created_at").eq("is_active",true).order("created_at",{ascending:false});
+  if(error)throw error;
+  box.innerHTML=data?.length?data.map(x=>'<article class="card"><div class="card-icon">'+(x.content_type==="video"?"▶️":x.content_type==="advertisement"?"📢":x.content_type==="announcement"?"📣":"🔗")+'</div>'+(x.content_type==="advertisement"?'<span class="pill">Advertisement</span>':'')+(x.image_url?'<img src="'+safe(x.image_url)+'" alt="" loading="lazy" style="width:100%;max-height:170px;object-fit:cover;border-radius:12px;margin-top:8px">':'')+'<h3>'+safe(x.title)+'</h3><p>'+safe(x.body||"")+'</p>'+(x.link_url?'<a class="btn btn-light btn-small" href="'+safe(x.link_url)+'" target="_blank" rel="noopener">'+(x.content_type==="video"?"Watch video":"Open link")+' →</a>':'')+'</article>').join(""):'<p>No updates at the moment.</p>';
+ }catch(e){box.textContent="Updates could not be loaded right now.";}
+}
 window.addEventListener("storage",e=>{if(e.key==="myamin_admin_content_v1")renderAdminContentFeed()});renderAdminContentFeed();
 
-function applyLocalWebsiteSettings(){let s={};try{s=JSON.parse(localStorage.getItem("myamin_site_settings_v1")||"{}")}catch(e){}const setVisible=(id,show)=>{const el=document.getElementById(id);if(el)el.hidden=show===false};setVisible("quickServices",s.showQuick);setVisible("services",s.showServices);setVisible("adminHighlights",s.showUpdates);setVisible("nearby",s.showMap);if(s.maintenance){let n=document.getElementById("myAminMaintenanceNotice");if(!n){n=document.createElement("div");n.id="myAminMaintenanceNotice";n.style.cssText="margin:12px auto;max-width:1160px;padding:12px 16px;border-radius:12px;background:#fff4dc;color:#76500c;text-align:center;font-weight:700";document.querySelector("main")?.prepend(n)}n.textContent=s.announcement||"My Amin is currently under maintenance. Please try again soon."}else document.getElementById("myAminMaintenanceNotice")?.remove();if(s.announcement&&!s.maintenance){let n=document.getElementById("myAminAnnouncement");if(!n){n=document.createElement("div");n.id="myAminAnnouncement";n.style.cssText="max-width:1160px;margin:10px auto;padding:10px 14px;border-radius:12px;background:#eaf6ed;color:#075638;text-align:center;font-weight:700";document.querySelector("main")?.prepend(n)}n.textContent=s.announcement}else document.getElementById("myAminAnnouncement")?.remove()}
+async function applyLocalWebsiteSettings(){
+ let s={};try{s=JSON.parse(localStorage.getItem("myamin_site_settings_v1")||"{}")}catch(e){}
+ try{const client=window.myAminSupabase;if(client){const {data,error}=await client.from("admin_settings").select("setting_value").eq("setting_key","website_settings").maybeSingle();if(!error&&data?.setting_value)s=data.setting_value;}}catch(e){}
+ const setVisible=(id,show)=>{const el=document.getElementById(id);if(el)el.hidden=show===false};
+ setVisible("quickServices",s.showQuick);setVisible("services",s.showServices);setVisible("adminHighlights",s.showUpdates);setVisible("nearby",s.showMap);
+ if(s.maintenance){let n=document.getElementById("myAminMaintenanceNotice");if(!n){n=document.createElement("div");n.id="myAminMaintenanceNotice";n.style.cssText="margin:12px auto;max-width:1160px;padding:12px 16px;border-radius:12px;background:#fff4dc;color:#76500c;text-align:center;font-weight:700";document.querySelector("main")?.prepend(n)}n.textContent=s.announcement||"My Amin is currently under maintenance. Please try again soon."}else document.getElementById("myAminMaintenanceNotice")?.remove();
+ if(s.announcement&&!s.maintenance){let n=document.getElementById("myAminAnnouncement");if(!n){n=document.createElement("div");n.id="myAminAnnouncement";n.style.cssText="max-width:1160px;margin:10px auto;padding:10px 14px;border-radius:12px;background:#eaf6ed;color:#075638;text-align:center;font-weight:700";document.querySelector("main")?.prepend(n)}n.textContent=s.announcement}else document.getElementById("myAminAnnouncement")?.remove();
+}
 window.addEventListener("storage",e=>{if(e.key==="myamin_site_settings_v1")applyLocalWebsiteSettings()});applyLocalWebsiteSettings();
 </script>
 
