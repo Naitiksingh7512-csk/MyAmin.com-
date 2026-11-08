@@ -43,9 +43,31 @@ Deno.serve(async (req: Request) => {
     return reply({ success: true, member });
   }
 
-  if (caller.app_metadata?.role !== "admin") return reply({ error: "Admin only" }, 403);
   const { data: membership } = await root.from("admin_team_members").select("role,status").eq("user_id", caller.id).maybeSingle();
-  if (caller.app_metadata?.role !== "admin" || membership?.role !== "admin" || membership?.status !== "active") return reply({ error: "Active admin membership required" }, 403);
+  if (action === "complete_password_change") {
+    if (!membership || membership.status !== "active") return reply({ error: "Active team membership required" }, 403);
+    const { error } = await root.from("admin_team_members")
+      .update({ must_change_password: false, updated_at: new Date().toISOString() })
+      .eq("user_id", caller.id).eq("status", "active");
+    if (error) return reply({ error: error.message }, 400);
+    return reply({ success: true });
+  }
+  if (caller.app_metadata?.role !== "admin" || membership?.role !== "admin" || membership?.status !== "active") {
+    return reply({ error: "Active admin membership required" }, 403);
+  }
+  if (action === "list_members") {
+    const { data: members, error } = await root.from("admin_team_members")
+      .select("user_id,role,status,permissions,full_name,email,phone,department,must_change_password,last_login_at,created_at")
+      .order("created_at", { ascending: false });
+    if (error) return reply({ error: error.message }, 400);
+    const ids = (members || []).map(m => m.user_id);
+    const { data: profiles, error: profileError } = ids.length
+      ? await root.from("user_profiles").select("id,photo_url").in("id", ids)
+      : { data: [], error: null };
+    if (profileError) return reply({ error: profileError.message }, 400);
+    const photos = new Map((profiles || []).map(p => [p.id, p.photo_url]));
+    return reply({ success: true, members: (members || []).map(m => ({ ...m, photo_url: photos.get(m.user_id) || null })) });
+  }
 
   if (action === "create_member") {
     const name = String(body.full_name || "").trim().slice(0, 120);
