@@ -91,7 +91,18 @@ body{background:radial-gradient(ellipse at 8% 4%,#dff3ff 0,transparent 34%),radi
 th{background:linear-gradient(100deg,#edf6ff,#f8efff)}tr:hover td{background:#f7faff}.btn{box-shadow:0 2px 7px #5a68a20b}.btn:hover{box-shadow:0 6px 15px #5969a21c}
 @media(prefers-reduced-motion:no-preference){.stat,.summary-card,.team-card{transition:transform .2s ease,box-shadow .2s ease}.summary-card:hover,.team-card:hover{transform:translateY(-2px);box-shadow:0 9px 22px #6274b51a}}
 </style>
-<style>@media print{body *{visibility:hidden!important}body[data-print-target="admin"] #adminCardPreview,body[data-print-target="admin"] #adminCardPreview *,body[data-print-target="team"] #teamSecureCardPreview,body[data-print-target="team"] #teamSecureCardPreview *{visibility:visible!important}body[data-print-target="admin"] #adminCardPreview,body[data-print-target="team"] #teamSecureCardPreview{position:absolute!important;left:0!important;top:0!important;width:100%!important;max-width:100%!important;box-shadow:none!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head>
+<style>@media print{body *{visibility:hidden!important}body[data-print-target="admin"] #adminCardPreview,body[data-print-target="admin"] #adminCardPreview *,body[data-print-target="team"] #teamSecureCardPreview,body[data-print-target="team"] #teamSecureCardPreview *{visibility:visible!important}body[data-print-target="admin"] #adminCardPreview,body[data-print-target="team"] #teamSecureCardPreview{position:absolute!important;left:0!important;top:0!important;width:100%!important;max-width:100%!important;box-shadow:none!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style><style>
+.admin-id-card{--id-navy:#092b55;--id-blue:#1768bd;--id-sky:#62c9f4;position:relative;isolation:isolate;overflow:hidden;max-width:720px;margin:22px auto;padding:0;border:1px solid #b9def5;border-radius:22px;background:linear-gradient(135deg,#f8fdff 0%,#eaf7ff 55%,#fff 100%);box-shadow:0 18px 44px #0b57921c;color:#102d4d;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.admin-id-card:before{content:"";position:absolute;z-index:-1;width:260px;height:260px;right:-105px;top:90px;border:28px solid #bceaff55;border-radius:50%}
+.admin-id-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 22px;color:white;background:linear-gradient(110deg,#082b55 0%,#1768bd 58%,#36aee0 100%)}
+.admin-id-brand{display:flex;align-items:center;gap:12px}.admin-id-mark{width:46px;height:46px;display:grid;place-items:center;border-radius:13px;background:linear-gradient(145deg,#b8efff,#fff);color:#0b4b86;font-size:17px;font-weight:950;letter-spacing:-1px;box-shadow:0 5px 16px #001c3c35}.admin-id-brand strong{display:block;font-size:17px;letter-spacing:2px}.admin-id-brand small{display:block;margin-top:2px;color:#d9f4ff;font-size:9px;letter-spacing:1.1px}.admin-id-chip{padding:6px 10px;border:1px solid #ffffff70;border-radius:30px;background:#ffffff18;font-size:10px;font-weight:850;letter-spacing:1.2px}
+.admin-id-body{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:18px;padding:22px;align-items:center}.admin-id-eyebrow{color:#1685c7;font-size:11px;font-weight:900;letter-spacing:2.3px}.admin-id-details h2{margin:8px 0 4px;color:#082b55;font-size:clamp(22px,4vw,30px);line-height:1.15;font-weight:850;overflow-wrap:anywhere}.admin-id-role{display:inline-block;margin:4px 0 10px;padding:5px 11px;border-radius:30px;background:#d9f2ff;color:#075b9e;font-size:12px;font-weight:800}.admin-id-details p{margin:5px 0;color:#34536f;font-size:13px;overflow-wrap:anywhere}.admin-id-email{font-weight:600}.admin-id-footer{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px;padding-top:11px;border-top:1px solid #c7e5f6;color:#397091;font-size:9px;font-weight:850;letter-spacing:1px}.admin-id-media{display:grid;justify-items:center;gap:12px}.admin-id-photo-wrap{width:112px;height:128px;overflow:hidden;border:4px solid white;border-radius:15px;background:linear-gradient(145deg,#b9eaff,#dceeff);box-shadow:0 5px 18px #0d4d7d24}.admin-id-photo-wrap img,.admin-id-photo-wrap>div{width:100%;height:100%;object-fit:cover}.admin-id-photo-wrap>div{display:grid;place-items:center;color:#0b4b86;font-size:38px;font-weight:950}.admin-id-qr-wrap{width:100%;display:grid;justify-items:center;gap:4px;padding:9px 8px;border:1px solid #c7e5f6;border-radius:14px;background:#fff}.admin-id-qr-wrap canvas{width:120px!important;height:120px!important;max-width:100%;image-rendering:pixelated}.admin-id-qr-wrap small{color:#0d5e9d;font-size:9px;font-weight:900;letter-spacing:1px}.admin-id-qr-wrap a{color:#075fa8;font-size:11px;font-weight:800;text-decoration:underline}.admin-id-qr-wrap span{color:#5b7890;font-size:9px;text-align:center}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+@media(max-width:560px){.admin-id-body{grid-template-columns:minmax(0,1fr) 138px;gap:10px;padding:14px}.admin-id-photo-wrap{width:92px;height:108px}.admin-id-qr-wrap canvas{width:104px!important;height:104px!important}.admin-id-top{padding:14px}.admin-id-brand strong{font-size:14px}.admin-id-footer{margin-top:16px}}
+@media(max-width:390px){.admin-id-body{grid-template-columns:1fr}.admin-id-media{grid-template-columns:1fr 1fr;align-items:start}.admin-id-qr-wrap{max-width:150px}}
+@media print{body[data-print-target="admin"] #adminCardPreview{width:85mm!important;max-width:85mm!important;min-height:54mm!important;margin:0!important;border-radius:4mm!important;box-shadow:none!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}.admin-id-body{grid-template-columns:minmax(0,1fr) 34mm!important;padding:4mm!important;gap:3mm!important}.admin-id-top{padding:3mm!important}.admin-id-photo-wrap{width:25mm!important;height:29mm!important}.admin-id-qr-wrap canvas{width:22mm!important;height:22mm!important}.admin-id-qr-wrap{padding:1mm!important}.admin-id-details h2{font-size:15pt!important}}
+</style>
+</head>
 <body><div id="adminBootGate" class="admin-boot-gate"><div><h2>My Amin Admin</h2><p>Secure Admin password, session और Passkey verification जाँची जा रही है…</p></div></div>
 <header class="top"><div class="brand"><img src="assets/myamin-logo.svg" alt="My Amin logo"><div><strong data-en="Administration" data-hi="प्रशासन">Administration</strong><small data-en="My Amin control centre" data-hi="My Amin नियंत्रण केंद्र">My Amin control centre</small></div></div><div class="top-actions"><button id="topAdminCardBtn" type="button">🪪 Admin ID Card</button><button id="langBtn" type="button">हिंदी</button><button type="button" onclick="location.href='index.html'" data-en="← Website" data-hi="← वेबसाइट">← Website</button></div></header>
 <main class="wrap">
@@ -139,9 +150,12 @@ th{background:linear-gradient(100deg,#edf6ff,#f8efff)}tr:hover td{background:#f7
   <div class="actions" style="margin-top:14px"><button class="btn primary" type="submit">Save Admin Card to Supabase</button><button class="btn outline" id="adminCardRefresh" type="button">Reload saved details</button><button class="btn outline" id="adminCardPrint" type="button">Download / Print ID Card</button></div>
   <p id="adminCardMessage" class="notice" aria-live="polite">Your saved card will appear below.</p>
  </form>
- <article id="adminCardPreview" style="max-width:620px;margin:18px auto;padding:22px;border:3px solid #173f32;border-radius:20px;background:linear-gradient(135deg,#fff,#edf7f0);display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center">
-  <div><div style="font-size:12px;font-weight:900;letter-spacing:2px;color:#08764d">MY AMIN · ADMINISTRATION</div><h2 id="adminCardPreviewName" style="margin:12px 0 4px">Main Administrator</h2><div id="adminCardPreviewRole" style="font-weight:800;color:#315f4d">Main Administrator</div><p id="adminCardPreviewPhone" style="margin:12px 0 4px;font-size:13px"></p><p id="adminCardPreviewEmail" style="margin:4px 0;font-size:13px;overflow-wrap:anywhere"></p><small style="color:#65796e">OFFICIAL ADMIN IDENTITY CARD</small></div>
-  <div style="text-align:center"><img id="adminCardPreviewPhoto" alt="Admin profile" hidden style="width:104px;height:120px;object-fit:cover;border-radius:12px;border:2px solid #d7e6dc"><div id="adminCardPreviewInitials" style="width:104px;height:120px;display:grid;place-items:center;background:#dceee2;border-radius:12px;font-size:36px;font-weight:900;color:#174b37">MA</div><canvas id="adminCardQr" width="128" height="128" style="display:block;margin:12px auto 4px;background:#fff;padding:5px;border-radius:8px"></canvas><small style="font-size:10px;color:#52675b">SCAN · ADMIN PANEL</small></div>
+ <article id="adminCardPreview" class="admin-id-card">
+  <div class="admin-id-top"><div class="admin-id-brand"><span class="admin-id-mark">MA</span><div><strong>MY AMIN</strong><small>LAND SERVICES · DIGITAL INDIA</small></div></div><span class="admin-id-chip">OFFICIAL ID</span></div>
+  <div class="admin-id-body">
+   <div class="admin-id-details"><div class="admin-id-eyebrow">ADMINISTRATION</div><h2 id="adminCardPreviewName">Main Administrator</h2><div id="adminCardPreviewRole" class="admin-id-role">Main Administrator</div><p id="adminCardPreviewPhone"></p><p id="adminCardPreviewEmail" class="admin-id-email"></p><div class="admin-id-footer"><span>AUTHORIZED ADMINISTRATOR</span><span>MYAMIN.COM</span></div></div>
+   <div class="admin-id-media"><div class="admin-id-photo-wrap"><img id="adminCardPreviewPhoto" alt="Admin profile" hidden><div id="adminCardPreviewInitials">MA</div></div><div class="admin-id-qr-wrap"><canvas id="adminCardQr" width="160" height="160"></canvas><small>SCAN FOR ADMIN PANEL</small><a id="adminCardQrLink" href="https://naitiksingh7512-csk.github.io/MyAmin.com-/ma-control-9f2c7a61b4e8.html" target="_blank" rel="noopener">Open Admin Panel</a><span id="adminCardQrStatus" aria-live="polite">Preparing secure link…</span></div></div>
+  </div>
  </article>
 </section>
 <section id="team" class="panel hidden">
@@ -405,19 +419,36 @@ $("secureTeamForm").addEventListener("submit",createSecureTeamMember);
 $("secureTeamRefresh").addEventListener("click",loadSecureTeamMembers);
 $("teamSecureCardPrint").addEventListener("click",()=>{document.body.dataset.printTarget="team";window.print()});
 window.addEventListener("afterprint",()=>{delete document.body.dataset.printTarget;});
+async function ensureAdminQrLibrary(){
+ if(window.QRCode?.toCanvas)return window.QRCode;
+ const existing=document.querySelector('script[data-admin-qr]');
+ if(existing){await new Promise((resolve,reject)=>{if(window.QRCode?.toCanvas)return resolve();existing.addEventListener("load",resolve,{once:true});existing.addEventListener("error",reject,{once:true});});if(window.QRCode?.toCanvas)return window.QRCode;}
+ await new Promise((resolve,reject)=>{const script=document.createElement("script");script.src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js";script.async=true;script.dataset.adminQr="1";script.onload=resolve;script.onerror=()=>reject(new Error("QR library could not be loaded. Check internet and reload."));document.head.appendChild(script);});
+ if(!window.QRCode?.toCanvas)throw new Error("QR generator is unavailable.");
+ return window.QRCode;
+}
+const ADMIN_PANEL_QR_URL="https://naitiksingh7512-csk.github.io/MyAmin.com-/ma-control-9f2c7a61b4e8.html";
+async function renderAdminCardQR(){
+ const canvas=$("adminCardQr"),link=$("adminCardQrLink"),status=$("adminCardQrStatus");
+ if(link)link.href=ADMIN_PANEL_QR_URL;
+ if(status)status.textContent="Creating secure Admin Panel QR…";
+ try{const lib=await ensureAdminQrLibrary();await lib.toCanvas(canvas,ADMIN_PANEL_QR_URL,{width:160,margin:2,errorCorrectionLevel:"H",color:{dark:"#082b55",light:"#ffffff"}});if(status)status.textContent="QR ready · sign-in and Passkey still required.";}
+ catch(e){if(status)status.textContent="QR could not load. Use the secure link above.";console.warn("Admin ID QR:",e);}
+}
 function renderAdminCardPreview(data={}){
  const name=data.name||"Main Administrator";
  $("adminCardPreviewName").textContent=name;$("adminCardPreviewRole").textContent=data.role||"Main Administrator";
- $("adminCardPreviewPhone").textContent=data.phone?("☎ "+data.phone):"";$("adminCardPreviewEmail").textContent=data.email||"";
+ $("adminCardPreviewPhone").textContent=data.phone?( "☎ "+data.phone):"";
+ $("adminCardPreviewEmail").textContent=data.email||"";
  $("adminCardPreviewInitials").textContent=(name.split(/\s+/).slice(0,2).map(x=>x[0]||"").join("")||"MA").toUpperCase();
- if(data.photo_url){$("adminCardPreviewPhoto").src=data.photo_url;$("adminCardPreviewPhoto").hidden=false;$("adminCardPreviewInitials").hidden=true;}
- else{$("adminCardPreviewPhoto").hidden=true;$("adminCardPreviewInitials").hidden=false;}
- const link="https://naitiksingh7512-csk.github.io/MyAmin.com-/ma-control-9f2c7a61b4e8.html?reauth=1";
- if(window.QRCode?.toCanvas)QRCode.toCanvas($("adminCardQr"),link,{width:128,margin:1,errorCorrectionLevel:"H"}).catch(()=>{});
+ const photo=$("adminCardPreviewPhoto"),initials=$("adminCardPreviewInitials");
+ if(data.photo_url){photo.onload=()=>{photo.hidden=false;initials.hidden=true;};photo.onerror=()=>{photo.hidden=true;initials.hidden=false;};photo.src=data.photo_url;if(photo.complete&&photo.naturalWidth){photo.hidden=false;initials.hidden=true;}}
+ else{photo.removeAttribute("src");photo.hidden=true;initials.hidden=false;}
+ renderAdminCardQR();
 }
 async function loadAdminCard(){
  try{
-  const client=window.myAminSupabase;if(!client)return;
+  const client=window.myAminSupabase;if(!client)throw new Error("Supabase client is not ready.");
   const {data:{user},error:userError}=await client.auth.getUser();if(userError)throw userError;
   if(!user||user.app_metadata?.role!=="admin")throw new Error("Admin account required.");
   const {data,error}=await client.from("admin_settings").select("setting_value").eq("setting_key",ADMIN_CARD_SETTING).maybeSingle();if(error)throw error;
@@ -426,20 +457,21 @@ async function loadAdminCard(){
   $("adminCardRole").value=v.role||"Main Administrator";$("adminCardPhone").value=v.phone||"";
   $("adminCardEmail").value=v.email||user.email||"";
   let photoUrl="";
-  if(adminCardPhotoPath){const {data:signed,error:signError}=await client.storage.from("private-uploads").createSignedUrl(adminCardPhotoPath,3600);if(!signError)photoUrl=signed?.signedUrl||"";}
+  if(adminCardPhotoPath){const {data:signed,error:signError}=await client.storage.from("private-uploads").createSignedUrl(adminCardPhotoPath,3600);if(signError)throw new Error("Saved profile photo could not be opened: "+signError.message);photoUrl=signed?.signedUrl||"";if(!photoUrl)throw new Error("Saved photo URL is empty.");}
   renderAdminCardPreview({name:$("adminCardName").value,role:$("adminCardRole").value,phone:$("adminCardPhone").value,email:$("adminCardEmail").value,photo_url:photoUrl});
-  $("adminCardMessage").textContent="Saved Admin Card loaded from Supabase.";
+  $("adminCardMessage").textContent=adminCardPhotoPath?"Saved Admin Card and profile photo loaded from Supabase.":"Saved Admin Card loaded. Add a profile photo and press Save to display it.";
  }catch(e){$("adminCardMessage").textContent="Admin card load failed: "+(e.message||"Unknown error");}
 }
 async function saveAdminCard(e){
  e.preventDefault();const btn=$("adminCardForm").querySelector('button[type="submit"]');btn.disabled=true;
  try{
-  const client=window.myAminSupabase;const {data:{user},error:userError}=await client.auth.getUser();if(userError)throw userError;
+  const client=window.myAminSupabase;if(!client)throw new Error("Supabase client is not ready.");
+  const {data:{user},error:userError}=await client.auth.getUser();if(userError)throw userError;
   if(!user||user.app_metadata?.role!=="admin")throw new Error("Active Admin login required.");
   const file=$("adminCardPhotoFile").files[0];
   if(file){
    if(!/^image\/(jpeg|png|webp)$/.test(file.type)||file.size>5*1024*1024)throw new Error("Use JPG, PNG or WebP up to 5 MB.");
-   const ext=(file.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"");
+   const ext=(file.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";
    const path=user.id+"/admin-card/"+crypto.randomUUID()+"."+ext;
    const {error:uploadError}=await client.storage.from("private-uploads").upload(path,file,{upsert:false,contentType:file.type,cacheControl:"3600"});if(uploadError)throw uploadError;
    adminCardPhotoPath=path;
@@ -451,12 +483,17 @@ async function saveAdminCard(e){
  }catch(err){$("adminCardMessage").textContent="Save failed: "+(err.message||"Unknown error");}
  finally{btn.disabled=false;}
 }
+$("adminCardPhotoFile").addEventListener("change",e=>{
+ const file=e.target.files?.[0];if(!file)return;
+ if(!/^image\/(jpeg|png|webp)$/.test(file.type)||file.size>5*1024*1024){$("adminCardMessage").textContent="Use JPG, PNG or WebP up to 5 MB.";e.target.value="";return;}
+ const url=URL.createObjectURL(file);renderAdminCardPreview({name:$("adminCardName").value,role:$("adminCardRole").value,phone:$("adminCardPhone").value,email:$("adminCardEmail").value,photo_url:url});
+ $("adminCardMessage").textContent="Photo preview ready. Press Save Admin Card to upload it securely.";
+});
 $("topAdminCardBtn").addEventListener("click",()=>document.querySelector('[data-tab="adminCard"]')?.click());
 $("adminCardForm").addEventListener("submit",saveAdminCard);
 $("adminCardRefresh").addEventListener("click",loadAdminCard);
 $("adminCardPrint").addEventListener("click",()=>{document.body.dataset.printTarget="admin";window.print()});
 ["adminCardName","adminCardRole","adminCardPhone","adminCardEmail"].forEach(id=>$(id).addEventListener("input",()=>renderAdminCardPreview({name:$("adminCardName").value,role:$("adminCardRole").value,phone:$("adminCardPhone").value,email:$("adminCardEmail").value,photo_url:$("adminCardPreviewPhoto").hidden?"":$("adminCardPreviewPhoto").src})));
-
 
 function refresh(){const d=allData(),bs=d.bookings;const completed=bs.filter(b=>String(b.status||"pending").toLowerCase()==="completed");$("totalAmins").textContent=d.amins.length;$("pendingAmins").textContent=d.amins.filter(a=>statusOf(a)==="pending").length;$("approvedAmins").textContent=d.amins.filter(a=>statusOf(a)==="approved").length;$("totalBookings").textContent=bs.length;$("overviewCustomers").textContent=customersFrom(bs).length;$("overviewCompleted").textContent=completed.length;$("overviewReports").textContent=d.reports.length;renderApplications();renderDirectory();renderCustomers();renderBookings();renderReports();renderCommission();renderPayments();renderRecent(d);renderActivity();renderTeam();renderPaymentRequests();renderAminNotices();renderContentManager()}
 function messageAmin(id){const amin=read(DB.amins,[]).find(a=>String(a.profileId||a.id)===String(id));if(!amin){notify(lang==="hi"?"अमीन नहीं मिला।":"Amin not found.");return}document.querySelectorAll(".tab").forEach(b=>{const active=b.dataset.tab==="paymentRequests";b.classList.toggle("active",active);if(active)b.click()});$("noticeAminSelect").value=String(amin.profileId||amin.id||"");$("noticeTitle").value="";$("noticeDescription").value="";$("noticeImageFile").value="";$("noticeImagePreview").hidden=true;$("noticeTitle").focus();notify(lang==="hi"?amin.name+" के लिए संदेश लिखें।": "Write a message for "+amin.name+".")}
