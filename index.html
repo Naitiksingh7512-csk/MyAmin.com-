@@ -1409,11 +1409,17 @@ async function sendAminBookingMessage(bookingId){
 }
 
 const AMIN_PAYMENT_NOTICES_KEY="myamin_amin_payment_notices_v1";
-function renderAminPaymentNotices(amin){
+async function renderAminPaymentNotices(amin){
  const box=$("accountPaymentNotices");if(!box)return;
- const notices=read(AMIN_PAYMENT_NOTICES_KEY,[]).filter(n=>String(n.aminId)===String(amin.profileId||amin.id||""));
- if(!notices.length){box.innerHTML='<p>'+(currentLang==="hi"?"अभी कोई एडमिन नोटिस नहीं है।":"No admin notices yet.")+'</p>';return;}
- box.innerHTML=notices.map(n=>'<article class="list-item" style="margin:10px 0;border:1px solid #e1ebe5;border-radius:14px;padding:14px"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><strong>'+safe(n.title||"Payment notice")+'</strong><small>'+safe(new Date(n.createdAt).toLocaleString(currentLang==="hi"?"hi-IN":"en-IN"))+'</small></div><p style="white-space:pre-wrap">'+safe(n.description||"")+'</p>'+(n.image?'<img src="'+safe(n.image)+'" alt="Admin notice attachment" loading="lazy" style="display:block;max-width:100%;max-height:260px;object-fit:contain;border-radius:10px;margin-top:10px">':'')+'</article>').join("");
+ try{
+  const client=window.myAminSupabase;if(!client)throw new Error("Secure account session required.");
+  const {data:{user},error:userError}=await client.auth.getUser();if(userError)throw userError;
+  if(!user||user.id!==amin.userId)throw new Error("Amin account verification failed.");
+  const {data,error}=await client.from("notifications").select("id,title,body,attachment_path,created_at,read_at").eq("user_id",user.id).eq("notification_type","admin_notice").order("created_at",{ascending:false});if(error)throw error;
+  if(!data?.length){box.innerHTML='<p>'+(currentLang==="hi"?"अभी कोई एडमिन नोटिस नहीं है।":"No admin notices yet.")+'</p>';return;}
+  box.innerHTML=data.map(n=>'<article class="list-item" style="margin:10px 0;border:1px solid #e1ebe5;border-radius:14px;padding:14px"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><strong>'+safe(n.title||"Admin notice")+'</strong><small>'+safe(new Date(n.created_at).toLocaleString(currentLang==="hi"?"hi-IN":"en-IN"))+'</small></div><p style="white-space:pre-wrap">'+safe(n.body||"")+'</p>'+(n.attachment_path?'<img src="'+safe(n.attachment_path)+'" alt="Admin notice attachment" loading="lazy" style="display:block;max-width:100%;max-height:260px;object-fit:contain;border-radius:10px;margin-top:10px">':'')+'</article>').join("");
+  const unread=data.filter(n=>!n.read_at).map(n=>n.id);if(unread.length)await client.from("notifications").update({read_at:new Date().toISOString()}).in("id",unread);
+ }catch(e){box.textContent=e.message||"Admin notices could not be loaded.";}
 }
 function renderAminBookingList(amin,list){
  const box=$("accountBookings");
