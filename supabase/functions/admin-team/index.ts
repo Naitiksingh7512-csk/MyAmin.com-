@@ -196,7 +196,13 @@ Deno.serve(async (req: Request) => {
       .select("user_id,profile_uid,display_name,photo_path,upi_qr_path").maybeSingle();
     if (error) return reply({ error: error.message }, 400);
     if (!deleted) return reply({ error: "Amin profile not found" }, 404);
-    const assetPaths = [deleted.photo_path, deleted.upi_qr_path].filter(p => typeof p === "string" && p && !p.startsWith("http"));
+    const publicPrefix = "/storage/v1/object/public/amin-assets/";
+    const assetPaths = [deleted.photo_path, deleted.upi_qr_path].map(p => {
+      if (typeof p !== "string" || !p) return null;
+      const index = p.indexOf(publicPrefix);
+      if (index >= 0) return decodeURIComponent(p.slice(index + publicPrefix.length));
+      return p.startsWith("http") ? null : p;
+    }).filter((p): p is string => !!p);
     if (assetPaths.length) {
       const { error: storageError } = await root.storage.from("amin-assets").remove(assetPaths);
       if (storageError) return reply({ error: "Profile deleted, but one or more stored images could not be removed: " + storageError.message }, 500);
