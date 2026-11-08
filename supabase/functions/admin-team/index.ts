@@ -124,9 +124,17 @@ Deno.serve(async (req: Request) => {
     const userId = String(body.user_id || "");
     const status = String(body.status || "");
     if (!userId || !["active","blocked","removed"].includes(status)) return reply({ error: "Invalid member status" }, 400);
+    if (userId === caller.id) return reply({ error: "You cannot block or remove your own admin account." }, 400);
+    const { data: target, error: targetError } = await root.from("admin_team_members")
+      .select("role,status").eq("user_id", userId).maybeSingle();
+    if (targetError) return reply({ error: targetError.message }, 400);
+    if (!target) return reply({ error: "Team member not found" }, 404);
+    if (target.role === "admin") return reply({ error: "The main Admin account cannot be changed from Team Management." }, 403);
+    if (target.status === "removed" && status !== "removed") return reply({ error: "A removed member cannot be reactivated. Create a new team account instead." }, 409);
     const { error } = await root.from("admin_team_members").update({ status, updated_at: new Date().toISOString() }).eq("user_id", userId);
     if (error) return reply({ error: error.message }, 400);
-    await root.auth.admin.updateUserById(userId, { ban_duration: status === "active" ? "none" : "876000h" });
+    const { error: banError } = await root.auth.admin.updateUserById(userId, { ban_duration: status === "active" ? "none" : "876000h" });
+    if (banError) return reply({ error: "Status saved but account ban update failed: " + banError.message }, 500);
     await root.from("admin_audit_logs").insert({
       actor_user_id: caller.id, action: "team_member_status_changed",
       target_type: "auth_user", target_id: userId, metadata: { status }
