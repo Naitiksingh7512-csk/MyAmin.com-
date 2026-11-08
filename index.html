@@ -591,7 +591,7 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
 @media(prefers-reduced-motion:no-preference){.amin-dashboard .dashboard-identity{animation:aminFadeUp .45s ease both}.amin-dashboard .account-stat{animation:aminFadeUp .5s ease both}.amin-dashboard .account-stat:nth-child(2){animation-delay:.06s}.amin-dashboard .account-stat:nth-child(3){animation-delay:.12s}}
 @keyframes aminFadeUp{from{opacity:.65;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:600px){.amin-dashboard{width:calc(100vw - 16px);max-height:92vh;padding:13px}.amin-dashboard .dashboard-stats{gap:6px}.amin-dashboard .account-stat small{font-size:9px}.amin-customer-contact a{flex:1}}
-</style>
+.customer-booking-card{border:1px solid #dbe5f2;border-radius:16px;padding:14px;margin:12px 0;background:linear-gradient(145deg,#fff,#f6f8ff)}.customer-booking-top{display:flex;align-items:center;justify-content:space-between;gap:10px}.customer-booking-chat{margin-top:12px;padding-top:10px;border-top:1px solid #dfe6f2}.customer-chat-list{display:flex;flex-direction:column;gap:8px;max-height:260px;overflow:auto;padding:8px 2px}.customer-chat-bubble{max-width:88%;padding:9px 12px;border-radius:13px;background:#eef2ff;overflow-wrap:anywhere}.customer-chat-bubble.mine{align-self:flex-end;background:#dbeafe}.customer-chat-bubble.theirs{align-self:flex-start;background:#ecfdf5}.customer-chat-bubble small{display:block;color:#64748b;font-size:11px;margin-bottom:4px}.customer-chat-compose{display:flex;gap:8px;margin-top:8px}.customer-chat-compose input{flex:1;min-width:0;border:1px solid #d5deec;border-radius:10px;padding:10px}.customer-chat-compose button{flex-shrink:0}@media(max-width:520px){.customer-chat-compose button{padding:8px 10px}}</style>
 <style>.account-stat{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px;cursor:pointer;color:inherit;display:grid;gap:5px}.account-stat strong{font-size:22px}.account-stat small{font-size:12px}.account-detail-grid>div{position:relative;padding:10px 42px 10px 10px}.account-edit-field{position:absolute;right:7px;top:8px;border:0;background:transparent;cursor:pointer;font-size:17px}</style>
 <style>
 /* Refined, lightweight search experience */
@@ -1274,7 +1274,40 @@ document.querySelectorAll("[data-action='logout']").forEach(button=>{
 function refreshAminMenuProfile(){const a=read(DB.aminProfile,null),b=$("aminMenuProfile");if(!b)return;b.style.display=a?"flex":"none";if(a){$("aminMenuProfileName").textContent=a.name;$("aminMenuProfileId").textContent=a.profileId;$("aminMenuAvatar").src=a.photo||"";$("aminMenuAvatar").hidden=!a.photo;$("aminMenuAvatarFallback").hidden=!!a.photo;}}
 function refreshCustomerMenuProfile(){const u=read(DB.user,null),b=$("customerMenuProfile");if(!b)return;b.style.display=u?"flex":"none";if(u){$("customerMenuProfileName").textContent=u.name||"Customer";$("customerMenuProfileEmail").textContent=u.username?"Username: "+u.username:"Customer account";const img=$("customerMenuAvatar"),fallback=$("customerMenuAvatarFallback");if(img){img.src=u.photo||"";img.hidden=!u.photo;}if(fallback)fallback.hidden=!!u.photo;}}
 refreshCustomerMenuProfile();
-async function openCustomerAccount(){const u=read(DB.user,null);if(!u){toast("पहले Customer Login करें।");return;}closeMenu();$("customerAccountName").textContent=u.name||"Customer";$("customerAccountEmail").textContent="Username: "+(u.username||u.name||"");$("customerAccountNameInput").value=u.name||"";$("customerAccountPhoneInput").value=u.phone||"";$("customerAccountDistrictInput").value=u.district||"";$("customerAccountUsername").value=u.username||u.name||"";$("customerAccountMessage").textContent="";$("customerAccountBookings").innerHTML="<p>Loading...</p>";const img=$("customerAccountAvatar"),fallback=$("customerAccountAvatarFallback");if(img){img.src=u.photo||"";img.hidden=!u.photo;}if(fallback)fallback.hidden=!!u.photo;$("customerAccountDialog").classList.add("show");try{const client=window.myAminSupabase;const {data:{user},error:userError}=await client.auth.getUser();if(userError)throw userError;if(!user)throw new Error("कृपया दोबारा Login करें।");const {data:p,error:profileError}=await client.from("user_profiles").select("full_name,phone,district,photo_url").eq("id",user.id).maybeSingle();if(profileError)throw profileError;if(p){$("customerAccountNameInput").value=p.full_name||u.name||"";$("customerAccountPhoneInput").value=p.phone||"";$("customerAccountDistrictInput").value=p.district||"";if(p.photo_url){if(img){img.src=p.photo_url;img.hidden=false;}if(fallback)fallback.hidden=true;save(DB.user,{...read(DB.user,{}),name:p.full_name||u.name,phone:p.phone||"",district:p.district||"",photo:p.photo_url,username:u.username||u.name});}}const {data,error}=await client.from("bookings").select("id,service,state,district,place,preferred_date,preferred_time,status,confirmed_date,confirmed_time,created_at").eq("customer_user_id",user.id).order("created_at",{ascending:false});if(error)throw error;$("customerAccountBookings").innerHTML=data?.length?data.map(b=>'<article class="list-item"><strong>'+safe(b.service||"Booking")+'</strong><p>'+safe([b.place,b.district,b.state].filter(Boolean).join(", "))+'<br>Preferred: '+safe(b.preferred_date||"—")+' · '+safe(b.preferred_time||"Any time")+'<br>Confirmed: '+safe(b.confirmed_date||"Not confirmed")+' · '+safe(b.confirmed_time||"—")+'<br>Status: '+safe(b.status||"Pending")+'</p></article>').join(""):"<p>अभी कोई बुकिंग नहीं है।</p>";}catch(e){$("customerAccountBookings").textContent=e.message||"बुकिंग लोड नहीं हुई।";}}
+async function openCustomerAccount(){
+ const local=read(DB.user,null);if(!local){toast("पहले Customer Login करें।");return;}
+ closeMenu();$("customerAccountDialog").classList.add("show");$("customerAccountMessage").textContent="";
+ $("customerAccountBookings").innerHTML="<p>बुकिंग लोड हो रही है…</p>";$("customerAccountMessages").innerHTML="<p>Messages लोड हो रहे हैं…</p>";
+ try{
+  const client=window.myAminSupabase;if(!client)throw new Error("Backend connection नहीं मिला। पेज reload करके दोबारा खोलें।");
+  const {data:{user},error:userError}=await client.auth.getUser();if(userError)throw userError;if(!user)throw new Error("कृपया Customer Login दोबारा करें।");
+  const {data:p,error:profileError}=await client.from("user_profiles").select("full_name,phone,district,photo_url").eq("id",user.id).maybeSingle();if(profileError)throw profileError;
+  const name=p?.full_name||local.name||"Customer",photo=p?.photo_url||local.photo||"";
+  $("customerAccountName").textContent=name;$("customerAccountEmail").textContent="Username: "+(local.username||local.name||"");
+  $("customerAccountNameInput").value=name;$("customerAccountPhoneInput").value=p?.phone||local.phone||"";$("customerAccountDistrictInput").value=p?.district||local.district||"";$("customerAccountUsername").value=local.username||local.name||"";
+  const img=$("customerAccountAvatar"),fallback=$("customerAccountAvatarFallback");if(img){img.src=photo;img.hidden=!photo;}if(fallback)fallback.hidden=!!photo;
+  save(DB.user,{...local,name,phone:p?.phone||local.phone||"",district:p?.district||local.district||"",photo,username:local.username||local.name});refreshCustomerMenuProfile();
+  const {data:bookings,error:bookingError}=await client.from("bookings").select("id,amin_user_id,service,state,district,place,preferred_date,preferred_time,status,confirmed_date,confirmed_time,details,created_at").eq("customer_user_id",user.id).order("created_at",{ascending:false});if(bookingError)throw bookingError;
+  if(!bookings?.length){$("customerAccountBookings").innerHTML="<p>अभी कोई बुकिंग नहीं है। Booking form से request भेजें।</p>";$("customerAccountMessages").innerHTML="<p>बुकिंग बनने के बाद उसी के अंदर Amin को message कर सकेंगे।</p>";return;}
+  const ids=bookings.map(b=>b.id);
+  const {data:messages,error:messageError}=await client.from("booking_messages").select("id,booking_id,sender_user_id,message,created_at").in("booking_id",ids).order("created_at",{ascending:true});if(messageError)throw messageError;
+  const groups=new Map();(messages||[]).forEach(m=>{if(!groups.has(m.booking_id))groups.set(m.booking_id,[]);groups.get(m.booking_id).push(m);});
+  $("customerAccountBookings").innerHTML=bookings.map(b=>{
+   const ms=groups.get(b.id)||[];
+   const bubbles=ms.length?ms.map(m=>'<div class="customer-chat-bubble '+(m.sender_user_id===user.id?"mine":"theirs")+'"><small>'+(m.sender_user_id===user.id?"You":"Amin")+' · '+safe(new Date(m.created_at).toLocaleString())+'</small><div>'+safe(m.message)+'</div></div>').join(""):'<p class="muted">अभी कोई message नहीं है।</p>';
+   const compose=b.amin_user_id?'<div class="customer-chat-compose"><input maxlength="2000" id="customerMsg-'+safe(b.id)+'" placeholder="Amin को message लिखें…" aria-label="Message Amin"><button type="button" class="btn btn-green" onclick="sendCustomerBookingMessage(\''+safe(b.id)+'\')">Send</button></div>':'<p class="muted">Amin assign होने के बाद messaging शुरू होगी।</p>';
+   return '<article class="list-item customer-booking-card"><div class="customer-booking-top"><strong>'+safe(b.service||"Booking")+'</strong><span class="pill">'+safe(b.status||"pending")+'</span></div><p>'+safe([b.place,b.district,b.state].filter(Boolean).join(", "))+'<br>Preferred: '+safe(b.preferred_date||"—")+' · '+safe(b.preferred_time||"Any time")+'<br>Confirmed: '+safe(b.confirmed_date||"Not confirmed")+' · '+safe(b.confirmed_time||"—")+'<br>Request: '+safe(b.details||"—")+'<br><small>Booking ID: '+safe(b.id)+'</small></p><div class="customer-booking-chat"><strong>Messages with Amin</strong><div class="customer-chat-list">'+bubbles+'</div>'+compose+'</div></article>';
+  }).join("");
+  $("customerAccountMessages").innerHTML="<p>हर booking का अलग private message thread है। Messages केवल booking के customer और assigned Amin को दिखेंगे।</p>";
+ }catch(e){$("customerAccountBookings").textContent=e.message||"बुकिंग लोड नहीं हुई।";$("customerAccountMessages").textContent="Messages लोड नहीं हुए।";}
+}
+async function sendCustomerBookingMessage(bookingId){
+ const input=$("customerMsg-"+bookingId),message=input?.value.trim();if(!message)return;
+ try{const client=window.myAminSupabase;const {data:{user},error:userError}=await client.auth.getUser();if(userError)throw userError;if(!user)throw new Error("दोबारा Login करें।");
+ const {error}=await client.from("booking_messages").insert({booking_id:bookingId,sender_user_id:user.id,message});if(error)throw error;
+ input.value="";await openCustomerAccount();
+ }catch(e){toast(e.message||"Message नहीं भेजा जा सका।");}
+}
 async function saveCustomerAccount(){const button=$("saveCustomerAccount");button.disabled=true;try{const client=window.myAminSupabase;const {data:{user},error:userError}=await client.auth.getUser();if(error)throw error;if(!user)throw new Error("कृपया दोबारा Login करें।");const full_name=$("customerAccountNameInput").value.trim(),phone=$("customerAccountPhoneInput").value.trim(),district=$("customerAccountDistrictInput").value.trim();if(!full_name)throw new Error("पूरा नाम भरें।");const {error:updateError}=await client.from("user_profiles").update({full_name,phone,district}).eq("id",user.id);if(updateError)throw updateError;const local=read(DB.user,{});save(DB.user,{...local,name:full_name,phone,district,username:local.username||local.name});$("customerAccountName").textContent=full_name;$("customerMenuProfileName").textContent=full_name;$("customerAccountMessage").textContent="प्रोफ़ाइल अपडेट सेव हो गई।";}catch(e){$("customerAccountMessage").textContent=e.message||"अपडेट नहीं हुआ।";}finally{button.disabled=false;}}
 
 function openAminAccount(){const a=read(DB.aminProfile,null);if(!a)return;closeMenu();$("accountFullName").textContent=a.name||"";$("accountProfileId").textContent=a.profileId||"";$("accountPhone").textContent=a.phone||"—";$("accountWhatsApp").textContent=a.whatsapp||"—";$("accountDistrict").textContent=a.district||"—";$("accountState").textContent=a.state||"—";$("accountPlace").textContent=a.place||"—";$("accountBusiness").textContent=a.businessId||"—";$("accountApproval").textContent=a.approved?"Approved":"Pending approval";$("accountAvatar").src=a.photo||"";$("accountAvatar").hidden=!a.photo;$("accountAvatarFallback").hidden=!!a.photo;$("accountUpiId").value=a.upiId||"";$("accountUpiQrPreview").src=a.upiQr||"";$("accountUpiQrPreview").hidden=!a.upiQr;const bs=read(DB.bookings,[]).filter(x=>x.aminId===a.profileId||x.profileId===a.profileId||String(x.amin||"").trim().toLowerCase()===String(a.name||"").trim().toLowerCase());const status=x=>String(x.status||"pending").toLowerCase();const done=bs.filter(x=>["completed","complete","done"].includes(status(x)));const active=bs.filter(x=>["confirmed","accepted","in progress","ongoing","started"].includes(status(x)));const pending=bs.filter(x=>!["completed","complete","done","confirmed","accepted","in progress","ongoing","started","cancelled"].includes(status(x)));$("accountCompletedCount").textContent=done.length;$("accountActiveCount").textContent=active.length;$("accountPendingCount").textContent=pending.length;renderAminBookingList(a,bs);renderAminPaymentNotices(a);$("accountMessages").innerHTML="<p>Messaging will work after backend connection.</p>";$("aminAccountDialog").classList.add("show");}
@@ -1818,51 +1851,28 @@ function prefillBooking(name) {
 /* Booking */
 function localTodayISO(){const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");}
 $("bookingDate").min=localTodayISO();
-$("bookingForm").addEventListener("submit",e=>{
-  e.preventDefault();
-  const user=read(DB.user,null);
-  if(!user) {toast("पहले Customer Login करें।");go("login");return;}
-  const bookings=read(DB.bookings,[]);
-  const selectedAminName=$("bookingAmin").value.trim();
-  const matchedAmin=read(DB.amins,[]).find(a=>
-    String(a.profileId||a.id||"").toLowerCase()===selectedAminName.toLowerCase() ||
-    String(a.name||"").trim().toLowerCase()===selectedAminName.toLowerCase()
-  );
-  bookings.push({
-    id:"BK-"+Date.now().toString().slice(-8),
-    customer:user.name,phone:user.phone,
-    amin:selectedAminName,
-    aminId:matchedAmin?(matchedAmin.profileId||matchedAmin.id||""):"",
-    profileId:matchedAmin?(matchedAmin.profileId||matchedAmin.id||""):"",
-    service:$("bookingService").value,
-    state:$("bookingState").value.trim(),
-    district:$("bookingDistrict").value.trim(),
-    place:$("bookingPlace").value.trim(),
-    date:$("bookingDate").value,
-    preferredTime:$("bookingPreferredTime").value,
-    details:$("bookingDetails").value.trim(),
-    status:"Pending",
-    createdAt:new Date().toISOString()
-  });
-  save(DB.bookings,bookings);
-  $("bookingMessage").textContent=currentLang==="hi"?"बुकिंग अनुरोध इसी डिवाइस में सेव हुआ। यह अपने आप अमीन को नहीं भेजा गया है।":"Booking request saved on this device. It has not been sent to the Amin.";
-  $("bookingMessage").style.display="block";
-  e.target.reset();
-  $("bookingDate").min=localTodayISO();
-  updateBookingUser();
-  refreshBookings();
+$("bookingForm").addEventListener("submit",async e=>{
+ e.preventDefault();const local=read(DB.user,null);if(!local){toast("पहले Customer Login करें।");go("login");return;}
+ const button=e.target.querySelector('button[type="submit"]');button.disabled=true;
+ try{
+  const client=window.myAminSupabase;if(!client)throw new Error("Secure backend connection नहीं मिला।");
+  const {data:{user},error:userError}=await client.auth.getUser();if(userError)throw userError;if(!user)throw new Error("कृपया Customer Login दोबारा करें।");
+  const selected=$("bookingAmin").value.trim();let aminUserId=null;
+  if(selected){const {data:rows,error}=await client.from("amin_profiles").select("user_id,profile_uid,display_name").eq("approval_status","approved");if(error)throw error;const found=(rows||[]).find(a=>String(a.profile_uid||"").toLowerCase()===selected.toLowerCase()||String(a.display_name||"").trim().toLowerCase()===selected.toLowerCase());if(found)aminUserId=found.user_id;}
+  const payload={customer_user_id:user.id,amin_user_id:aminUserId,service:$("bookingService").value,state:$("bookingState").value.trim(),district:$("bookingDistrict").value.trim(),place:$("bookingPlace").value.trim(),preferred_date:$("bookingDate").value,preferred_time:$("bookingPreferredTime").value||null,details:$("bookingDetails").value.trim()||null,status:"pending"};
+  const {error}=await client.from("bookings").insert(payload);if(error)throw error;
+  $("bookingMessage").textContent=aminUserId?"Booking request Supabase में save हो गई और चुने गए Amin को assign है।":"Booking request Supabase में save हो गई। Amin match नहीं हुआ, इसलिए Admin इसे assign कर सकता है।";
+  $("bookingMessage").style.display="block";e.target.reset();$("bookingDate").min=localTodayISO();updateBookingUser();await refreshBookings();
+  if($("customerAccountDialog").classList.contains("show"))await openCustomerAccount();
+ }catch(err){$("bookingMessage").textContent=err.message||"Booking save नहीं हुई।";$("bookingMessage").style.display="block";}
+ finally{button.disabled=false;}
 });
-function refreshBookings() {
-  const user=read(DB.user,null);
-  const list=read(DB.bookings,[]);
-  const mine=user?list.filter(b=>b.phone===user.phone):[];
-  const hi=currentLang==="hi";
-  $("myBookings").innerHTML=mine.length?mine.map(b=>`
-    <div class="list-item"><strong>${safe(b.service)}</strong>
-    <p>${hi?"बुकिंग ID":"Booking ID"}: ${safe(b.id)}<br>${hi?"स्थान":"Location"}: ${safe(b.place)}, ${safe(b.district)}, ${safe(b.state)}<br>${hi?"पसंदीदा तारीख/समय":"Preferred date/time"}: ${safe(b.date)} · ${safe(b.preferredTime||(hi?"कोई भी समय":"Any time"))}<br>${b.confirmedDate?(hi?"अमीन द्वारा पुष्टि":"Confirmed by Amin")+": "+safe(b.confirmedDate)+" · "+safe(b.confirmedTime||""):(hi?"अमीन की पुष्टि बाकी":"Waiting for Amin confirmation")}<br>${hi?"स्थिति":"Status"}: ${safe(b.status)}</p></div>
-  `).join(""):(hi?"<p>इस ग्राहक की कोई बुकिंग नहीं मिली।</p>":"<p>No bookings found for this customer.</p>");
+async function refreshBookings(){
+ const hi=currentLang==="hi";try{const client=window.myAminSupabase;const {data:{user},error:userError}=await client.auth.getUser();if(error)throw error;if(!user)throw new Error("Login required");
+ const {data:list,error}=await client.from("bookings").select("id,service,state,district,place,preferred_date,preferred_time,status,confirmed_date,confirmed_time,created_at").eq("customer_user_id",user.id).order("created_at",{ascending:false});if(error)throw error;
+ $("myBookings").innerHTML=list?.length?list.map(b=>'<div class="list-item"><strong>'+safe(b.service)+'</strong><p>Booking ID: '+safe(b.id)+'<br>Location: '+safe([b.place,b.district,b.state].filter(Boolean).join(", "))+'<br>Preferred: '+safe(b.preferred_date)+' · '+safe(b.preferred_time||"Any time")+'<br>Confirmed: '+safe(b.confirmed_date||"Waiting for Amin")+' · '+safe(b.confirmed_time||"")+'<br>Status: '+safe(b.status)+'</p></div>').join(""):(hi?"<p>इस ग्राहक की कोई बुकिंग नहीं मिली।</p>":"<p>No bookings found for this customer.</p>");
+ }catch(e){$("myBookings").textContent=e.message||"Bookings could not be loaded.";}
 }
-
 /* Auto-suggest a profile ID in the card maker when a name is entered manually. */
 let cardSuggestedProfileId="";
 $("idName").addEventListener("input",()=>{
@@ -2823,7 +2833,7 @@ footer .logo-image{filter:drop-shadow(0 4px 9px rgba(0,0,0,.18))}
 @media(prefers-reduced-motion:reduce){#searchDialog .search-result:before{transition:none}}
 </style>
 
-<script type="module" src="supabase-auth.js?v=20261108-customer-profile-photo-1"></script>
+<script type="module" src="supabase-auth.js?v=20261108-customer-bookings-admin-1"></script>
 <style>
 .customer-menu-card{gap:9px;padding:17px 14px;border:1px solid #dcebe2;background:linear-gradient(145deg,#fff 0%,#f0f8f2 100%);border-radius:20px;box-shadow:0 10px 26px rgba(18,59,50,.08)}
 .customer-menu-card .account-avatar{width:76px;height:76px;flex-basis:76px;border:3px solid #fff;box-shadow:0 0 0 2px #d7b765}
