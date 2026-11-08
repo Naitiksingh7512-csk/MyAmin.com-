@@ -2324,7 +2324,7 @@ async function renderAdminContentFeed(){
  const box=$("adminContentFeed");if(!box)return;
  try{
   const client=window.myAminSupabase;if(!client)return;
-  const {data,error}=await client.from("admin_announcements").select("id,title,body,link_url,content_type,image_url,created_at").eq("is_active",true).order("created_at",{ascending:false});
+  const now=new Date().toISOString();const {data,error}=await client.from("admin_announcements").select("id,title,body,link_url,content_type,image_url,starts_at,ends_at,created_at").eq("is_active",true).or("starts_at.is.null,starts_at.lte."+now).or("ends_at.is.null,ends_at.gte."+now).order("created_at",{ascending:false});
   if(error)throw error;
   box.innerHTML=data?.length?data.map(x=>'<article class="card"><div class="card-icon">'+(x.content_type==="video"?"▶️":x.content_type==="advertisement"?"📢":x.content_type==="announcement"?"📣":"🔗")+'</div>'+(x.content_type==="advertisement"?'<span class="pill">Advertisement</span>':'')+(x.image_url?'<img src="'+safe(x.image_url)+'" alt="" loading="lazy" style="width:100%;max-height:170px;object-fit:cover;border-radius:12px;margin-top:8px">':'')+'<h3>'+safe(x.title)+'</h3><p>'+safe(x.body||"")+'</p>'+(x.link_url?'<a class="btn btn-light btn-small" href="'+safe(x.link_url)+'" target="_blank" rel="noopener">'+(x.content_type==="video"?"Watch video":"Open link")+' →</a>':'')+'</article>').join(""):'<p>No updates at the moment.</p>';
  }catch(e){box.textContent="Updates could not be loaded right now.";}
