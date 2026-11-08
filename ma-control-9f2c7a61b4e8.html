@@ -803,7 +803,15 @@ $("attendanceMember").addEventListener("change",renderTeam);
 $("attendanceAction").addEventListener("click",attendanceAction);
 toggleTeamFullAccess();
 const sections={adminCard:["Main Admin ID Card","मुख्य एडमिन ID कार्ड"],team:["Team management","टीम मैनेजमेंट"],overview:["Dashboard overview","डैशबोर्ड"],applications:["Amin applications","अमीन आवेदन"],directory:["Amin directory","अमीन सूची"],customers:["Customers","ग्राहक"],bookings:["Customer bookings","ग्राहक बुकिंग"],reports:["Website reports","वेबसाइट रिपोर्ट"],commission:["Commission tracker","कमीशन ट्रैकर"],payments:["Amin payment details","अमीन भुगतान जानकारी"],paymentRequests:["Payment requests","पेमेंट रिक्वेस्ट"],content:["Videos & links","वीडियो और लिंक"],websiteControls:["Website controls","वेबसाइट कंट्रोल"],activity:["Activity history","गतिविधि इतिहास"]};
-document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{$("pageTitle").textContent=sections[b.dataset.tab][lang==="hi"?1:0]}));
+function activateAdminSection(id){
+ const target=$(id);if(!target||!sections[id])return;
+ document.querySelectorAll("main.wrap > section.panel").forEach(panel=>panel.classList.toggle("hidden",panel!==target));
+ document.querySelectorAll(".tabs .tab").forEach(tab=>{const active=tab.dataset.tab===id;tab.classList.toggle("active",active);if(active)tab.setAttribute("aria-current","page");else tab.removeAttribute("aria-current");});
+ $("pageTitle").textContent=sections[id][lang==="hi"?1:0];
+ target.scrollIntoView({behavior:"smooth",block:"start"});
+}
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>activateAdminSection(b.dataset.tab)));
+$("topAdminCardBtn").addEventListener("click",()=>activateAdminSection("adminCard"));
 ["applicationSearch","applicationFilter"].forEach(id=>$(id).addEventListener("input",renderApplications));
 ["directorySearch","directoryFilter"].forEach(id=>$(id).addEventListener("input",renderDirectory));
 $("customerSearch").addEventListener("input",renderCustomers);
