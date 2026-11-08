@@ -475,6 +475,7 @@ supabase.auth.onAuthStateChange((_event, session) => {
     await syncAdminAccessUI(session);
     if (typeof window.renderAdminContentFeed === "function") await window.renderAdminContentFeed();
     if (typeof window.applyLocalWebsiteSettings === "function") await window.applyLocalWebsiteSettings();
+    if (typeof window.loadAmins === "function") await window.loadAmins();
     if (sessionStorage.getItem("myamin_admin_google_pending") === "1" && session) {
       await verifyAdminOAuthSession(session);
     }
