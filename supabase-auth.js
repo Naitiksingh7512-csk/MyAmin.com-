@@ -123,45 +123,26 @@ const showAuthState = async (session) => {
 };
 const ensureCustomerFields = () => {
   const form = $("loginForm");
-  if (!form || $("customerPhone")) return;
+  if (!form || $("customerUsername")) return;
   const grid = form.querySelector(".form-grid");
   grid.innerHTML = `
     <div class="field"><label for="customerName">पूरा नाम / Full Name *</label><input id="customerName" autocomplete="name" maxlength="80" required></div>
-    <div class="field"><label for="customerPhone">मोबाइल नंबर / Mobile Number *</label><input id="customerPhone" type="tel" inputmode="tel" autocomplete="tel" maxlength="16" placeholder="+91 98765 43210" required></div>
-    <div class="field"><label for="customerPassword">पासवर्ड / Password *</label><div class="password-wrap"><input id="customerPassword" type="password" minlength="8" maxlength="72" autocomplete="new-password" required><button type="button" class="password-eye" data-target="customerPassword" aria-label="Show password">👁</button></div><small>कम-से-कम 8 अक्षर रखें।</small></div>
-    <div class="field"><label for="customerDistrict">जिला / District *</label><input id="customerDistrict" maxlength="80" autocomplete="address-level2" required></div>
-    <div class="field full"><label>वर्तमान लोकेशन / Current Location</label><button class="btn btn-outline" type="button" id="shareCustomerLocation">⌖ Share my live location</button><small id="customerLocationStatus">लोकेशन साझा करना वैकल्पिक है। बटन दबाने पर ही अनुमति माँगी जाएगी।</small><input id="customerLatitude" type="hidden"><input id="customerLongitude" type="hidden"></div>`;
+    <div class="field"><label for="customerUsername">Username *</label><input id="customerUsername" autocomplete="username" minlength="3" maxlength="24" pattern="[A-Za-z0-9._-]+" placeholder="e.g. naitik7512" required><small>3–24 अक्षर: English letters, numbers, dot, _ या -।</small></div>
+    <div class="field full"><label for="customerPassword">पासवर्ड / Password *</label><div class="password-wrap"><input id="customerPassword" type="password" minlength="8" maxlength="72" autocomplete="new-password" required><button type="button" class="password-eye" data-target="customerPassword" aria-label="Show password">👁</button></div><small>कम-से-कम 8 अक्षर रखें।</small></div>`;
   const actions = form.querySelector(".form-actions");
-  actions.innerHTML = '<button class="btn btn-green" type="submit">Create Account / Login</button><button class="btn btn-outline" type="button" id="customerModeToggle">Already have an account? Login</button><button class="btn btn-outline" type="button" onclick="logout()">Logout</button>';
+  actions.innerHTML = '<button class="btn btn-green" type="submit">Create Account</button><button class="btn btn-outline" type="button" id="customerModeToggle">Already have an account? Login</button><button class="btn btn-outline" type="button" onclick="logout()">Logout</button>';
   let mode = "signup";
   const nameField = $("customerName").closest(".field");
-  const districtField = $("customerDistrict").closest(".field");
-  const locationField = $("shareCustomerLocation").closest(".field");
   const toggle = $("customerModeToggle");
   toggle.addEventListener("click", () => {
     mode = mode === "signup" ? "login" : "signup";
     nameField.hidden = mode === "login";
-    districtField.hidden = mode === "login";
-    locationField.hidden = mode === "login";
     $("customerPassword").autocomplete = mode === "login" ? "current-password" : "new-password";
     toggle.textContent = mode === "signup" ? "Already have an account? Login" : "Create a new account";
     form.querySelector('button[type="submit"]').textContent = mode === "signup" ? "Create Account" : "Login";
+    form.dataset.authMode = mode;
   });
   form.dataset.authMode = "signup";
-  toggle.addEventListener("click", () => { form.dataset.authMode = mode; });
-  form.querySelector('button[type="submit"]').addEventListener("click", () => { form.dataset.authMode = mode; });
-  $("shareCustomerLocation").addEventListener("click", () => {
-    const status = $("customerLocationStatus");
-    if (!navigator.geolocation) { status.textContent = "इस browser में GPS उपलब्ध नहीं है।"; return; }
-    status.textContent = "लोकेशन की अनुमति माँगी जा रही है…";
-    navigator.geolocation.getCurrentPosition(pos => {
-      $("customerLatitude").value = String(pos.coords.latitude);
-      $("customerLongitude").value = String(pos.coords.longitude);
-      status.textContent = "लोकेशन मिल गई। अकाउंट बनाते समय साझा होगी।";
-    }, err => {
-      status.textContent = err.code === 1 ? "आपने location permission नहीं दी। आप बिना location के भी account बना सकते हैं।" : "लोकेशन नहीं मिल सकी। बाद में फिर कोशिश करें।";
-    }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 });
-  });
   form.querySelectorAll(".password-eye").forEach(btn => btn.addEventListener("click", () => {
     const input = $(btn.dataset.target);
     input.type = input.type === "password" ? "text" : "password";
@@ -187,29 +168,34 @@ const handleCustomerLogin = async (event) => {
   const form = $("loginForm");
   const mode = form.dataset.authMode || "signup";
   const name = $("customerName").value.trim();
-  const phoneRaw = $("customerPhone").value.trim();
-  const phone = phoneRaw.replace(/[\\s()-]/g, "");
+  const username = $("customerUsername").value.trim().toLowerCase();
   const password = $("customerPassword").value;
-  const district = $("customerDistrict").value.trim();
-  if (!/^\\+?[1-9]\\d{7,14}$/.test(phone)) { say("loginMessage", "कृपया country code सहित सही मोबाइल नंबर डालें। भारत के लिए +91 लिखें।", true); return; }
+  if (!/^[a-z0-9][a-z0-9._-]{2,23}$/.test(username)) {
+    say("loginMessage", "Username 3–24 अक्षरों का हो और English letters, numbers, dot, _ या - से बने।", true);
+    return;
+  }
   if (password.length < 8) { say("loginMessage", "पासवर्ड कम-से-कम 8 अक्षरों का होना चाहिए।", true); return; }
-  if (mode === "signup" && (!name || !district)) { say("loginMessage", "कृपया नाम और जिला भरें।", true); return; }
+  if (mode === "signup" && !name) { say("loginMessage", "कृपया अपना पूरा नाम भरें।", true); return; }
   const button = form.querySelector('button[type="submit"]');
   button.disabled = true;
   try {
+    // Supabase Auth has no native username/password identity. A reserved,
+    // non-deliverable email alias maps each unique username to email/password Auth.
+    const authEmail = username + "@login.myamin.invalid";
     let data, error;
     if (mode === "signup") {
       const result = await supabase.auth.signUp({
-        phone, password,
-        options: { data: { full_name: name, account_type: "customer", district } }
+        email: authEmail,
+        password,
+        options: { data: { full_name: name, username, account_type: "customer" } }
       });
       data = result.data; error = result.error;
       if (error) throw error;
       if (!data.session || !data.user) {
-        throw new Error("Supabase में Phone Confirmation चालू है। बिना OTP चलाने के लिए Auth → Providers → Phone में Phone confirmations बंद करने होंगे। अभी account session नहीं बना, इसलिए login पूरा नहीं हुआ।");
+        throw new Error("अकाउंट बन गया हो सकता है, लेकिन Login session नहीं मिला। पहले Supabase Auth में Email confirmations OFF करना ज़रूरी है। अभी दोबारा Create Account न दबाएँ।");
       }
     } else {
-      const result = await supabase.auth.signInWithPassword({ phone, password });
+      const result = await supabase.auth.signInWithPassword({ email: authEmail, password });
       data = result.data; error = result.error;
       if (error) throw error;
     }
@@ -217,15 +203,10 @@ const handleCustomerLogin = async (event) => {
     const profile = {
       id: data.user.id,
       full_name: mode === "signup" ? name : (data.user.user_metadata?.full_name || "Customer"),
-      phone: data.user.phone || phone,
-      district: mode === "signup" ? district : (data.user.user_metadata?.district || ""),
+      phone: null,
+      district: null,
       account_type: "customer"
     };
-    if (mode === "signup") {
-      const lat = $("customerLatitude").value;
-      const lng = $("customerLongitude").value;
-      if (lat && lng) { profile.location_lat = Number(lat); profile.location_lng = Number(lng); profile.location_shared_at = new Date().toISOString(); }
-    }
     const { error: profileError } = await supabase.from("user_profiles").upsert(profile, { onConflict: "id" });
     if (profileError) throw profileError;
     await showAuthState(data.session);
