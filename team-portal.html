@@ -24,6 +24,9 @@ button{border:0;border-radius:11px;padding:12px 16px;font:700 14px system-ui;cur
 <div class="row" style="justify-content:space-between"><div><h1 id="memberName">Team member</h1><p id="memberRole"></p></div><button class="secondary" id="logout">Sign out</button></div>
 <div class="row" id="permissions"></div><hr style="border:0;border-top:1px solid #e4eee8;margin:18px 0">
 <h2>My assigned work</h2><div id="tasks"><p>Loading tasks…</p></div>
+ <hr style="border:0;border-top:1px solid #e4eee8;margin:18px 0"><h2>My attendance</h2>
+ <div class="row"><button id="teamCheckIn">Check in</button><button class="secondary" id="teamCheckOut">Check out</button></div>
+ <div id="attendance"><p>Loading attendance…</p></div>
 </section>
 </main>
 <script type="module">
@@ -53,6 +56,31 @@ async function openPortal(session){
  }
  await loadTasks();
 }
+const localWorkDate=()=>{const d=new Date(Date.now()-new Date().getTimezoneOffset()*60000);return d.toISOString().slice(0,10)};
+async function loadAttendance(){
+ const box=$("attendance");try{const {data:{user},error:userError}=await supabase.auth.getUser();if(userError)throw userError;
+  const {data,error}=await supabase.from("team_attendance").select("id,work_date,check_in_at,check_out_at,note").eq("member_user_id",user.id).order("work_date",{ascending:false}).limit(30);if(error)throw error;
+  box.innerHTML=data?.length?data.map(a=>'<article class="task"><strong>'+safe(a.work_date)+'</strong><p>Check in: '+safe(new Date(a.check_in_at).toLocaleTimeString())+'<br>Check out: '+safe(a.check_out_at?new Date(a.check_out_at).toLocaleTimeString():"Not checked out")+'</p></article>').join(""):"<p>No attendance records yet.</p>";
+ }catch(e){box.textContent=e.message||"Attendance could not be loaded.";}
+}
+async function teamCheckIn(){
+ try{const {data:{user},error:userError}=await supabase.auth.getUser();if(userError)throw userError;
+  const {data:open,error:openError}=await supabase.from("team_attendance").select("id").eq("member_user_id",user.id).is("check_out_at",null).limit(1).maybeSingle();if(openError)throw openError;
+  if(open){alert("You already have an open attendance session. Check out first.");return;}
+  const {error}=await supabase.from("team_attendance").insert({member_user_id:user.id,work_date:localWorkDate(),check_in_at:new Date().toISOString()});if(error)throw error;
+  await loadAttendance();alert("Check-in saved.");
+ }catch(e){alert("Check-in failed: "+(e.message||"Unknown error"));}
+}
+async function teamCheckOut(){
+ try{const {data:{user},error:userError}=await supabase.auth.getUser();if(userError)throw userError;
+  const {data:open,error:openError}=await supabase.from("team_attendance").select("id").eq("member_user_id",user.id).is("check_out_at",null).order("check_in_at",{ascending:false}).limit(1).maybeSingle();if(openError)throw openError;
+  if(!open){alert("No open attendance session found.");return;}
+  const {error}=await supabase.from("team_attendance").update({check_out_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",open.id);if(error)throw error;
+  await loadAttendance();alert("Check-out saved.");
+ }catch(e){alert("Check-out failed: "+(e.message||"Unknown error"));}
+}
+$("teamCheckIn").addEventListener("click",teamCheckIn);
+$("teamCheckOut").addEventListener("click",teamCheckOut);
 async function loadTasks(){
  const {data,error}=await supabase.from("team_member_tasks").select("id,title,description,module,status,due_at,created_at").order("created_at",{ascending:false});
  if(error){$("tasks").textContent=error.message;return}
