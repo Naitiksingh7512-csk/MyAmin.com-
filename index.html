@@ -921,16 +921,16 @@ header{
   <!-- NORMAL CUSTOMER LOGIN -->
   <section id="login" class="panel">
     <h2>👤 Customer Login / ग्राहक लॉगिन</h2>
-    <p>बुकिंग से पहले अपना नाम और संपर्क विवरण भरें।</p>
-    <div class="notice">अब ईमेल और पासवर्ड से सुरक्षित ऑनलाइन अकाउंट में लॉगिन करें। नया Customer अकाउंट बनाने का विकल्प भी उपलब्ध है।</div>
+    <p>अपना नाम और मोबाइल नंबर डालें। OTP सत्यापित होते ही Customer Login हो जाएगा।</p>
+    <div class="notice">सुरक्षित Customer Login: मोबाइल नंबर + SMS OTP। ईमेल या पासवर्ड की जरूरत नहीं है।</div>
     <form id="loginForm">
       <div class="form-grid">
         <div class="field"><label for="customerName">पूरा नाम / Full Name *</label><input id="customerName" autocomplete="name" maxlength="80"></div>
         <div class="field"><label for="customerPhone">मोबाइल नंबर *</label><input id="customerPhone" type="tel" inputmode="tel" autocomplete="tel" minlength="10" maxlength="18" pattern="[0-9+() -]{10,18}" title="Enter a valid phone number."></div>
-        <div class="field"><label for="customerEmail">ईमेल *</label><input id="customerEmail" type="email" autocomplete="email" required></div>
+        
         <div class="field"><label for="customerDistrict">जिला / District</label><input id="customerDistrict"></div>
       </div>
-      <div class="form-actions"><button class="btn btn-green" type="submit">Login / Continue</button><button class="btn btn-outline" type="button" onclick="logout()">Logout</button></div>
+      <div class="form-actions"><button class="btn btn-green" type="submit">Send OTP / OTP भेजें</button><button class="btn btn-outline" id="verifyCustomerOtp" type="button">Verify OTP / OTP सत्यापित करें</button><button class="btn btn-outline" type="button" onclick="logout()">Logout</button></div>
     </form>
     <div id="loginMessage" class="success"></div>
   </section>
