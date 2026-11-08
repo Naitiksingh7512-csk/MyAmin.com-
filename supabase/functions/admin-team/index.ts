@@ -147,9 +147,14 @@ Deno.serve(async (req: Request) => {
     if (!profileUid) return reply({ error: "Amin profile ID is required" }, 400);
     const { data: deleted, error } = await root.from("amin_profiles")
       .delete().eq("profile_uid", profileUid)
-      .select("user_id,profile_uid,display_name").maybeSingle();
+      .select("user_id,profile_uid,display_name,photo_path,upi_qr_path").maybeSingle();
     if (error) return reply({ error: error.message }, 400);
     if (!deleted) return reply({ error: "Amin profile not found" }, 404);
+    const assetPaths = [deleted.photo_path, deleted.upi_qr_path].filter(p => typeof p === "string" && p && !p.startsWith("http"));
+    if (assetPaths.length) {
+      const { error: storageError } = await root.storage.from("amin-assets").remove(assetPaths);
+      if (storageError) return reply({ error: "Profile deleted, but one or more stored images could not be removed: " + storageError.message }, 500);
+    }
     await root.from("admin_audit_logs").insert({
       actor_user_id: caller.id, action: "amin_profile_deleted",
       target_type: "amin_profile", target_id: deleted.profile_uid,
