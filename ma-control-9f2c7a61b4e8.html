@@ -107,7 +107,7 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-ser
 .admin-id-card:before{content:"";position:absolute;z-index:-1;inset:0;background:repeating-linear-gradient(135deg,transparent 0 23px,#ffffff06 24px 25px),radial-gradient(circle at 78% 52%,#0aa4df20,transparent 34%);pointer-events:none}
 .admin-id-card:after{content:"MY AMIN";position:absolute;z-index:-1;right:-12px;bottom:35px;color:#d7f5ff09;font-size:clamp(48px,11vw,104px);font-weight:950;letter-spacing:8px;transform:rotate(-12deg);pointer-events:none}
 .admin-id-top{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:18px 23px;background:linear-gradient(100deg,#07162d,#0b3970 58%,#087eb5);border-bottom:1px solid #51d6ff70}
-.admin-id-brand{display:flex;align-items:center;gap:14px}.admin-id-logo{width:145px;height:48px;object-fit:contain;object-position:left center;padding:0;border-radius:0;background:transparent;box-shadow:none;mix-blend-mode:multiply}.admin-id-brand strong{display:block;color:#fff;font-size:13px;letter-spacing:2.1px;font-weight:900}.admin-id-brand small{display:block;margin-top:4px;color:#a9eaff;font-size:9px;letter-spacing:1.4px;font-weight:750}.admin-id-chip{padding:7px 12px;border:1px solid #8ce8ff8a;border-radius:30px;background:#ffffff0b;color:#d9f7ff;font-size:9px;font-weight:900;letter-spacing:1.7px}
+.admin-id-brand{display:flex;align-items:center;gap:14px}.admin-id-logo{display:block!important;flex:0 0 145px!important;width:145px!important;height:48px!important;max-width:none!important;object-fit:contain!important;object-position:center!important;padding:3px 5px!important;border-radius:6px!important;background:#fff!important;box-shadow:0 2px 8px #00152c35!important;mix-blend-mode:normal!important;filter:none!important}.admin-id-brand strong{display:block;color:#fff;font-size:13px;letter-spacing:2.1px;font-weight:900}.admin-id-brand small{display:block;margin-top:4px;color:#a9eaff;font-size:9px;letter-spacing:1.4px;font-weight:750}.admin-id-chip{padding:7px 12px;border:1px solid #8ce8ff8a;border-radius:30px;background:#ffffff0b;color:#d9f7ff;font-size:9px;font-weight:900;letter-spacing:1.7px}
 .admin-id-body{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:20px;padding:24px;align-items:center}.admin-id-eyebrow{color:#43d5ff;font-size:10px;font-weight:950;letter-spacing:3px}.admin-id-details h2{margin:9px 0 7px;color:#fff;font-size:clamp(23px,4vw,32px);line-height:1.12;font-weight:900;letter-spacing:-.8px;text-shadow:0 3px 20px #0008;overflow-wrap:anywhere}.admin-id-role{display:inline-block;margin:3px 0 12px;padding:6px 12px;border:1px solid #36c9ff60;border-radius:30px;background:linear-gradient(90deg,#0878d14a,#1bc5e52b);color:#9ceaff;font-size:11px;font-weight:850}.admin-id-details p{margin:7px 0;color:#c4d9ec;font-size:12px;font-weight:550;overflow-wrap:anywhere}.admin-id-email:empty{display:none}.admin-id-footer{display:flex;gap:13px;flex-wrap:wrap;margin-top:26px;padding-top:13px;border-top:1px solid #6bcffb42;color:#78b7da;font-size:8px;font-weight:900;letter-spacing:1.5px}.admin-id-media{display:grid;justify-items:center;gap:14px}.admin-id-photo-wrap{width:118px;height:138px;overflow:hidden;border:2px solid #53d8ff;border-radius:17px;background:linear-gradient(145deg,#103c69,#0c1a31);box-shadow:0 0 0 5px #38bfff18,0 10px 32px #0008}.admin-id-photo-wrap img,.admin-id-photo-wrap>div{width:100%;height:100%;object-fit:cover}.admin-id-photo-wrap>div{display:grid;place-items:center;color:#9deaff;font-size:40px;font-weight:950}.admin-id-qr-wrap{width:100%;display:grid;justify-items:center;gap:7px;padding:12px 9px;border:1px solid #54d5ff70;border-radius:17px;background:linear-gradient(145deg,#f8fcff,#dcefff);box-shadow:0 9px 30px #0006}.admin-id-qr-frame{width:136px;height:136px;display:grid;place-items:center;padding:7px;border-radius:10px;background:white}.admin-id-qr-frame img{display:block;width:100%;height:100%;object-fit:contain;image-rendering:pixelated}.admin-id-qr-wrap small{color:#063b69;font-size:8px;font-weight:950;letter-spacing:1.1px;text-align:center}.admin-id-qr-wrap span{color:#315d7c;font-size:8px;text-align:center;line-height:1.35}
 body{font-family:Inter,"SF Pro Display","Segoe UI",Arial,sans-serif}
 @media(max-width:560px){.admin-id-body{grid-template-columns:minmax(0,1fr) 150px;gap:11px;padding:15px}.admin-id-photo-wrap{width:96px;height:114px}.admin-id-qr-frame{width:116px;height:116px}.admin-id-top{padding:13px}.admin-id-logo{width:116px;height:40px}.admin-id-brand{gap:8px}.admin-id-brand strong{font-size:10px}.admin-id-brand small{font-size:7px}.admin-id-footer{margin-top:16px}}
@@ -628,7 +628,7 @@ $("adminCardPhotoFile").addEventListener("change",e=>{
  const url=URL.createObjectURL(file);renderAdminCardPreview({name:$("adminCardName").value,role:$("adminCardRole").value,phone:$("adminCardPhone").value,email:$("adminCardEmail").value,photo_url:url});
  $("adminCardMessage").textContent="Photo preview ready. Press Save Admin Card to upload it securely.";
 });
-$("topAdminCardBtn").addEventListener("click",()=>document.querySelector('[data-tab="adminCard"]')?.click());
+$("topAdminCardBtn").addEventListener("click",()=>activateAdminSection("adminCard"));
 $("adminCardForm").addEventListener("submit",saveAdminCard);
 $("adminCardRefresh").addEventListener("click",loadAdminCard);
 $("adminCardPrint").addEventListener("click",()=>{document.body.dataset.printTarget="admin";window.print()});
@@ -648,6 +648,38 @@ async function waitForCardImages(card){
  const images=[...card.querySelectorAll("img")];
  await Promise.all(images.map(async img=>{if(!img.complete)await new Promise(resolve=>{img.addEventListener("load",resolve,{once:true});img.addEventListener("error",resolve,{once:true});setTimeout(resolve,10000);});if(img.decode)try{await img.decode()}catch(_){}}));
 }
+async function downloadAdminCardPrintSheet(){
+ const button=$("downloadAdminCardSheet"),status=$("adminCardMessage");
+ if(!button||button.disabled)return;
+ button.disabled=true;button.textContent="Preparing folded Admin ID PDF…";
+ try{
+  if(status)status.textContent="Preparing front and back artwork with the complete MyAmin logo…";
+  const libs=await loadBusinessCardPdfLibraries(),html2canvas=libs.html2canvas,jsPDF=libs.jsPDF;
+  const front=$("adminCardPreview"),back=$("adminCardBackPreview");
+  if(!front||!back)throw new Error("Admin ID front/back preview is missing.");
+  const frontCanvas=await renderPrintCardCanvas(front,html2canvas,1200,800);
+  const backCanvas=await renderPrintCardCanvas(back,html2canvas,1200,800);
+  const pdf=new jsPDF({orientation:"landscape",unit:"mm",format:"a4",compress:true});
+  const cardW=90,cardH=60,left=15,top=20;
+  pdf.addImage(frontCanvas.toDataURL("image/png"),"PNG",left,top,cardW,cardH,undefined,"FAST");
+  pdf.addImage(backCanvas.toDataURL("image/png"),"PNG",left+cardW,top,cardW,cardH,undefined,"FAST");
+  pdf.setDrawColor(80,125,160);pdf.setLineWidth(.25);pdf.setLineDashPattern([2,1.5],0);
+  pdf.line(105,top-5,105,top+cardH+5);pdf.setLineDashPattern([],0);
+  pdf.setFontSize(7);pdf.setTextColor(65,95,120);pdf.text("FOLD LINE",105,top-7,{align:"center"});
+  const mark=1.5;
+  for(const pair of [[left,top],[left+180,top],[left,top+cardH],[left+180,top+cardH]]){
+   const x=pair[0],y=pair[1],dx=x===left?-1:1,dy=y===top?-1:1;
+   pdf.line(x+dx*mark,y,x+dx*4,y);pdf.line(x,y+dy*mark,x,y+dy*4);
+  }
+  pdf.save("MyAmin-Admin-ID-Folded-Front-Back-A4.pdf");
+  if(status)status.textContent="Admin ID PDF ready: one A4 landscape page, Front left and Back right, both 90 × 60 mm and upright. Fold on the marked centre line. Print at Actual Size / 100%.";
+ }catch(e){
+  const message="Admin ID PDF failed: "+(e?.message||"Unknown error");
+  if(status)status.textContent=message;notify(message);
+ }finally{
+  button.disabled=false;button.textContent="⬇ Download Folded Admin ID Card (A4)";
+ }
+}
 async function renderPrintCardCanvas(source,html2canvas,width,height){
  const wrapper=document.createElement("div");wrapper.style.cssText="position:fixed;left:-16000px;top:0;width:"+width+"px;height:"+height+"px;overflow:hidden;background:#061329;z-index:-1;";
  const clone=source.cloneNode(true);clone.removeAttribute("id");
@@ -658,7 +690,7 @@ async function renderPrintCardCanvas(source,html2canvas,width,height){
   const response=await fetch(new URL(img.getAttribute("src"),document.baseURI).href,{cache:"no-store"});if(!response.ok)throw new Error("MyAmin logo fetch failed (HTTP "+response.status+").");
   const svg=await response.text(),url=URL.createObjectURL(new Blob([svg],{type:"image/svg+xml;charset=utf-8"}));
   try{const im=new Image();await new Promise((resolve,reject)=>{im.onload=resolve;im.onerror=()=>reject(new Error("SVG logo decode failed"));im.src=url;});const png=document.createElement("canvas");png.width=1600;png.height=416;const ctx=png.getContext("2d");if(!ctx)throw new Error("PNG canvas unavailable");ctx.fillStyle="#fff";ctx.fillRect(0,0,png.width,png.height);ctx.drawImage(im,0,0,png.width,png.height);img.src=png.toDataURL("image/png");}finally{URL.revokeObjectURL(url);}
-  img.style.setProperty("display","block","important");img.style.setProperty("visibility","visible","important");img.style.setProperty("opacity","1","important");img.style.setProperty("width","220px","important");img.style.setProperty("height","58px","important");img.style.setProperty("max-width","48%","important");img.style.setProperty("object-fit","contain","important");img.style.setProperty("object-position","left center","important");img.style.setProperty("background","#fff","important");img.style.setProperty("border-radius","6px","important");img.style.setProperty("padding","3px 6px","important");img.style.setProperty("mix-blend-mode","normal","important");img.style.setProperty("filter","none","important");await img.decode();
+  img.style.setProperty("display","block","important");img.style.setProperty("visibility","visible","important");img.style.setProperty("opacity","1","important");img.style.setProperty("width","250px","important");img.style.setProperty("height","65px","important");img.style.setProperty("max-width","none","important");img.style.setProperty("flex","0 0 250px","important");img.style.setProperty("object-fit","contain","important");img.style.setProperty("object-position","left center","important");img.style.setProperty("background","#fff","important");img.style.setProperty("border-radius","6px","important");img.style.setProperty("padding","3px 6px","important");img.style.setProperty("mix-blend-mode","normal","important");img.style.setProperty("filter","none","important");await img.decode();
  }));
  const brand=clone.querySelector(".admin-id-brand");if(brand){brand.style.setProperty("display","flex","important");brand.style.setProperty("flex-direction","row","important");brand.style.setProperty("align-items","center","important");brand.style.setProperty("gap","10px","important");brand.style.setProperty("min-width","0","important");brand.style.setProperty("flex","1 1 auto","important");}
  wrapper.appendChild(clone);document.body.appendChild(wrapper);
@@ -811,7 +843,6 @@ function activateAdminSection(id){
  target.scrollIntoView({behavior:"smooth",block:"start"});
 }
 document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>activateAdminSection(b.dataset.tab)));
-$("topAdminCardBtn").addEventListener("click",()=>activateAdminSection("adminCard"));
 ["applicationSearch","applicationFilter"].forEach(id=>$(id).addEventListener("input",renderApplications));
 ["directorySearch","directoryFilter"].forEach(id=>$(id).addEventListener("input",renderDirectory));
 $("customerSearch").addEventListener("input",renderCustomers);
