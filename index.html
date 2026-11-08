@@ -1380,7 +1380,20 @@ async function saveCustomerAccount(){
  }finally{if(button)button.disabled=false;}
 }
 
-function openAminAccount(){const a=read(DB.aminProfile,null);if(!a)return;closeMenu();$("accountFullName").textContent=a.name||"";$("accountProfileId").textContent=a.profileId||"";$("accountPhone").textContent=a.phone||"—";$("accountWhatsApp").textContent=a.whatsapp||"—";$("accountDistrict").textContent=a.district||"—";$("accountState").textContent=a.state||"—";$("accountPlace").textContent=a.place||"—";$("accountBusiness").textContent=a.businessId||"—";$("accountApproval").textContent=a.approved?"Approved":"Pending approval";$("accountAvatar").src=a.photo||"";$("accountAvatar").hidden=!a.photo;$("accountAvatarFallback").hidden=!!a.photo;$("accountUpiId").value=a.upiId||"";$("accountUpiQrPreview").src=a.upiQr||"";$("accountUpiQrPreview").hidden=!a.upiQr;const bs=read(DB.bookings,[]).filter(x=>x.aminId===a.profileId||x.profileId===a.profileId||String(x.amin||"").trim().toLowerCase()===String(a.name||"").trim().toLowerCase());const status=x=>String(x.status||"pending").toLowerCase();const done=bs.filter(x=>["completed","complete","done"].includes(status(x)));const active=bs.filter(x=>["confirmed","accepted","in progress","ongoing","started"].includes(status(x)));const pending=bs.filter(x=>!["completed","complete","done","confirmed","accepted","in progress","ongoing","started","cancelled"].includes(status(x)));$("accountCompletedCount").textContent=done.length;$("accountActiveCount").textContent=active.length;$("accountPendingCount").textContent=pending.length;renderAminBookingList(a,bs);renderAminPaymentNotices(a);renderAminPaymentRequests(a);$("accountMessages").innerHTML="<p>Loading booking conversations…</p>";loadAminBookingMessages();$("aminAccountDialog").classList.add("show");}
+async function syncAminBookingsFromSupabase(amin){
+ const client=window.myAminSupabase;if(!client)throw new Error("Supabase connection is not ready.");
+ const {data:{user},error:userError}=await client.auth.getUser();if(userError)throw userError;if(!user)throw new Error("Amin login required.");
+ const {data:rows,error}=await client.from("bookings").select("id,customer_user_id,amin_user_id,service,state,district,place,preferred_date,preferred_time,status,confirmed_date,confirmed_time,details,created_at,completed_at,service_amount").eq("amin_user_id",user.id).order("created_at",{ascending:false});
+ if(error)throw error;
+ const ids=[...new Set((rows||[]).map(x=>x.customer_user_id).filter(Boolean))];
+ const {data:profiles,error:profileError}=ids.length?await client.from("user_profiles").select("id,full_name,phone").in("id",ids):{data:[],error:null};
+ if(profileError)throw profileError;
+ const people=new Map((profiles||[]).map(x=>[x.id,x]));
+ const mapped=(rows||[]).map(x=>{const p=people.get(x.customer_user_id)||{};const raw=String(x.status||"pending").toLowerCase();const status=raw==="in_progress"?"In progress":raw==="confirmed"?"Confirmed":raw==="completed"?"Completed":raw==="cancelled"?"Cancelled":raw.charAt(0).toUpperCase()+raw.slice(1);return {id:x.id,customer:p.full_name||"Customer",phone:p.phone||"",customerUserId:x.customer_user_id,aminUserId:x.amin_user_id,aminId:amin.profileId,profileId:amin.profileId,amin:amin.name,service:x.service,state:x.state,district:x.district,place:x.place,date:x.preferred_date,preferredDate:x.preferred_date,preferredTime:x.preferred_time,confirmedDate:x.confirmed_date,confirmedTime:x.confirmed_time,details:x.details,status,completedAt:x.completed_at,serviceAmount:x.service_amount||0,createdAt:x.created_at};});
+ save(DB.bookings,mapped);
+ return mapped;
+}
+async function openAminAccount(){const a=read(DB.aminProfile,null);if(!a)return;closeMenu();$("aminAccountDialog").classList.add("show");try{await syncAminBookingsFromSupabase(a);}catch(e){toast("Booking list could not sync: "+(e.message||"Unknown error"));}$("accountFullName").textContent=a.name||"";$("accountProfileId").textContent=a.profileId||"";$("accountPhone").textContent=a.phone||"—";$("accountWhatsApp").textContent=a.whatsapp||"—";$("accountDistrict").textContent=a.district||"—";$("accountState").textContent=a.state||"—";$("accountPlace").textContent=a.place||"—";$("accountBusiness").textContent=a.businessId||"—";$("accountApproval").textContent=a.approved?"Approved":"Pending approval";$("accountAvatar").src=a.photo||"";$("accountAvatar").hidden=!a.photo;$("accountAvatarFallback").hidden=!!a.photo;$("accountUpiId").value=a.upiId||"";$("accountUpiQrPreview").src=a.upiQr||"";$("accountUpiQrPreview").hidden=!a.upiQr;const bs=read(DB.bookings,[]).filter(x=>x.aminId===a.profileId||x.profileId===a.profileId||String(x.amin||"").trim().toLowerCase()===String(a.name||"").trim().toLowerCase());const status=x=>String(x.status||"pending").toLowerCase();const done=bs.filter(x=>["completed","complete","done"].includes(status(x)));const active=bs.filter(x=>["confirmed","accepted","in progress","ongoing","started"].includes(status(x)));const pending=bs.filter(x=>!["completed","complete","done","confirmed","accepted","in progress","ongoing","started","cancelled"].includes(status(x)));$("accountCompletedCount").textContent=done.length;$("accountActiveCount").textContent=active.length;$("accountPendingCount").textContent=pending.length;renderAminBookingList(a,bs);renderAminPaymentNotices(a);renderAminPaymentRequests(a);$("accountMessages").innerHTML="<p>Loading booking conversations…</p>";loadAminBookingMessages();$("aminAccountDialog").classList.add("show");}
 async function loadAminBookingMessages(){
  const box=$("accountMessages");if(!box)return;
  try{
@@ -1457,22 +1470,26 @@ function renderAminBookingList(amin,list){
  box.querySelectorAll("[data-set-booking]").forEach(btn=>btn.addEventListener("click",()=>setAminBookingStatus(btn.dataset.setBooking,btn.dataset.status)));
  translateDynamic(box);
 }
-function setAminBookingStatus(id,status){
+async function setAminBookingStatus(id,status){
  const amin=read(DB.aminProfile,null);if(!amin)return;
- const list=read(DB.bookings,[]),booking=list.find(x=>String(x.id)===String(id)&&(x.aminId===amin.profileId||x.profileId===amin.profileId||String(x.amin||"").trim().toLowerCase()===String(amin.name||"").trim().toLowerCase()));
- if(!booking){toast("This booking is not linked to your profile.");return;}
- booking.status=status;booking.completedAt=status==="Completed"?(booking.completedAt||new Date().toISOString()):"";booking.updatedAt=new Date().toISOString();
- if(save(DB.bookings,list)){toast(currentLang==="hi"?"बुकिंग की स्थिति अपडेट हुई।":"Booking status updated.");openAminAccount();refreshBookings();}
+ try{
+  const client=window.myAminSupabase;const {data:{user},error:userError}=await client.auth.getUser();if(userError)throw userError;if(!user)throw new Error("Amin login required.");
+  const label=String(status||"").toLowerCase();const dbStatus=label==="in progress"?"in_progress":label==="completed"?"completed":label==="cancelled"?"cancelled":label;
+  const patch={status:dbStatus,updated_at:new Date().toISOString(),completed_at:dbStatus==="completed"?new Date().toISOString():null};
+  const {data,error}=await client.from("bookings").update(patch).eq("id",id).eq("amin_user_id",user.id).select("id").maybeSingle();if(error)throw error;if(!data)throw new Error("यह booking आपके Amin account को assign नहीं है या update की अनुमति नहीं है।");
+  toast(currentLang==="hi"?"बुकिंग की स्थिति Supabase में अपडेट हुई।":"Booking status saved to Supabase.");await openAminAccount();if(typeof refreshBookings==="function")await refreshBookings();
+ }catch(e){toast((currentLang==="hi"?"बुकिंग अपडेट नहीं हुई: ":"Booking update failed: ")+(e.message||"Unknown error"));}
 }
-function confirmAminBooking(id){
+async function confirmAminBooking(id){
  const amin=read(DB.aminProfile,null);if(!amin)return;
- const list=read(DB.bookings,[]),booking=list.find(x=>String(x.id)===String(id)&&(x.aminId===amin.profileId||x.profileId===amin.profileId||String(x.amin||"").trim().toLowerCase()===String(amin.name||"").trim().toLowerCase()));
- if(!booking){toast("This booking is not linked to your profile.");return;}
  const dateInput=$("accountBookings").querySelector('[data-confirm-date="'+id+'"]');
  const timeInput=$("accountBookings").querySelector('[data-confirm-time="'+id+'"]');
  if(!dateInput||!dateInput.value||!timeInput||!timeInput.value){toast(currentLang==="hi"?"पुष्टि के लिए तारीख और समय दोनों चुनें।":"Choose both a date and time to confirm.");return;}
- booking.confirmedDate=dateInput.value;booking.confirmedTime=timeInput.value;booking.status="Confirmed";booking.updatedAt=new Date().toISOString();
- if(save(DB.bookings,list)){toast(currentLang==="hi"?"बुकिंग की तारीख और समय की पुष्टि हो गई।":"Booking date and time confirmed.");openAminAccount();refreshBookings();}
+ try{
+  const client=window.myAminSupabase;const {data:{user},error:userError}=await client.auth.getUser();if(userError)throw userError;if(!user)throw new Error("Amin login required.");
+  const {data,error}=await client.from("bookings").update({confirmed_date:dateInput.value,confirmed_time:timeInput.value,status:"confirmed",updated_at:new Date().toISOString()}).eq("id",id).eq("amin_user_id",user.id).select("id").maybeSingle();if(error)throw error;if(!data)throw new Error("यह booking आपके Amin account को assign नहीं है या update की अनुमति नहीं है।");
+  toast(currentLang==="hi"?"बुकिंग की तारीख और समय Supabase में सेव हुए।":"Booking date and time saved to Supabase.");await openAminAccount();if(typeof refreshBookings==="function")await refreshBookings();
+ }catch(e){toast((currentLang==="hi"?"बुकिंग की पुष्टि नहीं हुई: ":"Booking confirmation failed: ")+(e.message||"Unknown error"));}
 }
 function refreshAminAccount(){if($("aminAccountDialog").classList.contains("show"))openAminAccount();}
 function showAccountList(kind){
