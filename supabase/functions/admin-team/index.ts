@@ -83,11 +83,11 @@ Deno.serve(async (req: Request) => {
     if (currentError) return reply({ error: currentError.message }, 400);
     if (!current) return reply({ error: "Amin profile not found for this account." }, 404);
     const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
-    const textFields = ["display_name", "phone", "whatsapp", "state", "district", "place", "business_reference", "upi_id"];
+    const textFields = ["display_name", "phone", "whatsapp", "state", "district", "place", "business_reference", "experience", "upi_id"];
     for (const key of textFields) {
       if (Object.prototype.hasOwnProperty.call(body, key)) {
         const value = body[key] == null ? "" : String(body[key]).trim();
-        const limits: Record<string, number> = { display_name: 120, phone: 30, whatsapp: 30, state: 80, district: 80, place: 120, business_reference: 160, upi_id: 120 };
+        const limits: Record<string, number> = { display_name: 120, phone: 30, whatsapp: 30, state: 80, district: 80, place: 120, business_reference: 160, experience: 2000, upi_id: 120 };
         if (value.length > limits[key]) return reply({ error: key + " is too long." }, 400);
         if (key === "display_name" && !value) return reply({ error: "Name cannot be empty." }, 400);
         patch[key] = value || null;
