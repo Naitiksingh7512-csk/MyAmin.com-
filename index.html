@@ -796,6 +796,13 @@ header{
 }
 </style>
 
+<style id="customer-auth-refresh">
+#loginForm .password-wrap{display:flex;gap:8px;align-items:center}
+#loginForm .password-wrap input{flex:1;min-width:0}
+#loginForm .password-eye{border:1px solid #b8c9bd;border-radius:10px;background:#f5faf6;padding:10px 12px;cursor:pointer}
+#loginForm [hidden]{display:none!important}
+#loginForm .field.full{grid-column:1/-1}
+</style>
 </head>
 
 <body>
@@ -921,16 +928,17 @@ header{
   <!-- NORMAL CUSTOMER LOGIN -->
   <section id="login" class="panel">
     <h2>👤 Customer Login / ग्राहक लॉगिन</h2>
-    <p>अपना नाम और ईमेल डालें। आपके ईमेल पर आया OTP सत्यापित करके Login करें।</p>
-    <div class="notice">सुरक्षित Customer Login: Email + OTP। पासवर्ड और SMS की जरूरत नहीं है।</div>
+    <p>नाम, मोबाइल नंबर, पासवर्ड और जिला भरकर अकाउंट बनाएँ। पहले से अकाउंट है तो Login चुनें।</p>
+    <div class="notice">Customer Account: Mobile Number + Password। कोई Email OTP या Google Login नहीं।</div>
     <form id="loginForm">
       <div class="form-grid">
-        <div class="field"><label for="customerName">पूरा नाम / Full Name *</label><input id="customerName" autocomplete="name" maxlength="80"></div>
-        <div class="field"><label for="customerEmail">ईमेल पता / Email *</label><input id="customerEmail" type="email" inputmode="email" autocomplete="email" maxlength="254" required placeholder="yourname@example.com"></div>
-        
-        <div class="field"><label for="customerDistrict">जिला / District</label><input id="customerDistrict"></div>
+        <div class="field"><label for="customerName">पूरा नाम / Full Name *</label><input id="customerName" autocomplete="name" maxlength="80" required></div>
+        <div class="field"><label for="customerPhone">मोबाइल नंबर / Mobile Number *</label><input id="customerPhone" type="tel" autocomplete="tel" required></div>
+        <div class="field"><label for="customerPassword">पासवर्ड / Password *</label><input id="customerPassword" type="password" minlength="8" maxlength="72" autocomplete="new-password" required></div>
+        <div class="field"><label for="customerDistrict">जिला / District *</label><input id="customerDistrict" maxlength="80" required></div>
+        <div class="field full"><label>वर्तमान लोकेशन / Current Location</label><button class="btn btn-outline" type="button" id="shareCustomerLocation">⌖ Share my live location</button><small id="customerLocationStatus">लोकेशन साझा करना वैकल्पिक है।</small><input id="customerLatitude" type="hidden"><input id="customerLongitude" type="hidden"></div>
       </div>
-      <div class="form-actions"><button class="btn btn-green" type="submit">Send OTP / OTP भेजें</button><button class="btn btn-outline" id="verifyCustomerOtp" type="button">Verify OTP / OTP सत्यापित करें</button><button class="btn btn-outline" type="button" onclick="logout()">Logout</button></div>
+      <div class="form-actions"><button class="btn btn-green" type="submit">Create Account / Login</button><button class="btn btn-outline" type="button" id="customerModeToggle">Already have an account? Login</button><button class="btn btn-outline" type="button" onclick="logout()">Logout</button></div>
     </form>
     <div id="loginMessage" class="success"></div>
   </section>
@@ -2811,6 +2819,6 @@ footer .logo-image{filter:drop-shadow(0 4px 9px rgba(0,0,0,.18))}
 @media(prefers-reduced-motion:reduce){#searchDialog .search-result:before{transition:none}}
 </style>
 
-<script type="module" src="supabase-auth.js?v=20261108-email-otp"></script>
+<script type="module" src="supabase-auth.js?v=20261108-phone-password"></script>
 </body>
 </html>
