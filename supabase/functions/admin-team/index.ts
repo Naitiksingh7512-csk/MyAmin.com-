@@ -101,7 +101,8 @@ Deno.serve(async (req: Request) => {
       .select("role,status").eq("user_id", userId).maybeSingle();
     if (targetError) return reply({ error: targetError.message }, 400);
     if (!target || target.role === "admin" || target.status !== "active") return reply({ error: "Only active non-admin team members can receive a card." }, 403);
-    const token = randomToken();
+    const random = new Uint8Array(32); crypto.getRandomValues(random);
+    const token = btoa(String.fromCharCode(...random)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,"");
     const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
     const tokenHash = Array.from(new Uint8Array(digest)).map(x=>x.toString(16).padStart(2,"0")).join("");
     const { error } = await root.from("admin_team_members")
