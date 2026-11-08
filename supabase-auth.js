@@ -121,68 +121,26 @@ const showAuthState = async (session) => {
   if (typeof window.updateBookingUser === "function") window.updateBookingUser();
   renderPasskeyControls(session);
 };
+const normalizeIndianPhone = (value) => {
+  let digits = String(value || "").replace(/\\D/g, "");
+  if (digits.length === 10) digits = "91" + digits;
+  if (digits.length === 12 && digits.startsWith("91")) return "+" + digits;
+  if (String(value || "").trim().startsWith("+") && digits.length >= 10 && digits.length <= 15) return "+" + digits;
+  throw new Error("भारत का सही 10 अंकों का मोबाइल नंबर डालें।");
+};
 const ensureCustomerFields = () => {
   const form = $("loginForm");
-  if (!form || $("customerPassword")) return;
-  const grid = form.querySelector(".form-grid");
-  const email = $("customerEmail");
-  email.required = true;
-  email.autocomplete = "email";
-  if ($("customerName")) $("customerName").required = false;
-  if ($("customerPhone")) $("customerPhone").required = false;
-  email.placeholder = "name@example.com";
-  const pass = document.createElement("div");
-  pass.className = "field";
-  pass.innerHTML = '<label for="customerPassword">Password / पासवर्ड *</label><input id="customerPassword" type="password" minlength="8" maxlength="72" autocomplete="current-password" required><small>कम-से-कम 8 characters.</small>';
-  grid.appendChild(pass);
-  const create = document.createElement("button");
-  create.type = "button";
-  create.id = "createCustomerAccount";
-  create.className = "btn btn-outline";
-  create.textContent = "Create Customer Account / नया अकाउंट";
-  form.querySelector(".form-actions").prepend(create);
-  const forgot = document.createElement("button");
-  forgot.type = "button";
-  forgot.id = "forgotCustomerPassword";
-  forgot.className = "btn btn-outline";
-  forgot.textContent = "Forgot password? / पासवर्ड भूल गए?";
-  form.querySelector(".form-actions").appendChild(forgot);
-  forgot.addEventListener("click", async () => {
-    const emailValue = email.value.trim().toLowerCase();
-    if (!emailValue) { say("loginMessage", "पहले अपना Customer Email भरें।", true); email.focus(); return; }
-    forgot.disabled = true;
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(emailValue, {
-        redirectTo: "https://naitiksingh7512-csk.github.io/MyAmin.com-/"
-      });
-      if (error) throw error;
-      say("loginMessage", "यदि इस ईमेल पर अकाउंट है, तो Password Reset लिंक भेज दिया गया है। Inbox और Spam फ़ोल्डर देखें।");
-    } catch (e) { say("loginMessage", e.message || "Password reset email नहीं भेजा जा सका।", true); }
-    finally { forgot.disabled = false; }
-  });
-  create.addEventListener("click", async () => {
-    const name = $("customerName").value.trim();
-    const phone = $("customerPhone").value.trim();
-    const emailValue = email.value.trim();
-    const password = $("customerPassword").value;
-    if (!name || !phone || !emailValue || password.length < 8) {
-      say("loginMessage", "नाम, मोबाइल, ईमेल और कम-से-कम 8 अक्षर का पासवर्ड भरें।", true);
-      return;
-    }
-    create.disabled = true;
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email: emailValue, password,
-        options: { emailRedirectTo: "https://naitiksingh7512-csk.github.io/MyAmin.com-/", data: { full_name: name, phone, account_type: "customer" } }
-      });
-      if (error) throw error;
-      if (data.session) await showAuthState(data.session);
-      say("loginMessage", data.session
-        ? "Customer अकाउंट बन गया और सुरक्षित रूप से लॉगिन हो गया।"
-        : "अकाउंट बन गया। अपना ईमेल खोलकर verification पूरा करें, फिर लॉगिन करें।");
-    } catch (e) { say("loginMessage", e.message || "Signup असफल हुआ।", true); }
-    finally { create.disabled = false; }
-  });
+  if (!form || $("customerOtp")) return;
+  $("customerName").required = true;
+  $("customerPhone").required = true;
+  $("customerPhone").type = "tel";
+  $("customerPhone").inputMode = "numeric";
+  $("customerPhone").placeholder = "10 अंकों का मोबाइल नंबर";
+  const otp = document.createElement("div");
+  otp.className = "field full";
+  otp.innerHTML = '<label for="customerOtp">SMS OTP / मोबाइल पर आया OTP *</label><input id="customerOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" pattern="[0-9]{4,8}" placeholder="OTP डालें">';
+  form.querySelector(".form-grid").appendChild(otp);
+  $("verifyCustomerOtp")?.addEventListener("click", verifyCustomerPhoneOtp);
 };
 const ensureAminFields = () => {
   const form = $("aminForm");
@@ -200,21 +158,50 @@ const ensureAminFields = () => {
 const handleCustomerLogin = async (event) => {
   event.preventDefault();
   event.stopImmediatePropagation();
-  const email = $("customerEmail").value.trim().toLowerCase();
-  const password = $("customerPassword").value;
-  if (!email || !password) { say("loginMessage", "अपना ईमेल और पासवर्ड भरें।", true); return; }
+  const name = $("customerName").value.trim();
+  let phone;
+  try { phone = normalizeIndianPhone($("customerPhone").value); }
+  catch (e) { say("loginMessage", e.message, true); return; }
+  if (!name) { say("loginMessage", "कृपया अपना पूरा नाम भरें।", true); return; }
+  const button = $("loginForm").querySelector('button[type="submit"]');
+  button.disabled = true;
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithOtp({
+      phone,
+      options: { shouldCreateUser: true, data: { full_name: name, account_type: "customer" } }
+    });
     if (error) throw error;
-    await showAuthState(data.session);
-    say("loginMessage", "सुरक्षित Customer Login सफल।");
-    setTimeout(() => window.location.reload(), 450);
+    sessionStorage.setItem("myamin_pending_customer_name", name);
+    sessionStorage.setItem("myamin_pending_customer_phone", phone);
+    say("loginMessage", "OTP भेजने का अनुरोध सफल हुआ। SMS में आया OTP नीचे भरकर Verify OTP दबाएँ।");
+    $("customerOtp").focus();
   } catch (e) {
-    const message = e?.code === "invalid_credentials" || /invalid login credentials/i.test(e?.message || "")
-      ? "ईमेल या पासवर्ड मेल नहीं खा रहा। ईमेल जाँचें या Forgot password से नया पासवर्ड सेट करें।"
-      : (e.message || "Login असफल हुआ।");
-    say("loginMessage", message, true);
-  }
+    say("loginMessage", e.message || "OTP नहीं भेजा जा सका। Supabase में Phone Auth और SMS Provider सेटिंग जाँचें।", true);
+  } finally { button.disabled = false; }
+};
+const verifyCustomerPhoneOtp = async () => {
+  const button = $("verifyCustomerOtp");
+  const otp = $("customerOtp")?.value.trim();
+  const phone = sessionStorage.getItem("myamin_pending_customer_phone");
+  const name = sessionStorage.getItem("myamin_pending_customer_name") || $("customerName").value.trim();
+  if (!phone) { say("loginMessage", "पहले मोबाइल नंबर डालकर Send OTP दबाएँ।", true); return; }
+  if (!otp || !/^\\d{4,8}$/.test(otp)) { say("loginMessage", "SMS में आया सही OTP भरें।", true); return; }
+  button.disabled = true;
+  try {
+    const { data, error } = await supabase.auth.verifyOtp({ phone, token: otp, type: "sms" });
+    if (error) throw error;
+    if (!data.session || !data.user) throw new Error("OTP सत्यापित हुआ, लेकिन Login session नहीं मिला।");
+    const profile = { id: data.user.id, full_name: name || "Customer", phone, account_type: "customer" };
+    const { error: profileError } = await supabase.from("user_profiles").upsert(profile, { onConflict: "id" });
+    if (profileError) throw profileError;
+    await showAuthState(data.session);
+    sessionStorage.removeItem("myamin_pending_customer_name");
+    sessionStorage.removeItem("myamin_pending_customer_phone");
+    say("loginMessage", "मोबाइल OTP सत्यापित। Customer Login सफल।");
+    setTimeout(() => window.location.reload(), 600);
+  } catch (e) {
+    say("loginMessage", e.message || "OTP सत्यापित नहीं हुआ।", true);
+  } finally { button.disabled = false; }
 };
 const handleAminSignup = async (event) => {
   event.preventDefault();
@@ -422,7 +409,6 @@ window.logout = async () => {
 document.addEventListener("DOMContentLoaded", () => {
   ensureCustomerFields();
   ensureAminFields();
-  addGoogleLoginButtons();
   $("loginForm")?.addEventListener("submit", handleCustomerLogin, true);
   $("aminForm")?.addEventListener("submit", handleAminSignup, true);
   $("bookingForm")?.addEventListener("submit", handleBooking, true);
