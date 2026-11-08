@@ -2257,9 +2257,13 @@ async function nearbyGeocodeAmin(a){
 async function refreshNearbyAmins(userLat=null,userLng=null){
  if(!initNearbyMap())return;
  nearbyAminMarkers.forEach(m=>nearbyMapInstance.removeLayer(m));nearbyAminMarkers=[];
- const records=read(DB.amins,[]).filter(a=>a.approved),list=$("nearbyAminList");
- if(!records.length){list.innerHTML='<div class="nearby-card"><strong>No approved Amin profiles yet.</strong><small>Only approved profiles registered in this browser can appear here.</small></div>';nearbySetStatus("No approved Amin profiles are available in this browser yet.");return;}
- nearbySetStatus("Finding registered Amin areas on the map…");
+ const list=$("nearbyAminList"),client=window.myAminSupabase;
+ if(!client){nearbySetStatus("Secure database connection is still loading.");return;}
+ const {data,error}=await client.from("amin_profiles").select("profile_uid,display_name,state,district,place,approval_status").eq("approval_status","approved");
+ if(error)throw error;
+ const records=(data||[]).map(a=>({profileId:a.profile_uid,name:a.display_name,state:a.state,district:a.district,place:a.place,approved:true}));
+ if(!records.length){list.innerHTML='<div class="nearby-card"><strong>No approved Amin profiles yet.</strong><small>Approved profiles from the shared My Amin database will appear here.</small></div>';nearbySetStatus("No approved Amin profiles are available yet.");return;}
+ nearbySetStatus("Finding approved Amin areas from Supabase…");
  const found=[];
  for(const a of records){
   const point=await nearbyGeocodeAmin(a);if(!point)continue;
