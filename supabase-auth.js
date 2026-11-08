@@ -264,7 +264,7 @@ const handleAminSignup = async (event) => {
     }
     const userId = data.user.id;
     const { data: previousProfile, error: previousError } = await supabase.from("amin_profiles")
-      .select("profile_uid,approval_status,photo_path,upi_id,upi_qr_path,services")
+      .select("profile_uid,approval_status,photo_path,upi_id,upi_qr_path,services,experience")
       .eq("user_id", userId).maybeSingle();
     if (previousError) throw previousError;
     const photo = await uploadPublicAsset(userId, "profile", $("regPhoto").files[0]) || previousProfile?.photo_path || null;
@@ -276,6 +276,7 @@ const handleAminSignup = async (event) => {
       state: $("regState").value.trim(), district: $("regDistrict").value.trim(),
       place: $("regPlace").value.trim(),
       business_reference: $("regBusinessId").value.trim() || null,
+      experience: $("regDescription").value.trim() || previousProfile?.experience || null,
       services: previousProfile?.services || [], photo_path: photo,
       upi_id: $("regUpiId").value.trim() || previousProfile?.upi_id || null,
       upi_qr_path: upiQr, approval_status: previousProfile?.approval_status || "pending"
@@ -285,7 +286,7 @@ const handleAminSignup = async (event) => {
         action: "update_amin_profile", display_name: name, phone,
         whatsapp: $("regWhatsApp").value.trim(), state: $("regState").value.trim(),
         district: $("regDistrict").value.trim(), place: $("regPlace").value.trim(),
-        business_reference: $("regBusinessId").value.trim(), photo_path: photo,
+        business_reference: $("regBusinessId").value.trim(), experience: $("regDescription").value.trim(), photo_path: photo,
         upi_id: $("regUpiId").value.trim() || previousProfile.upi_id, upi_qr_path: upiQr
       }});
       if (profileError) throw profileError;
