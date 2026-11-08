@@ -81,7 +81,7 @@ const showAuthState = async (session) => {
     .eq("user_id", session.user.id).maybeSingle();
   if (aminError) throw aminError;
   box.textContent = "Secure account: " + (p?.full_name || session.user.email) +
-    " · " + (a ? "Amin" : "Customer");
+    " · " + (session.user.app_metadata?.role === "admin" ? "Admin / Owner" : (a ? "Amin" : "Customer"));
   if (a) {
     if ($("idName")) {
       $("idName").value = a.display_name || "";
