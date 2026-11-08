@@ -340,7 +340,7 @@ async function createSecureTeamTask(e){
   const dueDate=$("secureTaskDue").value;const due_at=dueDate?new Date(dueDate+"T23:59:00").toISOString():null;
   const {data,error}=await client.functions.invoke("admin-team",{body:{action:"create_task",assigned_to,title,description:$("secureTaskDescription").value.trim(),module:$("secureTaskModule").value.trim()||"general",due_at}});
   if(error)throw error;if(!data?.success)throw new Error(data?.error||"Task assignment failed.");
-  $("secureTaskForm").reset();$("secureTaskModule").value="general";await loadSecureTasks();notify("Task saved in Supabase and assigned.");
+  $("secureTeamTaskForm").reset();$("secureTaskModule").value="general";await loadSecureTasks();notify("Task saved in Supabase and assigned.");
  }catch(e){notify("Task assignment failed: "+(e.message||"Unknown error"));}
  finally{btn.disabled=false;}
 }
@@ -368,6 +368,7 @@ async function loadSecureTeamMembers(){
   const {data,error}=await client.functions.invoke("admin-team",{body:{action:"list_members"}});if(error)throw error;if(!data?.success)throw new Error(data?.error||"Could not load team.");
   const members=data.members||[];secureTeamMembersCache=members;
   box.innerHTML=members.length?members.map(m=>'<article class="team-card '+(m.status==="blocked"?"blocked":"")+'"><div class="team-card-top"><div class="person">'+(m.photo_url?'<img class="avatar" src="'+esc(m.photo_url)+'" alt="">':'<span class="avatar">👤</span>')+'<div><strong>'+esc(m.full_name||"Team member")+'</strong><div class="team-meta">'+esc(m.email||"")+' · '+esc(m.department||m.role)+'</div></div></div><span class="pill '+(m.role==="admin"||m.status==="removed"?'':(m.status==="active"?'<button class="btn outline" onclick="setSecureMemberStatus(\\''+esc(m.user_id)+'\\',\\'blocked\\')">Block</button>':'<button class="btn soft" onclick="setSecureMemberStatus(\\''+esc(m.user_id)+'\\',\\'active\\')">Unblock</button>'))+(m.role==="admin"||m.status==="removed"?'':'<button class="btn danger" onclick="setSecureMemberStatus(\\''+esc(m.user_id)+'\\',\\'removed\\')">Delete</button>')</div></article>').join(""):'<div class="empty"><b>No secure team members yet</b></div>';
+  await loadSecureTasks();
  }catch(e){box.textContent="Team list error: "+(e.message||"Unknown error");}
 }
 async function setSecureMemberStatus(userId,status){
