@@ -1257,6 +1257,7 @@ function closeMenu() {
 $("menuBtn").addEventListener("click",openMenu);
 $("openCustomerAccount")?.addEventListener("click",openCustomerAccount);
 $("closeCustomerAccount")?.addEventListener("click",()=>$("customerAccountDialog").classList.remove("show"));
+ $("customerAdminDashboardLink")?.addEventListener("click",e=>{e.preventDefault();$("customerAccountDialog")?.classList.remove("show");const section=$("adminLogin");if(section){section.classList.add("active");section.scrollIntoView({behavior:"smooth",block:"start"});}setTimeout(()=>$("adminEmail")?.focus({preventScroll:true}),350);});
 $("customerAccountDialog")?.addEventListener("click",e=>{if(e.target===$("customerAccountDialog"))$("customerAccountDialog").classList.remove("show")});
 $("saveCustomerAccount")?.addEventListener("click",saveCustomerAccount);
 $("customerPhotoChoose")?.addEventListener("click",()=>$("customerPhotoInput")?.click());
