@@ -2,16 +2,5 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.105.0";
 const sb=createClient("https://cxchbvygydfrtkdmkmpa.supabase.co","sb_publishable_2xA7HmAgyn6Sr_kdpeTNZA_XIGBpZ-l",{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 window.myAminSupabase=sb;
 const home="https://naitiksingh7512-csk.github.io/MyAmin.com-/#adminLogin";
-(async()=>{
- try{
-  const {data:{session}}=await sb.auth.getSession();
-  if(!session?.user)throw new Error("Sign in required");
-  const {data:member,error}=await sb.from("admin_team_members").select("role,status").eq("user_id",session.user.id).maybeSingle();
-  if(error)throw error;
-  if(session.user.app_metadata?.role!=="admin"||member?.role!=="admin"||member?.status!=="active")throw new Error("Admin access denied");
-  document.documentElement.classList.add("admin-ready");
- }catch(e){
-  await sb.auth.signOut();
-  location.replace(home);
- }
-})();
+function showGuardError(message){let box=document.getElementById("adminGuardError");if(!box){box=document.createElement("div");box.id="adminGuardError";box.style.cssText="visibility:visible;position:fixed;z-index:999999;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;background:#f6f5ff;color:#202044;font:16px/1.5 system-ui";box.innerHTML='<div style="max-width:460px;background:white;padding:24px;border-radius:18px;box-shadow:0 12px 40px #20204422"><h2 style="margin-top:0">Admin verification could not finish</h2><p id="adminGuardErrorText"></p><a href="'+home+'" style="display:inline-block;padding:10px 16px;border-radius:10px;background:#4f46e5;color:white;text-decoration:none">Return to My Amin Login</a><button id="adminGuardRetry" style="margin-left:8px;padding:10px 16px;border:1px solid #ddd;border-radius:10px;background:white">Retry</button></div>';document.body.appendChild(box);document.getElementById("adminGuardRetry").onclick=()=>location.reload();}document.getElementById("adminGuardErrorText").textContent=message;}
+(async()=>{try{const {data:{session},error:sessionError}=await sb.auth.getSession();if(sessionError)throw sessionError;if(!session?.user){showGuardError("No active sign-in was found in this Safari session. Return to My Amin and sign in again.");return;}const user=session.user;if(user.app_metadata?.role!=="admin"){showGuardError("This signed-in account does not have the Admin role in its current session. Sign out and sign in again, then retry.");return;}const {data:member,error}=await sb.from("admin_team_members").select("role,status").eq("user_id",user.id).maybeSingle();if(error)throw error;if(member?.role!=="admin"||member?.status!=="active"){showGuardError("Your Admin team membership is not active. Ask the project owner to verify the Admin membership.");return;}document.documentElement.classList.add("admin-ready");}catch(e){showGuardError("Verification could not reach Supabase: "+(e.message||"Network or permission error")+". Your session has not been signed out.");}})();
