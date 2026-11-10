@@ -534,6 +534,7 @@ async function loadPublicServiceCategories() {
     select.innerHTML = '<option value="">सेवा चुनें / Choose a service</option>' + (data || []).map(x => '<option value="' + safeUi(x.name_en) + '">' + safeUi(hi ? x.name_hi : x.name_en) + '</option>').join("");
   } catch (e) { console.warn("Service categories:", e.message || e); }
 }
+$("languageBtn")?.addEventListener("click", () => { setTimeout(loadPublicServiceCategories, 0); });
 const { data: initial } = await supabase.auth.getSession();
 await showAuthState(initial.session);
 await syncAdminAccessUI(initial.session);
