@@ -1,10 +1,10 @@
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
 const supabase=window.myAminSupabase||createClient("https://cxchbvygydfrtkdmkmpa.supabase.co","sb_publishable_2xA7HmAgyn6Sr_kdpeTNZA_XIGBpZ-l",{auth:{persistSession:true,autoRefreshToken:true}});
 const $=id=>document.getElementById(id);
-let busy=false,recognition=null,recorder=null,chunks=[],chatOpen=false;
+let busy=false,recognition=null,recorder=null,chunks=[],chatOpen=false,voiceMode=false,voiceRestartTimer=null;
 const micSvg='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2.5" width="6" height="12" rx="3"></rect><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3.5M8.5 21.5h7"></path></svg>';
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-function speech(text){if(!("speechSynthesis"in window))return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=/[\u0900-\u097F]/.test(text)?"hi-IN":"en-IN";u.rate=1;window.speechSynthesis.speak(u)}
+function speech(text){return new Promise(resolve=>{if(!("speechSynthesis"in window)){resolve();return}window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=/[\u0900-\u097F]/.test(text)?"hi-IN":"en-IN";u.rate=1;u.onend=resolve;u.onerror=resolve;window.speechSynthesis.speak(u)})}
 async function ask(message,media=null,mediaKind="audio"){
  if(busy)return;busy=true;setState("मित्र AI सोच रहा है…");
  try{
@@ -14,21 +14,41 @@ async function ask(message,media=null,mediaKind="audio"){
   if(media)body[mediaKind]=media;
   const {data,error}=await supabase.functions.invoke("myamin-ai",{body});
   if(error)throw error;if(data?.error)throw Error(data.error);
-  showAnswer(data.answer);if($("mitraChatLog"))addChat("assistant",data.answer);speech(data.answer);
+  showAnswer(data.answer);if($("mitraChatLog"))addChat("assistant",data.answer);await speech(data.answer);
  }catch(e){setState(e.message||"अभी AI से संपर्क नहीं हो पाया।");}
- finally{busy=false}
+ finally{busy=false;if(voiceMode)resumeVoice()}
 }
 function setState(s){const n=$("mitraState");if(n)n.textContent=s}
 function showAnswer(s){const n=$("mitraAnswer");if(n){n.hidden=false;n.textContent=s;}}
-function startVoice(){
+function resumeVoice(){
+ if(!voiceMode||busy||recognition)return;
  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
- if(!SR){recordFallback();return}
+ if(!SR){setState("इस Safari में automatic voice listening उपलब्ध नहीं है।");voiceMode=false;return}
+ clearTimeout(voiceRestartTimer);
  const r=new SR();recognition=r;r.lang="hi-IN";r.interimResults=false;r.continuous=false;
- r.onstart=()=>setState("सुन रहा हूँ… बोलिए");
- r.onresult=e=>{const heard=e.results?.[0]?.[0]?.transcript||"";if(heard.trim())ask(heard.trim());else setState("आवाज़ समझ नहीं आई। फिर से बोलें।")};
- r.onerror=e=>{if(recognition===r)recognition=null;if(e.error==="not-allowed"||e.error==="service-not-allowed")setState("Safari में Microphone की अनुमति दें।");else if(e.error!=="aborted")recordFallback()};
- r.onend=()=>{if(recognition===r)recognition=null;if(!busy&&$("mitraState")?.textContent==="सुन रहा हूँ… बोलिए")setState("माइक दबाकर फिर बोलें")};
- try{r.start()}catch(_){recognition=null;recordFallback()}
+ r.onstart=()=>setState("मैं सुन रहा हूँ… बोलिए");
+ r.onresult=e=>{
+  let heard="";
+  for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)heard+=e.results[i][0].transcript+" "}
+  heard=heard.trim();
+  if(heard){try{r.stop()}catch(_){};ask(heard)}
+ };
+ r.onerror=e=>{
+  if(recognition===r)recognition=null;
+  if(e.error==="not-allowed"||e.error==="service-not-allowed"){voiceMode=false;setState("Safari में Microphone की अनुमति दें।")}
+  else if(e.error!=="aborted"&&voiceMode)setState("आवाज़ सुनने में रुकावट आई; दोबारा सुनने की कोशिश होगी।");
+ };
+ r.onend=()=>{
+  if(recognition===r)recognition=null;
+  if(voiceMode&&!busy)voiceRestartTimer=setTimeout(resumeVoice,450);
+ };
+ try{r.start()}catch(_){recognition=null;voiceMode=false;setState("Automatic voice इस browser में शुरू नहीं हो सका।")}
+}
+function startVoice(){
+ voiceMode=true;
+ const greeting="मैं आपकी क्या मदद कर सकता हूँ?";
+ setState(greeting);
+ speech(greeting).then(()=>resumeVoice());
 }
 async function recordFallback(){
  try{
@@ -56,8 +76,8 @@ async function recordFallback(){
  }catch(e){setState(e.message||"माइक्रोफोन की अनुमति दें।")}
 }
 function micClick(){
+ if(voiceMode){voiceMode=false;clearTimeout(voiceRestartTimer);if(recognition){const r=recognition;recognition=null;try{r.stop()}catch(_){}}if(recorder?.state==="recording")recorder.stop();window.speechSynthesis?.cancel();setState("Voice session बंद है। फिर शुरू करने के लिए mic दबाएँ।");return}
  if(recorder?.state==="recording"){recorder.stop();setState("आपकी आवाज़ समझ रहा हूँ…");return}
- if(recognition){const r=recognition;recognition=null;try{r.stop()}catch(_){}return}
  startVoice();
 }
 function addChat(role,text){const n=document.createElement("div");n.className="mitra-line "+role;n.textContent=text;$("mitraChatLog").append(n);$("mitraChatLog").scrollTop=$("mitraChatLog").scrollHeight}
@@ -68,8 +88,8 @@ function mount(){
  const panel=document.createElement("section");panel.id="mitraPanel";
  panel.innerHTML='<div class="mitra-mini-head"><span class="mitra-head-mic">'+micSvg+'</span><b>मित्र AI</b><button id="mitraClose" type="button" aria-label="Close">×</button></div><div id="mitraState">माइक दबाकर बात करें</div><div id="mitraAnswer" hidden></div><button id="mitraMic" type="button" aria-label="Activate microphone">'+micSvg+'</button><button id="mitraChatToggle" type="button">Chat</button><div id="mitraChatBox" hidden><div id="mitraChatLog"></div><div class="mitra-chat-row"><input id="mitraText" placeholder="Message मित्र AI"><button id="mitraSend" type="button">Send</button><label for="mitraImage">＋</label><input id="mitraImage" type="file" accept="image/png,image/jpeg,image/webp" hidden></div></div>';
  document.body.append(launcher,panel);
- launcher.onclick=()=>panel.classList.toggle("open");
- $("mitraClose").onclick=()=>{panel.classList.remove("open");if(recognition){try{recognition.stop()}catch(_){}recognition=null}if(recorder?.state==="recording")recorder.stop()};
+ launcher.onclick=()=>{panel.classList.toggle("open");};
+ $("mitraClose").onclick=()=>{panel.classList.remove("open");voiceMode=false;clearTimeout(voiceRestartTimer);if(recognition){try{recognition.stop()}catch(_){}recognition=null}if(recorder?.state==="recording")recorder.stop();window.speechSynthesis?.cancel()};
  $("mitraMic").onclick=micClick;
  $("mitraChatToggle").onclick=()=>{chatOpen=!chatOpen;$("mitraChatBox").hidden=!chatOpen};
  $("mitraSend").onclick=chatSend;
