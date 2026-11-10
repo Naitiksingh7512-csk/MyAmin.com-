@@ -2399,13 +2399,31 @@ async function refreshNearbyAmins(userLat=null,userLng=null){
 
 
 
-function openQrAminProfile(){
+async function openQrAminProfile(){
  const id=new URLSearchParams(window.location.search).get("profile");if(!id)return;
- const records=read(DB.amins,[]),amin=records.find(a=>(a.profileId||a.id)===id);
  go("publicAminProfile");
  const box=$("publicAminProfileContent");
- if(!amin){box.innerHTML='<div class="list-item"><strong>Profile not published on this device.</strong><p>Registrations are currently saved only in the browser where they were submitted. To make this QR open the Amin profile on every phone, My Amin needs a shared online database and public profile hosting.</p><p>Profile ID: '+safe(id)+'</p></div>';return;}
- const jobs=read(DB.bookings,[]).filter(x=>x.aminId===id||x.profileId===id||String(x.amin||"").trim().toLowerCase()===String(amin.name||"").trim().toLowerCase());const st=x=>String(x.status||"pending").toLowerCase();const done=jobs.filter(x=>["completed","complete","done"].includes(st(x))).length;const active=jobs.filter(x=>["confirmed","accepted","in progress","ongoing","started"].includes(st(x))).length;const pending=jobs.filter(x=>!["completed","complete","done","confirmed","accepted","in progress","ongoing","started","cancelled"].includes(st(x))).length;box.innerHTML='<div class="list-item">'+(amin.photo?'<img src="'+amin.photo+'" alt="Amin profile photo" style="width:92px;height:92px;object-fit:cover;border-radius:50%">':'')+'<h3>'+safe(amin.name)+'</h3><p><strong>Profile ID:</strong> '+safe(id)+'<br>📍 '+safe([amin.place,amin.district,amin.state].filter(Boolean).join(", "))+'<br>☎ '+safe(amin.phone||"Not provided")+'<br>'+safe(amin.description||"Land measurement service")+'</p><div class="dashboard-stats"><div><strong>'+done+'</strong><small>Completed</small></div><div><strong>'+active+'</strong><small>In progress</small></div><div><strong>'+pending+'</strong><small>Pending</small></div></div>'+(amin.upiId?'<p><strong>UPI ID:</strong> '+safe(amin.upiId)+'</p><a class="btn btn-green" href="upi://pay?pa='+encodeURIComponent(amin.upiId)+'&pn='+encodeURIComponent(amin.name||"Amin")+'&cu=INR">Pay Now</a>':'')+'</div>';
+ box.innerHTML='<div class="list-item" role="status">Loading public Amin profile…</div>';
+ try{
+  const client=window.myAminSupabase;
+  if(!client) throw new Error("Secure profile connection is not ready. Please refresh and try again.");
+  const {data:amin,error}=await client.from("amin_profiles")
+   .select("profile_uid,display_name,phone,state,district,place,experience,photo_path,upi_id,upi_qr_path,services")
+   .eq("profile_uid",id).eq("approval_status","approved").maybeSingle();
+  if(error) throw error;
+  if(!amin){
+   box.innerHTML='<div class="list-item"><strong>Profile not found or not yet approved.</strong><p>This public profile QR works only after the Amin profile has been saved in MyAmin.com and approved by Admin.</p><p>Profile ID: '+safe(id)+'</p></div>';
+   return;
+  }
+  const services=Array.isArray(amin.services)?amin.services:[];
+  const photo=amin.photo_path?'<img src="'+safe(amin.photo_path)+'" alt="Amin profile photo" style="width:92px;height:92px;object-fit:cover;border-radius:50%">':'';
+  const upi=amin.upi_id?'<p><strong>UPI ID:</strong> '+safe(amin.upi_id)+'</p><a class="btn btn-green" href="upi://pay?pa='+encodeURIComponent(amin.upi_id)+'&pn='+encodeURIComponent(amin.display_name||"Amin")+'&cu=INR">Pay Now</a>':'';
+  const qr=amin.upi_qr_path?'<p><img src="'+safe(amin.upi_qr_path)+'" alt="Amin payment QR" style="width:140px;height:140px;object-fit:contain;background:#fff;padding:6px;border-radius:8px"></p>':'';
+  box.innerHTML='<div class="list-item">'+photo+'<h3>'+safe(amin.display_name)+'</h3><p><strong>Profile ID:</strong> '+safe(amin.profile_uid)+'<br>📍 '+safe([amin.place,amin.district,amin.state].filter(Boolean).join(", "))+'<br>☎ '+safe(amin.phone||"Not provided")+'<br>'+safe(amin.experience||"Land service professional")+'</p>'+(services.length?'<p><strong>Services:</strong> '+services.map(safe).join(", ")+'</p>':'')+upi+qr+'</div>';
+ }catch(error){
+  console.error("Public Amin profile load failed",error);
+  box.innerHTML='<div class="list-item"><strong>Could not load this Amin profile.</strong><p>Please check your internet connection and scan again.</p><p>Profile ID: '+safe(id)+'</p></div>';
+ }
 }
 
 const nearbySearchInput=$("nearbyLocationQuery");if(nearbySearchInput)nearbySearchInput.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();searchNearbyLocation();}});
