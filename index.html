@@ -821,7 +821,16 @@ header{
 #customerAccountDialog input{max-width:100%!important;min-width:0!important;box-sizing:border-box!important}
 #customerAccountDialog #customerAccountMessage{display:block!important;min-height:44px!important;white-space:normal!important;overflow-wrap:anywhere!important}
 @media(max-width:620px){#customerAccountDialog .dialog-box{width:calc(100vw - 18px)!important;max-height:94vh!important;padding:14px!important}#customerAccountDialog .form-grid{grid-template-columns:minmax(0,1fr)!important}#customerAccountDialog .customer-profile-hero{gap:12px!important;padding:13px!important}#customerAccountDialog .customer-profile-title h2{font-size:19px!important}}
-</style></head>
+</style><style id="myamin-ipad-hamburger-nav">
+/* Keep the compact hamburger header on touch-first iPads in portrait,
+   landscape, and Split View. The existing menu overlay and actions remain unchanged. */
+@media (pointer: coarse) and (max-width: 1600px) {
+  .navlinks { display: none !important; }
+  .navactions #menuBtn { display: grid !important; }
+}
+</style>
+
+</head>
 
 <body>
 <div class="topline"></div>
