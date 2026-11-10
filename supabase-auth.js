@@ -480,9 +480,66 @@ document.addEventListener("DOMContentLoaded", () => {
 
   $("loginForm")?.querySelector('button[onclick="logout()"]')?.addEventListener("click", window.logout);
 });
+const safeUi = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+window.loadMySupportTickets = async () => {
+  const box = $("mySupportTickets"); if (!box) return;
+  try {
+    const user = await currentUser(); if (!user) { box.textContent = "Login to view support conversations."; return; }
+    const { data: tickets, error } = await supabase.from("support_tickets").select("id,subject,description,status,priority,created_at").eq("user_id", user.id).order("created_at", { ascending: false });
+    if (error) throw error;
+    if (!tickets?.length) { box.textContent = "No support conversations yet."; return; }
+    const ids = tickets.map(t => t.id);
+    const { data: messages, error: messageError } = await supabase.from("support_ticket_messages").select("id,ticket_id,sender_user_id,message,created_at").in("ticket_id", ids).order("created_at", { ascending: true });
+    if (messageError) throw messageError;
+    box.innerHTML = tickets.map(t => {
+      const thread = (messages || []).filter(m => m.ticket_id === t.id);
+      return '<article class="list-item"><strong>' + safeUi(t.subject) + '</strong><small> · ' + safeUi(t.status) + ' · ' + safeUi(new Date(t.created_at).toLocaleString()) + '</small><p>' + safeUi(t.description) + '</p><div style="max-height:220px;overflow:auto">' + thread.map(m => '<div style="padding:8px;margin:6px 0;border-radius:8px;background:' + (m.sender_user_id === user.id ? '#edf6f0' : '#f3f4f6') + '"><small>' + (m.sender_user_id === user.id ? 'You' : 'My Amin Support') + ' · ' + safeUi(new Date(m.created_at).toLocaleString()) + '</small><div style="white-space:pre-wrap">' + safeUi(m.message) + '</div></div>').join("") + '</div>' + (["resolved","closed"].includes(t.status) ? '<small>This conversation is closed. Submit a new report if you need more help.</small>' : '<form data-customer-ticket-reply="' + safeUi(t.id) + '" style="margin-top:10px"><textarea name="message" maxlength="4000" required rows="2" placeholder="Reply to support…"></textarea><button class="btn btn-green" type="submit">Send reply</button></form>') + '</article>';
+    }).join("");
+    box.querySelectorAll("[data-customer-ticket-reply]").forEach(form => form.addEventListener("submit", async e => {
+      e.preventDefault(); const target = e.currentTarget, button = target.querySelector("button"), message = target.elements.message.value.trim();
+      if (!message) return; button.disabled = true;
+      try { const { error } = await supabase.from("support_ticket_messages").insert({ ticket_id: target.dataset.customerTicketReply, sender_user_id: user.id, message }); if (error) throw error; await window.loadMySupportTickets(); }
+      catch (err) { alert("Reply failed: " + (err.message || "Unknown error")); button.disabled = false; }
+    }));
+  } catch (e) { box.textContent = "Support conversations unavailable: " + (e.message || "Unknown error"); }
+};
+window.loadCustomerAddresses = async () => {
+  const box = $("customerAddressList"); if (!box) return;
+  try {
+    const user = await currentUser(); if (!user) { box.textContent = "Login to manage saved addresses."; return; }
+    const { data, error } = await supabase.from("user_addresses").select("id,label,address_line,state,district,pincode,is_default").eq("user_id", user.id).order("is_default", { ascending: false }).order("created_at", { ascending: false });
+    if (error) throw error;
+    box.innerHTML = data?.length ? data.map(a => '<div class="list-item"><strong>' + safeUi(a.label) + (a.is_default ? ' · Default' : '') + '</strong><p>' + safeUi(a.address_line) + '<br>' + safeUi([a.district,a.state,a.pincode].filter(Boolean).join(", ")) + '</p></div>').join("") : '<p>No saved addresses yet.</p>';
+    const preferred = (data || []).find(a => a.is_default) || data?.[0];
+    if (preferred) { if ($("bookingState") && !$("bookingState").value.trim()) $("bookingState").value = preferred.state; if ($("bookingDistrict") && !$("bookingDistrict").value.trim()) $("bookingDistrict").value = preferred.district; if ($("bookingPlace") && !$("bookingPlace").value.trim()) $("bookingPlace").value = preferred.address_line; }
+  } catch (e) { box.textContent = "Saved addresses unavailable: " + (e.message || "Unknown error"); }
+};
+$("customerAddressForm")?.addEventListener("submit", async e => {
+  e.preventDefault(); const button = e.currentTarget.querySelector('button[type="submit"]'); button.disabled = true;
+  try {
+    const user = await currentUser(); if (!user) throw new Error("Please sign in first.");
+    const isDefault = $("addressDefault").checked;
+    if (isDefault) { const { error: clearError } = await supabase.from("user_addresses").update({ is_default: false }).eq("user_id", user.id); if (clearError) throw clearError; }
+    const { error } = await supabase.from("user_addresses").insert({ user_id: user.id, label: $("addressLabel").value, address_line: $("addressLine").value.trim(), state: $("addressState").value.trim(), district: $("addressDistrict").value.trim(), pincode: $("addressPincode").value.trim() || null, is_default: isDefault });
+    if (error) throw error; e.currentTarget.reset(); $("addressState").value = "Bihar"; await window.loadCustomerAddresses();
+  } catch (err) { alert("Address could not be saved: " + (err.message || "Unknown error")); }
+  finally { button.disabled = false; }
+});
+async function loadPublicServiceCategories() {
+  const select = $("bookingService"); if (!select) return;
+  try {
+    const { data, error } = await supabase.from("service_categories").select("slug,name_en,name_hi,is_active,sort_order").eq("is_active", true).order("sort_order", { ascending: true });
+    if (error) throw error;
+    const hi = (localStorage.getItem("myamin_language") || "en") === "hi";
+    select.innerHTML = '<option value="">सेवा चुनें / Choose a service</option>' + (data || []).map(x => '<option value="' + safeUi(x.name_en) + '">' + safeUi(hi ? x.name_hi : x.name_en) + '</option>').join("");
+  } catch (e) { console.warn("Service categories:", e.message || e); }
+}
 const { data: initial } = await supabase.auth.getSession();
 await showAuthState(initial.session);
 await syncAdminAccessUI(initial.session);
+await loadPublicServiceCategories();
+await window.loadMySupportTickets();
+await window.loadCustomerAddresses();
 if (typeof window.renderAdminContentFeed === "function") await window.renderAdminContentFeed();
 if (typeof window.applyLocalWebsiteSettings === "function") await window.applyLocalWebsiteSettings();
 if (typeof window.loadAmins === "function") await window.loadAmins();
@@ -493,6 +550,8 @@ supabase.auth.onAuthStateChange((_event, session) => {
   queueMicrotask(async () => {
     await showAuthState(session);
     await syncAdminAccessUI(session);
+    await window.loadMySupportTickets();
+    await window.loadCustomerAddresses();
     if (typeof window.renderAdminContentFeed === "function") await window.renderAdminContentFeed();
     if (typeof window.applyLocalWebsiteSettings === "function") await window.applyLocalWebsiteSettings();
     if (typeof window.loadAmins === "function") await window.loadAmins();
