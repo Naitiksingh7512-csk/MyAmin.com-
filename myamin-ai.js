@@ -22,16 +22,8 @@ function setState(s){const n=$("mitraState");if(n)n.textContent=s}
 function showAnswer(s){const n=$("mitraAnswer");if(n){n.hidden=false;n.textContent=s;}}
 function selectedLanguage(){try{return localStorage.getItem("myamin_language")==="hi"?"hi":"en"}catch(_){return "en"}}
 function resumeVoice(){
- if(!voiceMode||busy||recognition||autoStream)return;
- const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
- if(!SR){startAutoCapture();return}
- clearTimeout(voiceRestartTimer);
- const r=new SR();recognition=r;r.lang=selectedLanguage()==="hi"?"hi-IN":"en-IN";r.interimResults=false;r.continuous=false;
- r.onstart=()=>setState(selectedLanguage()==="hi"?"मैं सुन रहा हूँ… बोलिए":"Listening… go ahead");
- r.onresult=e=>{let heard="";for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)heard+=e.results[i][0].transcript+" "}heard=heard.trim();if(heard){try{r.stop()}catch(_){};ask(heard)}};
- r.onerror=e=>{if(recognition===r)recognition=null;if(e.error==="not-allowed"||e.error==="service-not-allowed"){voiceMode=false;setState("Please allow microphone access in Safari settings.")}else if(e.error!=="aborted"&&voiceMode){setState("Switching to automatic voice listening…");startAutoCapture()}};
- r.onend=()=>{if(recognition===r)recognition=null;if(voiceMode&&!busy&&!autoStream)voiceRestartTimer=setTimeout(resumeVoice,450)};
- try{r.start()}catch(_){recognition=null;startAutoCapture()}
+ if(!voiceMode||busy||autoStream)return;
+ startAutoCapture();
 }
 async function startAutoCapture(){
  if(!voiceMode||autoStream||busy)return;
@@ -53,7 +45,7 @@ function resumeAutoCapture(){
   autoAnalyser.getByteTimeDomainData(samples);let sum=0;for(let i=0;i<samples.length;i++){const v=(samples[i]-128)/128;sum+=v*v}
   const rms=Math.sqrt(sum/samples.length),now=Date.now();
   if(!busy){
-   if(rms>0.022){
+   if(rms>0.016){
     autoSilenceAt=0;
     if(!autoSpeaking){autoSpeaking=true;chunks=[];try{
      recorder=new MediaRecorder(autoStream,autoRecorderMime?{mimeType:autoRecorderMime}:undefined);
