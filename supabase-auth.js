@@ -78,15 +78,34 @@ const showAuthState = async (session) => {
     renderPasskeyControls(null);
     return;
   }
-  const { data: p, error: profileError } = await supabase.from("user_profiles")
-    .select("full_name,account_type,phone,district,photo_url").eq("id", session.user.id).maybeSingle();
-  if (profileError) throw profileError;
-  const { data: a, error: aminError } = await supabase.from("amin_profiles")
-    .select("profile_uid,display_name,phone,state,district,place,approval_status,photo_path,upi_id,upi_qr_path")
-    .eq("user_id", session.user.id).maybeSingle();
-  if (aminError) throw aminError;
+
+  // A missing/temporarily unreadable profile row must not stop the customer
+  // menu from rendering the signed-in user's name and saved avatar.
+  let p = null;
+  try {
+    const result = await supabase.from("user_profiles")
+      .select("full_name,account_type,phone,district,photo_url")
+      .eq("id", session.user.id).maybeSingle();
+    if (result.error) throw result.error;
+    p = result.data || null;
+  } catch (error) {
+    console.warn("My Amin customer profile lookup:", error.message || error);
+  }
+
+  let a = null;
+  try {
+    const result = await supabase.from("amin_profiles")
+      .select("profile_uid,display_name,phone,state,district,place,approval_status,photo_path,upi_id,upi_qr_path")
+      .eq("user_id", session.user.id).maybeSingle();
+    if (result.error) throw result.error;
+    a = result.data || null;
+  } catch (error) {
+    console.warn("My Amin Amin profile lookup:", error.message || error);
+  }
+
   box.textContent = "Secure account: " + (p?.full_name || session.user.email) +
     " · " + (session.user.app_metadata?.role === "admin" ? "Admin / Owner" : (a ? "Amin" : "Customer"));
+
   if (a) {
     if ($("idName")) {
       $("idName").value = a.display_name || "";
@@ -118,15 +137,16 @@ const showAuthState = async (session) => {
     const meta = session.user.user_metadata || {};
     let previous = {};
     try { previous = JSON.parse(localStorage.getItem("myamin_demo_user_v1") || "{}"); } catch {}
-    const username = meta.username || meta.name || meta.full_name || previous.username || "";
+    const emailName = (session.user.email || "").split("@")[0];
+    const username = meta.username || meta.name || meta.full_name || previous.username || emailName || "";
     localStorage.setItem("myamin_demo_user_v1", JSON.stringify({
       id: session.user.id,
-      name: p?.full_name || meta.full_name || meta.name || username || previous.name || "Customer",
+      name: p?.full_name || meta.full_name || meta.name || meta.username || previous.name || previous.username || emailName || "Customer",
       username,
       phone: p?.phone || meta.phone || session.user.phone || previous.phone || "",
       district: p?.district || meta.district || previous.district || "",
       photo: p?.photo_url || meta.avatar_url || meta.photo_url || previous.photo || "",
-      email: username || ""
+      email: session.user.email || username || ""
     }));
     localStorage.removeItem("myamin_demo_logged_in_amin_v1");
   }
