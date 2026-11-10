@@ -2262,6 +2262,7 @@ $("reportForm").addEventListener("submit",async e=>{
     const description="Type: "+type+"\nContact: "+(contact||"Not provided")+"\n\n"+details;
     const {error}=await client.from("support_tickets").insert({user_id:user.id,subject:title,description,priority:type==="Security Concern"?"high":"normal"});
     if(error)throw error;
+    if(typeof window.loadMySupportTickets==="function")await window.loadMySupportTickets();
     message.textContent=currentLang==="hi"?"आपकी रिपोर्ट My Amin टीम को सुरक्षित रूप से भेज दी गई है।":"Your report has been securely sent to the My Amin team.";
     e.target.reset();toast("Report submitted to Supabase.");
   }catch(err){message.textContent=(currentLang==="hi"?"रिपोर्ट नहीं भेजी जा सकी: ":"Report submission failed: ")+(err.message||"Unknown error");}
