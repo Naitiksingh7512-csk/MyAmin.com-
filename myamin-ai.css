@@ -50,3 +50,13 @@
 @media(prefers-reduced-motion:reduce){
   #mitraPanel #mitraMic.listening{animation:none!important}
 }
+
+
+/* Keep text chat fully usable when the user explicitly switches to it */
+#mitraPanel:has(#mitraChat:not([hidden])){height:min(520px,calc(100dvh - 110px))!important}
+#mitraPanel:has(#mitraChat:not([hidden])) #mitraMessages{
+  display:flex!important;flex:1 1 auto!important;min-height:100px!important;
+}
+#mitraPanel:has(#mitraChat:not([hidden])) #mitraHistoryBox{display:block!important}
+#mitraPanel:has(#mitraChat:not([hidden])) #mitraAttachment{display:block!important}
+#mitraPanel:has(#mitraChat:not([hidden])) .mitra-voice{display:none!important}
