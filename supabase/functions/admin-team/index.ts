@@ -130,6 +130,22 @@ Deno.serve(async (req: Request) => {
     return reply({ success: true, members: (members || []).map(m => ({ ...m, photo_url: photos.get(m.user_id) || null })) });
   }
 
+  if (action === "update_member_permissions") {
+    const userId = String(body.user_id || "").trim();
+    const input = body.permissions && typeof body.permissions === "object" ? body.permissions as Record<string, unknown> : {};
+    const allowed = ["applications","directory","customers","bookings","reports","commission","payments","paymentRequests","content","websiteControls","activity"];
+    if (!userId || userId === caller.id) return reply({ error: "Choose a valid team member." }, 400);
+    const { data: target, error: targetError } = await root.from("admin_team_members").select("role,status").eq("user_id", userId).maybeSingle();
+    if (targetError) return reply({ error: targetError.message }, 400);
+    if (!target || target.role === "admin" || target.status === "removed") return reply({ error: "This team account cannot be edited." }, 403);
+    const permissions: Record<string, boolean> = {};
+    for (const key of allowed) permissions[key] = input[key] === true;
+    const { error } = await root.from("admin_team_members").update({ permissions, updated_at: new Date().toISOString() }).eq("user_id", userId);
+    if (error) return reply({ error: error.message }, 400);
+    await root.from("admin_audit_logs").insert({ actor_user_id: caller.id, action: "team_member_permissions_updated", target_type: "auth_user", target_id: userId, metadata: { permissions } });
+    return reply({ success: true, permissions });
+  }
+
   if (action === "rotate_card") {
     const userId = String(body.user_id || "").trim();
     if (!userId || userId === caller.id) return reply({ error: "Choose a valid team member." }, 400);
@@ -158,7 +174,10 @@ Deno.serve(async (req: Request) => {
     const department = String(body.department || "").trim().slice(0, 80);
     const password = String(body.password || "");
     const role = String(body.role || "team_member");
-    const permissions = body.permissions && typeof body.permissions === "object" ? body.permissions : {};
+    const allowedPermissions = ["applications","directory","customers","bookings","reports","commission","payments","paymentRequests","content","websiteControls","activity"];
+    const submittedPermissions = body.permissions && typeof body.permissions === "object" ? body.permissions as Record<string, unknown> : {};
+    const permissions: Record<string, boolean> = {};
+    for (const key of allowedPermissions) permissions[key] = submittedPermissions[key] === true;
     if (!name || !/^\S+@\S+\.\S+$/.test(email) || password.length < 12 || password.length > 72) {
       return reply({ error: "Name, valid email and a 12–72 character password are required." }, 400);
     }
