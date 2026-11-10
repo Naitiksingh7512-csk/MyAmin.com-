@@ -27,6 +27,7 @@ button{border:0;border-radius:11px;padding:12px 16px;font:700 14px system-ui;cur
  <hr style="border:0;border-top:1px solid #e4eee8;margin:18px 0"><h2>My attendance</h2>
  <div class="row"><button id="teamCheckIn">Check in</button><button class="secondary" id="teamCheckOut">Check out</button></div>
  <div id="attendance"><p>Loading attendance…</p></div>
+ <hr style="border:0;border-top:1px solid #e4eee8;margin:18px 0"><h2>Authorized modules</h2><p>Only modules explicitly assigned by your administrator are shown here.</p><div id="authorizedModules"><p>Loading authorized modules…</p></div>
 </section>
 </main>
 <script type="module">
@@ -36,6 +37,27 @@ const $=id=>document.getElementById(id);
 const cardToken=new URLSearchParams(location.search).get("card")||"";
 const say=t=>$("message").textContent=t;
 const safe=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let activeMember=null;
+async function loadAuthorizedModules(member){
+ const host=$("authorizedModules");const p=member.permissions||{};const sections=[];
+ const add=(title,body)=>sections.push('<article class="task"><h3>'+safe(title)+'</h3>'+body+'</article>');
+ const rows=async(table,fields,options={})=>{const q=supabase.from(table).select(fields);if(options.order)q.order(options.order,{ascending:options.ascending??false});if(options.limit)q.limit(options.limit);const {data,error}=await q;if(error)throw error;return data||[]};
+ try{
+  if(p.applications||p.directory){const list=await rows("amin_profiles","profile_uid,display_name,phone,state,district,place,approval_status,created_at",{order:"created_at",limit:100});const filtered=p.applications?list:list.filter(x=>x.approval_status==="approved");add(p.applications?"Amin Applications":"Amin Directory",filtered.length?filtered.map(x=>'<div class="task"><strong>'+safe(x.display_name)+' · '+safe(x.profile_uid)+'</strong><p>'+safe([x.place,x.district,x.state].filter(Boolean).join(", "))+'<br>'+safe(x.phone)+' · '+safe(x.approval_status)+'</p>'+(p.applications?'<div class="row"><button data-amin-status="'+safe(x.profile_uid)+'" data-status="approved">Approve</button><button class="secondary" data-amin-status="'+safe(x.profile_uid)+'" data-status="rejected">Reject</button></div>':'')+'</div>').join(""):"<p>No Amin records found.</p>");}
+  if(p.customers){const list=await rows("user_profiles","id,full_name,phone,district,account_type,created_at",{order:"created_at",limit:150});const customers=list.filter(x=>x.account_type==="customer");const addresses=await rows("user_addresses","user_id,label,address_line,state,district,pincode,is_default",{order:"created_at",limit:200});add("Customers & Addresses",customers.length?customers.map(x=>'<div class="task"><strong>'+safe(x.full_name||"Customer")+'</strong><p>'+safe(x.phone||"No phone")+' · '+safe(x.district||"")+'<br>'+addresses.filter(a=>a.user_id===x.id).map(a=>safe(a.label)+": "+safe(a.address_line)+", "+safe(a.district)+", "+safe(a.state)+" "+safe(a.pincode||"")).join("<br>")+'</p></div>').join(""):"<p>No customer profiles found.</p>");}
+  if(p.bookings||p.commission){const list=await rows("bookings","id,service,state,district,place,preferred_date,status,service_amount,commission_paid,created_at",{order:"created_at",limit:150});const selected=p.commission?list.filter(x=>x.status==="completed"):list;add(p.commission&&!p.bookings?"Commission Records":"Bookings",selected.length?selected.map(x=>'<div class="task"><strong>'+safe(x.service)+'</strong><p>'+safe([x.place,x.district,x.state].filter(Boolean).join(", "))+'<br>'+safe(x.preferred_date)+' · '+safe(x.status)+'<br>Amount: ₹'+safe(x.service_amount)+'</p>'+(p.bookings?'<select data-booking-status="'+safe(x.id)+'"><option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="in_progress">In progress</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select><button class="secondary" data-booking-save="'+safe(x.id)+'">Save status</button>':'')+'</div>').join(""):"<p>No records found.</p>");}
+  if(p.reports){const tickets=await rows("support_tickets","id,subject,description,status,priority,created_at",{order:"created_at",limit:100});let html="";for(const t of tickets){const msgs=await rows("support_ticket_messages","id,ticket_id,sender_user_id,message,created_at",{order:"created_at",limit:300});html+='<div class="task"><strong>'+safe(t.subject)+' · '+safe(t.status)+'</strong><p>'+safe(t.description)+'</p>'+msgs.filter(m=>m.ticket_id===t.id).map(m=>'<p><small>'+safe(new Date(m.created_at).toLocaleString())+'</small><br>'+safe(m.message)+'</p>').join("")+'<form data-team-reply="'+safe(t.id)+'"><textarea name="message" rows="2" maxlength="4000" required placeholder="Reply to customer"></textarea><button type="submit">Send reply</button></form></div>';}add("Support Conversations",html||"<p>No support tickets.</p>");}
+  if(p.payments){const list=await rows("payment_records","id,booking_id,amount,currency,payment_method,transaction_reference,status,created_at",{order:"created_at",limit:150});add("Payment Records",list.length?list.map(x=>'<div class="task"><strong>₹'+safe(x.amount)+' · '+safe(x.status)+'</strong><p>'+safe(x.payment_method)+' · '+safe(x.transaction_reference||"No UTR")+'<br>'+safe(x.booking_id)+'</p></div>').join(""):"<p>No payment records.</p>");}
+  if(p.paymentRequests){const list=await rows("amin_payment_requests","id,amin_user_id,amount,note,status,transaction_reference,created_at",{order:"created_at",limit:150});add("Payment Requests",list.length?list.map(x=>'<div class="task"><strong>₹'+safe(x.amount)+' · '+safe(x.status)+'</strong><p>'+safe(x.note)+'<br>'+safe(x.transaction_reference||"No UTR")+'</p></div>').join(""):"<p>No payment requests.</p>");}
+  if(p.content){const list=await rows("service_categories","id,slug,name_en,name_hi,is_active,sort_order",{order:"sort_order",ascending:true});add("Service Categories",list.length?list.map(x=>'<div class="task"><strong>'+safe(x.name_en)+' / '+safe(x.name_hi)+'</strong><p>'+safe(x.slug)+' · '+(x.is_active?"Active":"Inactive")+'</p></div>').join(""):"<p>No categories.</p>");}
+  if(p.websiteControls){const list=await rows("admin_settings","setting_key,setting_value,updated_at",{order:"updated_at"});add("Website Controls (view only)",list.map(x=>'<div class="task"><strong>'+safe(x.setting_key)+'</strong><p>'+safe(JSON.stringify(x.setting_value))+'</p></div>').join("")||"<p>No public settings.</p>");}
+  if(p.activity){const list=await rows("admin_audit_logs","action,target_type,target_id,created_at",{order:"created_at",limit:100});add("Activity History",list.map(x=>'<div class="task"><strong>'+safe(x.action)+'</strong><p>'+safe(x.target_type)+' · '+safe(x.target_id)+'<br>'+safe(new Date(x.created_at).toLocaleString())+'</p></div>').join("")||"<p>No activity records.</p>");}
+  host.innerHTML=sections.join("")||"<p>No dashboard modules have been assigned. Contact your administrator.</p>";
+  host.querySelectorAll("[data-amin-status]").forEach(b=>b.addEventListener("click",async()=>{const {error}=await supabase.from("amin_profiles").update({approval_status:b.dataset.status}).eq("profile_uid",b.dataset.aminStatus);if(error)alert(error.message);else await loadAuthorizedModules(member)}));
+  host.querySelectorAll("[data-booking-save]").forEach(b=>b.addEventListener("click",async()=>{const select=host.querySelector('[data-booking-status="'+CSS.escape(b.dataset.bookingSave)+'"]');const {error}=await supabase.from("bookings").update({status:select.value}).eq("id",b.dataset.bookingSave);if(error)alert(error.message);else await loadAuthorizedModules(member)}));
+  host.querySelectorAll("[data-team-reply]").forEach(form=>form.addEventListener("submit",async e=>{e.preventDefault();const {data:{user}}=await supabase.auth.getUser();const message=form.elements.message.value.trim();if(!message)return;const {error}=await supabase.from("support_ticket_messages").insert({ticket_id:form.dataset.teamReply,sender_user_id:user.id,message});if(error)alert(error.message);else await loadAuthorizedModules(member)}));
+ }catch(e){host.innerHTML='<p>One or more assigned modules could not load: '+safe(e.message||"Access error")+'</p>';}
+}
 async function openPortal(session){
  if(!cardToken){say("Open this page by scanning the QR code on your team ID card.");return}
  const {data,error}=await supabase.functions.invoke("admin-team",{body:{action:"verify_card",card_token:cardToken}});
@@ -44,6 +66,7 @@ async function openPortal(session){
  $("memberName").textContent=data.member.full_name||session.user.email;
  $("memberRole").textContent=(data.member.role||"team_member")+" · Active team account";
  $("permissions").innerHTML=Object.entries(data.member.permissions||{}).filter(([,v])=>v===true).map(([k])=>'<span class="pill">'+safe(k)+'</span>').join(" ")||'<span class="pill">Assigned tasks only</span>';
+ activeMember=data.member;
  if(data.member.must_change_password){
    const next=prompt("Security requirement: set a new password now (at least 12 characters). Cancel will sign you out.");
    if(!next){await supabase.auth.signOut();location.reload();return;}
@@ -55,6 +78,7 @@ async function openPortal(session){
    say("Temporary password changed successfully.");
  }
  await loadTasks();
+ await loadAuthorizedModules(data.member);
 }
 const localWorkDate=()=>{const d=new Date(Date.now()-new Date().getTimezoneOffset()*60000);return d.toISOString().slice(0,10)};
 async function loadAttendance(){
