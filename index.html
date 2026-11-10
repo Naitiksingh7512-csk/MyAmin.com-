@@ -253,16 +253,22 @@ footer {background:#103a30;color:white;padding:35px 20px}
 footer p,footer a {color:#c6d9d0;font-size:12px;line-height:1.8}
 footer a {text-decoration:underline}
 .overlay {
-  display:none;position:fixed;inset:0;background:#10251fc2;
-  z-index:200;backdrop-filter:blur(3px);
+  display:none;position:fixed;inset:0;
+  width:100%;height:100vh;height:100dvh;
+  background:#10251fc2;z-index:200;backdrop-filter:blur(3px);
+  -webkit-backdrop-filter:blur(3px);
+  overscroll-behavior:contain;
 }
 .overlay.show {display:block}
 .drawer {
-  position:absolute;top:0;right:0;height:100%;height:100dvh;
+  position:absolute;top:0;right:0;
+  height:100%;height:100vh;height:100dvh;max-height:100dvh;
   width:min(390px,88vw);background:white;
-  padding:20px;overflow-y:auto;overscroll-behavior:contain;
+  padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom));
+  overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
   box-shadow:-15px 0 50px #0002;
-  transform:translateX(100%);transition:transform .22s ease;
+  transform:translate3d(100%,0,0);transition:transform .22s ease;
+  will-change:transform;
 }
 .overlay.show .drawer {transform:translateX(0)}
 .drawer-head {display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
@@ -1281,8 +1287,10 @@ $("customerPhotoChoose")?.addEventListener("click",()=>$("customerPhotoInput")?.
 $("customerPhotoInput")?.addEventListener("change",async e=>{const file=e.target.files?.[0];if(!file)return;const msg=$("customerAccountMessage"),btn=$("customerPhotoChoose");try{if(!/^image\/(jpeg|png|webp)$/.test(file.type)||file.size>5*1024*1024)throw new Error("JPG, PNG या WebP फोटो 5 MB तक चुनें।");btn.disabled=true;msg.textContent="फोटो अपलोड हो रही है…";const client=window.myAminSupabase;const {data:{user},error:userError}=await client.auth.getUser();if(userError)throw userError;if(!user)throw new Error("कृपया दोबारा Login करें।");const ext=(file.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"");const path=user.id+"/customer-profile-"+crypto.randomUUID()+"."+ext;const {error:uploadError}=await client.storage.from("amin-assets").upload(path,file,{upsert:false,contentType:file.type,cacheControl:"3600"});if(uploadError)throw uploadError;const url=client.storage.from("amin-assets").getPublicUrl(path).data.publicUrl;const {error:updateError}=await client.from("user_profiles").update({photo_url:url}).eq("id",user.id);if(updateError)throw updateError;const local=read(DB.user,{});save(DB.user,{...local,photo:url});const img=$("customerAccountAvatar"),fallback=$("customerAccountAvatarFallback");img.src=url;img.hidden=false;fallback.hidden=true;refreshCustomerMenuProfile();msg.textContent="प्रोफ़ाइल फोटो सफलतापूर्वक अपडेट हो गई।";}catch(err){msg.textContent=err.message||"फोटो अपलोड नहीं हुई।";}finally{btn.disabled=false;e.target.value="";}});
 $("closeMenu").addEventListener("click",closeMenu);
 $("menuOverlay").addEventListener("click",e=>{
+  // Close only when the actual backdrop is tapped, never when the drawer is used.
   if(e.target===$("menuOverlay")) closeMenu();
 });
+$("drawer").addEventListener("click",e=>e.stopPropagation());
 document.querySelectorAll("[data-go]").forEach(button=>{
   button.addEventListener("click",()=>go(button.dataset.go));
 });
