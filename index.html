@@ -2118,8 +2118,30 @@ $("idPhoto").addEventListener("change",e=>{
   reader.onload=()=>{idPhotoData=String(reader.result||"");};
   reader.readAsDataURL(file);
 });
-$("idForm").addEventListener("submit",e=>{
+$("idForm").addEventListener("submit",async e=>{
   e.preventDefault();
+  try{
+    const client=window.myAminSupabase;
+    if(!client) throw new Error("Secure account connection is not ready. Please refresh and try again.");
+    const {data:{user},error:userError}=await client.auth.getUser();
+    if(userError) throw userError;
+    if(!user) throw new Error("Please log in with your Amin account before creating its linked ID Card.");
+    const {data:profile,error:profileError}=await client.from("amin_profiles")
+      .select("profile_uid,display_name,phone,state,district,place,photo_path,upi_id,upi_qr_path,approval_status")
+      .eq("user_id",user.id).maybeSingle();
+    if(profileError) throw profileError;
+    if(!profile) throw new Error("Amin registration was not found for this account. Complete Amin Registration first.");
+    $("idName").value=profile.display_name||$("idName").value;
+    $("idNumber").value=profile.profile_uid;
+    $("idPhone").value=profile.phone||"";
+    $("idDistrict").value=[profile.place,profile.district,profile.state].filter(Boolean).join(", ");
+    $("idUpiId").value=profile.upi_id||"";
+    if(!idPhotoData) idPhotoData=profile.photo_path||"";
+    if(!window.idUpiQrData) window.idUpiQrData=profile.upi_qr_path||"";
+  }catch(error){
+    toast(error.message||"Could not load your saved Amin profile.");
+    return;
+  }
   $("cardName").textContent=$("idName").value.trim();
   $("cardNumber").textContent=$("idNumber").value.trim()||createProfileId($("idName").value,read(DB.amins,[]));
   $("cardPhone").textContent=$("idPhone").value.trim()||"Not provided";
