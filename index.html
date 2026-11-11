@@ -569,7 +569,7 @@ footer{background:linear-gradient(115deg,#102f29,#145541)}
 .footer-brand .logo-image{width:220px!important;height:58px!important;max-width:220px!important;max-height:58px!important;flex:0 1 220px!important;object-fit:contain!important}
 .footer-brand .logo{display:inline-flex!important;width:auto!important;height:auto!important;max-width:100%!important;overflow:visible!important}
 @media(max-width:700px){.logo-image{width:165px!important;height:46px!important;max-width:165px!important;max-height:46px!important;flex:0 0 165px!important}.footer-brand .logo-image{width:190px!important;height:52px!important;max-width:190px!important;flex:0 1 190px!important}}
-@media(max-width:420px){.logo-image{width:145px!important;height:42px!important;max-width:145px!important;max-height:42px!important;flex-basis:145px!important}}}
+@media(max-width:420px){.logo-image{width:145px!important;height:42px!important;max-width:145px!important;max-height:42px!important;flex-basis:145px!important}}
 
 .nearby-panel.active{display:block}.nearby-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}.nearby-head h2{margin:6px 0}.nearby-head p{color:var(--muted);max-width:650px}.nearby-legend{display:flex;gap:18px;flex-wrap:wrap;margin:14px 0;color:#53675e;font-size:13px}.nearby-legend span{display:flex;align-items:center;gap:7px}.legend-dot{display:inline-block;width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #8ba99a}.customer-dot{background:#1677ff}.amin-dot{background:#e53935}#nearbyMap{width:100%;height:min(62vh,560px);min-height:330px;border:1px solid #dce8e0;border-radius:18px;z-index:1;overflow:hidden;background:#e8efe9}.nearby-actions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.nearby-pin{background:#e53935;border:2px solid white;border-radius:50% 50% 50% 0;width:18px;height:18px;transform:rotate(-45deg);box-shadow:0 2px 8px #0004}.nearby-customer-pin{background:#1677ff;border:3px solid white;border-radius:50%;width:20px;height:20px;box-shadow:0 0 0 7px #1677ff33}.nearby-card{padding:12px 14px;border:1px solid #e1ebe4;border-radius:14px;background:#fff;margin-top:9px}.nearby-card strong{display:block}.nearby-card small{color:#718078}@media(max-width:600px){#nearbyMap{height:55vh;min-height:300px}.nearby-head .btn{width:100%}}
 
@@ -1339,10 +1339,15 @@ async function openCustomerAccount(){
   if(!user){if(dialog)dialog.classList.remove("show");toast("कृपया Customer Login दोबारा करें।");return;}
   const meta=user.user_metadata||{},local=read(DB.user,{})||{};
   const username=local.username||meta.username||meta.name||meta.full_name||user.email||"";
-  let isAdmin=user.app_metadata?.role==="admin";
-  if(!isAdmin){
-   try{const {data:membership}=await client.from("admin_team_members").select("role,status").eq("user_id",user.id).maybeSingle();isAdmin=membership?.role==="admin"&&membership?.status==="active";}
-   catch(_){/* Ordinary customers may not have permission to read team membership. */}
+  // Reveal this link only for the designated Owner Admin account.
+  // Both trusted auth metadata and an active Owner Admin membership are required.
+  const OWNER_ADMIN_USER_ID="24dd2630-4624-46ee-8c54-37b9dc8fcd64";
+  let isAdmin=false;
+  if(user.id===OWNER_ADMIN_USER_ID && user.app_metadata?.role==="admin"){
+   try{
+    const {data:membership,error:membershipError}=await client.from("admin_team_members").select("role,status").eq("user_id",user.id).maybeSingle();
+    if(!membershipError) isAdmin=membership?.role==="admin"&&membership?.status==="active";
+   }catch(_){isAdmin=false;}
   }
   const roleBadge=$("customerAccountRole");if(roleBadge)roleBadge.textContent=isAdmin?"Admin · Owner":"Customer account";
   const adminLink=$("customerAdminDashboardLink");if(adminLink)adminLink.hidden=!isAdmin;
@@ -3180,5 +3185,58 @@ footer .logo-image{filter:drop-shadow(0 4px 9px rgba(0,0,0,.18))}
 .customer-save-btn{min-width:170px;box-shadow:0 8px 18px rgba(20,91,70,.16)}
 #customerAccountUsername{background:#f1f5f2;color:#53685c}
 @media(max-width:480px){.customer-profile-hero{padding:13px;gap:12px}.customer-photo-frame{width:76px;height:76px;flex-basis:76px}.customer-photo-tools{align-items:flex-start;flex-direction:column}.customer-photo-tools button{width:100%}}
-</style></body>
+</style>
+<style id="myamin-mobile-overflow-and-spacing-fix">
+/* Mobile layout correction: prevent horizontal clipping without changing features. */
+html,body{width:100%;max-width:100%;overflow-x:clip}
+*,*::before,*::after{box-sizing:border-box}
+img,svg,video,canvas,iframe{max-width:100%}
+main,header,footer,section,.section,.panel,.card,.portal,.list,.list-item{min-width:0;max-width:100%}
+p,h1,h2,h3,h4,small,strong,label,a,button{overflow-wrap:anywhere}
+input,select,textarea{min-width:0;max-width:100%}
+.grid,.form-grid,.portal-grid,.quick-grid,.dashboard-stats,.account-detail-grid{min-width:0}
+.grid>*,.form-grid>*,.portal-grid>*,.quick-grid>*{min-width:0}
+.nav{width:100%;min-width:0}
+.logo{min-width:0;flex:0 1 auto}
+.navactions{min-width:0;flex:0 0 auto}
+.dialog{padding:clamp(8px,2.5vw,16px);overflow-y:auto;overscroll-behavior:contain}
+.dialog-box{width:min(520px,100%);min-width:0;max-width:100%;max-height:calc(100dvh - 20px);overflow-x:hidden}
+.amin-dashboard{width:min(760px,100%);max-width:100%;max-height:calc(100dvh - 20px);padding:clamp(12px,3.5vw,20px)}
+.customer-profile-hero,.dashboard-identity{min-width:0;flex-wrap:wrap}
+.customer-profile-title{min-width:0;flex:1 1 160px}
+.customer-photo-tools>*{min-width:0;max-width:100%}
+.form-actions,.nearby-actions,.amin-action-row{min-width:0;flex-wrap:wrap}
+.form-actions>.btn,.nearby-actions>.btn{max-width:100%}
+@media(max-width:600px){
+ .nav{padding:9px 8px!important;gap:5px!important}
+ .logo-image{width:clamp(104px,29vw,138px)!important;height:40px!important;max-width:100%!important;flex:0 1 auto!important}
+ .navactions{gap:4px!important}
+ .navactions .btn{padding:8px 9px!important;font-size:11px!important}
+ .navactions .iconbtn{width:35px!important;height:35px!important;flex:0 0 35px!important}
+ .navactions .lang{padding:7px 5px!important;font-size:9px!important;letter-spacing:-.25px}
+ main{padding-left:10px!important;padding-right:10px!important}
+ .hero{min-width:0;padding:20px 14px!important}
+ .hero>*{min-width:0}
+ .panel,.section{padding-left:14px!important;padding-right:14px!important}
+ .dialog{align-items:flex-start;padding:8px!important}
+ .dialog-box{border-radius:17px!important;padding:14px!important}
+ .amin-dashboard .dialog-head{margin:-14px -14px 8px!important;padding:12px 14px!important}
+ .dashboard-stats{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important}
+ .dashboard-stats>div,.dashboard-stats>button{min-width:0;padding:9px 5px!important}
+ .dashboard-stats strong{font-size:19px!important}
+ .customer-profile-hero{align-items:center}
+ .customer-profile-title h2{font-size:18px!important;overflow-wrap:anywhere}
+ .id-card-front,.id-card-back{max-width:100%!important}
+}
+@media(max-width:360px){
+ .logo-image{width:98px!important}
+ .navactions .lang{font-size:8px!important;padding:6px 4px!important}
+ .navactions .btn{padding:7px 7px!important}
+ .navactions{gap:3px!important}
+ .nav{gap:3px!important}
+ .dashboard-stats{grid-template-columns:1fr!important}
+}
+</style>
+
+</body>
 </html>
