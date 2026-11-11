@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+<rect width="512" height="512" rx="76" fill="#000"/>
+<defs><linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#19eaff"/><stop offset="1" stop-color="#0644ed"/></linearGradient><linearGradient id="green" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#d5ff20"/><stop offset="1" stop-color="#00b52a"/></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<g filter="url(#glow)" stroke-linejoin="round">
+<path d="M70 211 255 58 442 211" fill="none" stroke="url(#blue)" stroke-width="27" stroke-linecap="round"/>
+<path d="M111 190v112h57V214l87-70 87 70v88h57V190" fill="#06142c" stroke="url(#blue)" stroke-width="13"/>
+<g fill="url(#blue)" stroke="#9dfaff" stroke-width="5"><rect x="208" y="184" width="42" height="42" rx="7"/><rect x="262" y="184" width="42" height="42" rx="7"/><rect x="208" y="237" width="42" height="42" rx="7"/><rect x="262" y="237" width="42" height="42" rx="7"/></g>
+<path d="M40 330 Q130 267 222 319 Q305 276 470 329 Q374 422 256 382 Q135 416 40 330Z" fill="url(#green)" stroke="#9dff31" stroke-width="6"/>
+<path d="M82 340q75-39 143 0m-83 26q82-46 161-3m-91 28q80-43 152-5" fill="none" stroke="#071b0b" stroke-width="12" stroke-linecap="round"/>
+<path d="M374 199h62v116h-62z" fill="#f4f8ff" stroke="#fff" stroke-width="7" rx="9"/><path d="M387 224h35m-35 22h35m-35 22h25" stroke="#063f9c" stroke-width="9" stroke-linecap="round"/>
+<path d="M435 214c-29 0-46 22-46 45 0 28 46 73 46 73s46-45 46-73c0-23-17-45-46-45Z" fill="#ff2525" stroke="#ff8585" stroke-width="6"/><circle cx="435" cy="258" r="13" fill="#fff"/>
+</g>
+<text x="256" y="462" text-anchor="middle" font-family="Arial,sans-serif" font-size="54" font-weight="800" fill="#fff">My<tspan fill="#00cfff">Amin</tspan><tspan fill="#fff">.com</tspan></text>
+<path d="M72 478 Q256 505 440 478" fill="none" stroke="#05bfff" stroke-width="6"/>
+</svg>
