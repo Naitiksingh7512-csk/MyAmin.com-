@@ -2,14 +2,14 @@
   "name": "My Amin",
   "short_name": "My Amin",
   "description": "आपकी जमीन, आपकी जानकारी",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#f8fbf8",
   "theme_color": "#123b32",
   "icons": [
     {
-      "src": "/assets/myamin-logo.svg",
+      "src": "assets/myamin-logo.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
