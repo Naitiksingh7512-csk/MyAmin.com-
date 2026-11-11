@@ -794,7 +794,14 @@ async function deleteAccount(userId,name){
  try{
   const client=window.myAminSupabase;
   const {data,error}=await client.functions.invoke("admin-team",{body:{action:"delete_account",user_id:userId}});
-  if(error)throw error;if(!data?.success)throw new Error(data?.error||"Account deletion failed.");
+  if(error){
+   let detail=error.message||"Edge Function request failed.";
+   if(error.context&&typeof error.context.clone==="function"){
+    try{const payload=await error.context.clone().json();detail=payload.error||payload.message||detail;}catch{}
+   }
+   throw new Error(detail);
+  }
+  if(!data?.success)throw new Error(data?.error||"Account deletion failed.");
   logAction("Account permanently deleted",name+" · "+userId);notify("Account permanently deleted.");
   await Promise.all([renderCustomers(),loadAdminBackend(),loadAccountStats()]);
  }catch(e){notify("Account deletion failed: "+(e.message||"Unknown error"));}
