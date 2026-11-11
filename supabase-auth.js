@@ -84,7 +84,7 @@ const showAuthState = async (session) => {
   let p = null;
   try {
     const result = await supabase.from("user_profiles")
-      .select("full_name,account_type,phone,district,photo_url")
+      .select("full_name,account_type,phone,district,photo_url,account_status")
       .eq("id", session.user.id).maybeSingle();
     if (result.error) throw result.error;
     p = result.data || null;
@@ -101,6 +101,13 @@ const showAuthState = async (session) => {
     a = result.data || null;
   } catch (error) {
     console.warn("My Amin Amin profile lookup:", error.message || error);
+  }
+
+  if (p?.account_status === "blocked" || p?.account_status === "deleted" || a?.account_status === "blocked" || a?.account_status === "deleted") {
+    await supabase.auth.signOut();
+    box.textContent = "This account is blocked or inactive. Contact My Amin support.";
+    if (typeof window.refreshCustomerMenuProfile === "function") window.refreshCustomerMenuProfile();
+    return;
   }
 
   box.textContent = "Secure account: " + (p?.full_name || session.user.email) +
