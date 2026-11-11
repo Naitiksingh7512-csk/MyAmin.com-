@@ -95,7 +95,7 @@ const showAuthState = async (session) => {
   let a = null;
   try {
     const result = await supabase.from("amin_profiles")
-      .select("profile_uid,display_name,phone,state,district,place,approval_status,account_status,photo_path,upi_id,upi_qr_path")
+      .select("profile_uid,display_name,phone,whatsapp,state,district,place,business_reference,experience,services,instagram_url,facebook_url,youtube_url,approval_status,account_status,photo_path,upi_id,upi_qr_path")
       .eq("user_id", session.user.id).maybeSingle();
     if (result.error) throw result.error;
     a = result.data || null;
@@ -133,7 +133,9 @@ const showAuthState = async (session) => {
     }
     const local = {
       id: a.profile_uid, profileId: a.profile_uid, userId: session.user.id, name: a.display_name,
-      phone: a.phone, state: a.state, district: a.district, place: a.place,
+      phone: a.phone, whatsapp: a.whatsapp || "", state: a.state, district: a.district, place: a.place,
+      businessId: a.business_reference || "", description: a.experience || "", services: a.services || [],
+      instagram: a.instagram_url || "", facebook: a.facebook_url || "", youtube: a.youtube_url || "",
       approved: a.approval_status === "approved", photo: a.photo_path || "",
       upiId: a.upi_id || "", upiQr: a.upi_qr_path || ""
     };
@@ -607,6 +609,7 @@ await window.loadCustomerAddresses();
 if (typeof window.renderAdminContentFeed === "function") await window.renderAdminContentFeed();
 if (typeof window.applyLocalWebsiteSettings === "function") await window.applyLocalWebsiteSettings();
 if (typeof window.loadAmins === "function") await window.loadAmins();
+if (typeof window.openQrAminProfile === "function") await window.openQrAminProfile();
 if (sessionStorage.getItem("myamin_admin_google_pending") === "1" && initial.session) {
   await verifyAdminOAuthSession(initial.session);
 }
@@ -619,6 +622,7 @@ supabase.auth.onAuthStateChange((_event, session) => {
     if (typeof window.renderAdminContentFeed === "function") await window.renderAdminContentFeed();
     if (typeof window.applyLocalWebsiteSettings === "function") await window.applyLocalWebsiteSettings();
     if (typeof window.loadAmins === "function") await window.loadAmins();
+    if (typeof window.openQrAminProfile === "function") await window.openQrAminProfile();
     if (sessionStorage.getItem("myamin_admin_google_pending") === "1" && session) {
       await verifyAdminOAuthSession(session);
     }
