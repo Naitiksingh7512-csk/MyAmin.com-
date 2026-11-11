@@ -2094,9 +2094,15 @@ function searchAmins() {
 async function loadAmins() {
  try{
   const client=window.myAminSupabase;if(!client){renderAmins([]);return;}
-  const {data,error}=await client.from("amin_profiles").select("profile_uid,user_id,display_name,state,district,place,experience,services,photo_path,approval_status,location_lat,location_lng,location_shared_at").eq("approval_status","approved");
+  const {data,error}=await client.rpc("get_public_amin_directory");
   if(error)throw error;
-  const {data:reviews,error:reviewError}=await client.from("amin_reviews").select("amin_user_id,rating").eq("is_visible",true);if(reviewError)throw reviewError;const ratingMap=new Map();(reviews||[]).forEach(r=>{const v=ratingMap.get(r.amin_user_id)||{sum:0,count:0};v.sum+=Number(r.rating)||0;v.count++;ratingMap.set(r.amin_user_id,v);});publicAminsCache=(data||[]).map(a=>{const r=ratingMap.get(a.user_id)||{sum:0,count:0};return {id:a.profile_uid,profileId:a.profile_uid,userId:a.user_id,name:a.display_name,state:a.state,district:a.district,place:a.place,description:a.experience||"",services:a.services||[],photo:a.photo_path||"",latitude:a.location_lat,longitude:a.location_lng,rating:r.count?Math.round(r.sum/r.count*10)/10:0,reviewCount:r.count,approved:true,workAllowed:true};}).sort((a,b)=>b.rating-a.rating||b.reviewCount-a.reviewCount||a.name.localeCompare(b.name));
+  publicAminsCache=(data||[]).map(a=>({
+   id:a.profile_uid,profileId:a.profile_uid,name:a.display_name,
+   phone:a.phone||"",whatsapp:a.whatsapp||"",state:a.state,district:a.district,place:a.place,
+   description:a.experience||"",services:a.services||[],photo:a.photo_path||"",
+   latitude:a.location_lat,longitude:a.location_lng,locationSharedAt:a.location_shared_at,
+   rating:Number(a.rating)||0,reviewCount:Number(a.review_count)||0,approved:true,workAllowed:true
+  })).sort((a,b)=>b.rating-a.rating||b.reviewCount-a.reviewCount||a.name.localeCompare(b.name));
   window.followedAminProfileIds=new Set();
   const {data:{user}}=await client.auth.getUser();
   if(user){try{const {data:favorites}=await client.from("amin_favorites").select("amin_user_id").eq("customer_user_id",user.id);const ids=(favorites||[]).map(x=>x.amin_user_id);if(ids.length){const {data:favoriteProfiles}=await client.from("amin_profiles").select("user_id,profile_uid").in("user_id",ids);window.followedAminProfileIds=new Set((favoriteProfiles||[]).map(x=>String(x.profile_uid)));}}catch(e){}}
@@ -2426,7 +2432,7 @@ function startNearbyMap(){
  },err=>{const msg=err.code===1?"Safari location permission is blocked. In iPad Settings → Privacy & Security → Location Services, enable Location Services and allow Safari Websites; then reload.":err.code===2?"Device location is unavailable. Turn on Location Services, check Wi‑Fi/cellular and try outdoors.": "GPS timed out. Keep Safari open, allow location access, and tap Use my live location again.";nearbySetStatus(msg);},{enableHighAccuracy:true,timeout:30000,maximumAge:0});
 }
 async function nearbyGeocodeAmin(a){
- if(Number.isFinite(Number(a.latitude))&&Number.isFinite(Number(a.longitude)))return [Number(a.latitude),Number(a.longitude)];
+ if(a.latitude!==null&&a.latitude!==undefined&&a.longitude!==null&&a.longitude!==undefined&&Number.isFinite(Number(a.latitude))&&Number.isFinite(Number(a.longitude)))return [Number(a.latitude),Number(a.longitude)];
  const place=[a.place,a.district,a.state,"India"].filter(Boolean).join(", ");
  if(!place||place==="India")return null;
  let cache={};try{cache=JSON.parse(localStorage.getItem(nearbyGeoCacheKey)||"{}");}catch(e){}
@@ -2444,18 +2450,19 @@ async function refreshNearbyAmins(userLat=null,userLng=null){
  if(list)list.innerHTML='<div class="nearby-card" role="status">Loading approved Amin profiles…</div>';
  try{
   if(!client)throw new Error("Secure database connection is still loading.");
-  const {data,error}=await client.from("amin_profiles").select("profile_uid,user_id,display_name,phone,whatsapp,state,district,place,business_reference,experience,services,photo_path,approval_status,account_status,location_lat,location_lng,location_shared_at").eq("approval_status","approved").eq("account_status","active");
+  const {data,error}=await client.rpc("get_public_amin_directory");
   if(error)throw error;
-  const {data:nearbyReviews,error:nearbyReviewError}=await client.from("amin_reviews").select("amin_user_id,rating").eq("is_visible",true);
-  if(nearbyReviewError)throw nearbyReviewError;
-  const nearbyRatingMap=new Map();
-  (nearbyReviews||[]).forEach(r=>{const v=nearbyRatingMap.get(r.amin_user_id)||{sum:0,count:0};v.sum+=Number(r.rating)||0;v.count++;nearbyRatingMap.set(r.amin_user_id,v);});
-  const records=(data||[]).map(a=>{const r=nearbyRatingMap.get(a.user_id)||{sum:0,count:0};return {profileId:a.profile_uid,userId:a.user_id,name:a.display_name,phone:a.phone,whatsapp:a.whatsapp,state:a.state,district:a.district,place:a.place,businessReference:a.business_reference,description:a.experience,services:a.services||[],photo:a.photo_path,latitude:a.location_lat,longitude:a.location_lng,locationSharedAt:a.location_shared_at,rating:r.count?Math.round(r.sum/r.count*10)/10:0,reviewCount:r.count};});
+  const records=(data||[]).map(a=>({
+   profileId:a.profile_uid,name:a.display_name,phone:a.phone,whatsapp:a.whatsapp,
+   state:a.state,district:a.district,place:a.place,description:a.experience,
+   services:a.services||[],photo:a.photo_path,latitude:a.location_lat,longitude:a.location_lng,
+   locationSharedAt:a.location_shared_at,rating:Number(a.rating)||0,reviewCount:Number(a.review_count)||0
+  }));
   if(!records.length){if(list)list.innerHTML='<div class="nearby-card"><strong>No approved Amin profiles yet.</strong><small>Only approved and active Amin profiles appear here. New registrations must be approved by Admin first.</small></div>';nearbySetStatus("No approved and active Amin profiles are available yet.");return;}
   nearbySetStatus("Finding approved Amin areas from Supabase…");
   const found=[];
   for(const a of records){
-   const hasExactGps=!!a.locationSharedAt&&Number.isFinite(Number(a.latitude))&&Number.isFinite(Number(a.longitude));
+   const hasExactGps=!!a.locationSharedAt&&a.latitude!==null&&a.latitude!==undefined&&a.longitude!==null&&a.longitude!==undefined&&Number.isFinite(Number(a.latitude))&&Number.isFinite(Number(a.longitude));
    const point=hasExactGps?[Number(a.latitude),Number(a.longitude)]:await nearbyGeocodeAmin(a);
    if(!point)continue;
    const marker=L.marker(point,{icon:nearbyAminIcon()}).addTo(nearbyMapInstance).bindPopup("<strong>"+safe(a.name)+"</strong><br>"+safe([a.place,a.district,a.state].filter(Boolean).join(", "))+"<br><small>"+(hasExactGps?"Amin voluntarily shared GPS":"Approximate registered area")+"</small>");
@@ -2477,20 +2484,27 @@ async function refreshNearbyAmins(userLat=null,userLng=null){
  }
 }
 
+function publicSocialLink(url,label,allowedHosts){
+ try{const parsed=new URL(String(url||""));if(parsed.protocol!=="https:"||!allowedHosts.includes(parsed.hostname.toLowerCase()))return "";return '<a class="btn btn-outline" href="'+safe(parsed.href)+'" target="_blank" rel="noopener noreferrer">'+label+'</a>';}catch(e){return "";}
+}
 async function openDirectoryAminProfile(profileId){
  const box=$("publicAminProfileContent");if(!box)return;
  go("publicAminProfile");box.innerHTML='<div class="list-item">Loading Amin profile…</div>';
  try{
   const client=window.myAminSupabase;if(!client)throw new Error("Secure profile connection is not ready.");
-  const {data:a,error}=await client.from("amin_profiles").select("profile_uid,user_id,display_name,phone,whatsapp,state,district,place,business_reference,experience,photo_path,services,account_status").eq("profile_uid",String(profileId)).eq("approval_status","approved").eq("account_status","active").maybeSingle();
+  const {data:a,error}=await client.rpc("get_public_amin_profile",{p_profile_uid:String(profileId)});
   if(error)throw error;if(!a)throw new Error("Approved Amin profile not found.");
-  const {data:reviews,error:reviewError}=await client.from("amin_reviews").select("rating,review,created_at").eq("amin_user_id",a.user_id).eq("is_visible",true).order("created_at",{ascending:false});
-  if(reviewError)throw reviewError;
-  const avg=reviews?.length?(reviews.reduce((n,r)=>n+(Number(r.rating)||0),0)/reviews.length).toFixed(1):"No ratings";
+  const reviews=Array.isArray(a.reviews)?a.reviews:[];
+  const avg=Number(a.review_count)>0?Number(a.rating).toFixed(1):"No ratings";
   const photo=a.photo_path?'<img src="'+safe(a.photo_path)+'" alt="Amin profile photo" style="width:104px;height:104px;object-fit:cover;border-radius:50%">':"";
   const phone=String(a.phone||"").replace(/[^0-9+]/g,""),wa=String(a.whatsapp||a.phone||"").replace(/[^0-9]/g,"");
   const services=Array.isArray(a.services)?a.services:[];
-  box.innerHTML='<article class="list-item">'+photo+'<h2>'+safe(a.display_name||"Amin")+'</h2><p>★ '+avg+(reviews?.length?' / 5 · '+reviews.length+' reviews':'')+'</p><p><strong>Profile ID:</strong> '+safe(a.profile_uid)+'</p><p>📍 '+safe([a.place,a.district,a.state].filter(Boolean).join(", "))+'</p><p><strong>Business reference:</strong> '+safe(a.business_reference||"Not provided")+'</p><p>'+safe(a.experience||"Description not provided.")+'</p>'+(services.length?'<p><strong>Services:</strong> '+services.map(safe).join(", ")+'</p>':"")+'<div class="amin-action-row">'+(phone?'<a class="btn btn-outline" href="tel:'+phone+'">Call Amin</a>':'<span>Phone number not provided</span>')+(wa?'<a class="btn btn-outline" target="_blank" rel="noopener" href="https://wa.me/'+wa+'">WhatsApp</a>':"")+'<button class="btn btn-green" type="button" onclick="prefillBooking(\''+safe(a.profile_uid)+'\')">Book this Amin</button></div><h3>Customer reviews</h3>'+(reviews?.length?reviews.map(r=>'<div class="nearby-card">★ '+safe(r.rating)+'/5 '+safe(r.review||"")+'</div>').join(""):'<p>No customer reviews yet.</p>')+'</article>';
+  const socials=[
+   publicSocialLink(a.instagram_url,"Instagram",["instagram.com","www.instagram.com"]),
+   publicSocialLink(a.facebook_url,"Facebook",["facebook.com","www.facebook.com","m.facebook.com"]),
+   publicSocialLink(a.youtube_url,"YouTube",["youtube.com","www.youtube.com","youtu.be"])
+  ].filter(Boolean).join("");
+  box.innerHTML='<article class="list-item">'+photo+'<h2>'+safe(a.display_name||"Amin")+'</h2><p>★ '+avg+(Number(a.review_count)>0?' / 5 · '+Number(a.review_count)+' reviews':'')+'</p><p><strong>Profile ID:</strong> '+safe(a.profile_uid)+'</p><p>📍 '+safe([a.place,a.district,a.state].filter(Boolean).join(", "))+'</p><p>'+safe(a.experience||"Description not provided.")+'</p>'+(services.length?'<p><strong>Services:</strong> '+services.map(safe).join(", ")+'</p>':"")+'<div class="amin-action-row">'+(phone?'<a class="btn btn-outline" href="tel:'+phone+'">Call Amin</a>':'<span>Phone number not provided</span>')+(wa?'<a class="btn btn-outline" target="_blank" rel="noopener" href="https://wa.me/'+wa+'">WhatsApp</a>':"")+'<button class="btn btn-green" type="button" onclick="prefillBooking(\''+safe(a.profile_uid)+'\')">Book this Amin</button></div>'+(socials?'<div class="amin-action-row">'+socials+'</div>':"")+'<h3>Customer reviews</h3>'+(reviews.length?reviews.map(r=>'<div class="nearby-card">★ '+safe(r.rating)+'/5 '+safe(r.review||"")+'</div>').join(""):'<p>No customer reviews yet.</p>')+'</article>';
  }catch(e){box.innerHTML='<div class="list-item">'+safe(e.message||"Could not load Amin profile.")+'</div>';}
 }
 
@@ -2502,20 +2516,19 @@ async function openQrAminProfile(){
  try{
   const client=window.myAminSupabase;
   if(!client) throw new Error("Secure profile connection is not ready. Please refresh and try again.");
-  const {data:amin,error}=await client.from("amin_profiles")
-   .select("profile_uid,display_name,phone,state,district,place,experience,photo_path,upi_id,upi_qr_path,services")
-   .eq("profile_uid",id).eq("approval_status","approved").maybeSingle();
-  if(error) throw error;
-  if(!amin){
+  const {data:amin,error}=await client.rpc("get_public_amin_profile",{p_profile_uid:id});
+   if(error) throw error;
+   if(!amin){
    box.innerHTML='<div class="list-item"><strong>Profile not found or not yet approved.</strong><p>This public profile QR works only after the Amin profile has been saved in MyAmin.com and approved by Admin.</p><p>Profile ID: '+safe(id)+'</p></div>';
    return;
   }
   const services=Array.isArray(amin.services)?amin.services:[];
-  const photo=amin.photo_path?'<img src="'+safe(amin.photo_path)+'" alt="Amin profile photo" style="width:92px;height:92px;object-fit:cover;border-radius:50%">':'';
-  const upi=amin.upi_id?'<p><strong>UPI ID:</strong> '+safe(amin.upi_id)+'</p><a class="btn btn-green" href="upi://pay?pa='+encodeURIComponent(amin.upi_id)+'&pn='+encodeURIComponent(amin.display_name||"Amin")+'&cu=INR">Pay Now</a>':'';
-  const qr=amin.upi_qr_path?'<p><img src="'+safe(amin.upi_qr_path)+'" alt="Amin payment QR" style="width:140px;height:140px;object-fit:contain;background:#fff;padding:6px;border-radius:8px"></p>':'';
-  box.innerHTML='<div class="list-item">'+photo+'<h3>'+safe(amin.display_name)+'</h3><p><strong>Profile ID:</strong> '+safe(amin.profile_uid)+'<br>📍 '+safe([amin.place,amin.district,amin.state].filter(Boolean).join(", "))+'<br>☎ '+safe(amin.phone||"Not provided")+'<br>'+safe(amin.experience||"Land service professional")+'</p>'+(services.length?'<p><strong>Services:</strong> '+services.map(safe).join(", ")+'</p>':'')+upi+qr+'</div>';
- }catch(error){
+   const photo=amin.photo_path?'<img src="'+safe(amin.photo_path)+'" alt="Amin profile photo" style="width:92px;height:92px;object-fit:cover;border-radius:50%">':'';
+   const upi=amin.upi_id?'<p><strong>UPI ID:</strong> '+safe(amin.upi_id)+'</p><a class="btn btn-green" href="upi://pay?pa='+encodeURIComponent(amin.upi_id)+'&pn='+encodeURIComponent(amin.display_name||"Amin")+'&cu=INR">Pay Now</a>':'';
+   const qr=amin.upi_qr_path?'<p><img src="'+safe(amin.upi_qr_path)+'" alt="Amin payment QR" style="width:140px;height:140px;object-fit:contain;background:#fff;padding:6px;border-radius:8px"></p>':'';
+   const socials=[publicSocialLink(amin.instagram_url,"Instagram",["instagram.com","www.instagram.com"]),publicSocialLink(amin.facebook_url,"Facebook",["facebook.com","www.facebook.com","m.facebook.com"]),publicSocialLink(amin.youtube_url,"YouTube",["youtube.com","www.youtube.com","youtu.be"])].filter(Boolean).join("");
+   box.innerHTML='<div class="list-item">'+photo+'<h3>'+safe(amin.display_name)+'</h3><p><strong>Profile ID:</strong> '+safe(amin.profile_uid)+'<br>📍 '+safe([amin.place,amin.district,amin.state].filter(Boolean).join(", "))+'<br>☎ '+safe(amin.phone||"Not provided")+'<br>'+safe(amin.experience||"Land service professional")+'</p>'+(services.length?'<p><strong>Services:</strong> '+services.map(safe).join(", ")+'</p>':'')+upi+qr+(socials?'<div class="amin-action-row">'+socials+'</div>':'')+'</div>';
+  }catch(error){
   console.error("Public Amin profile load failed",error);
   box.innerHTML='<div class="list-item"><strong>Could not load this Amin profile.</strong><p>Please check your internet connection and scan again.</p><p>Profile ID: '+safe(id)+'</p></div>';
  }
@@ -3201,7 +3214,7 @@ footer .logo-image{filter:drop-shadow(0 4px 9px rgba(0,0,0,.18))}
 @media(prefers-reduced-motion:reduce){#searchDialog .search-result:before{transition:none}}
 </style>
 
-<script type="module" src="supabase-auth.js?v=20261111-secure-amin-registration-fix"></script>
+<script type="module" src="supabase-auth.js?v=20261111-public-amin-directory-social-fix"></script>
 <script type="module" src="booking-calls.js?v=20261111-booking-calls-v1"></script>
 <style>
 .customer-menu-card{gap:9px;padding:17px 14px;border:1px solid #dcebe2;background:linear-gradient(145deg,#fff 0%,#f0f8f2 100%);border-radius:20px;box-shadow:0 10px 26px rgba(18,59,50,.08)}
