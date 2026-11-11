@@ -1350,7 +1350,7 @@ async function openCustomerAccount(){
    }catch(_){isAdmin=false;}
   }
   const roleBadge=$("customerAccountRole");if(roleBadge)roleBadge.textContent=isAdmin?"Admin · Owner":"Customer account";
-  const adminLink=$("customerAdminDashboardLink");if(adminLink){adminLink.hidden=!isAdmin;adminLink.style.display=isAdmin?"inline-flex":"none";adminLink.setAttribute("aria-hidden",String(!isAdmin));adminLink.tabIndex=isAdmin?0:-1;if(!isAdmin)adminLink.remove();}
+  const adminLink=$("customerAdminDashboardLink");if(adminLink){adminLink.hidden=!isAdmin;adminLink.style.display=isAdmin?"inline-flex":"none";adminLink.setAttribute("aria-hidden",String(!isAdmin));adminLink.tabIndex=isAdmin?0:-1;}
   let p=null,profileLoadWarning="";
   try{const result=await client.from("user_profiles").select("full_name,phone,district,photo_url").eq("id",user.id).maybeSingle();if(result.error)throw result.error;p=result.data||null;}
   catch(error){profileLoadWarning="Profile details could not sync from Supabase: "+(error.message||"permission or network error");}
