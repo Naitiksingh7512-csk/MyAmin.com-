@@ -2,7 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.105.0";
 
 const wait = ms => new Promise(r => setTimeout(r, ms));
 let sb, user, amin, activeCallId = "", pc = null, localStream = null, remoteStream = null;
-let callChannel = null, signalChannel = null, videoEnabled = false, refreshBusy = false;
+let callChannel = null, signalChannel = null, videoEnabled = false, refreshBusy = false, seenSignalIds = new Set();
 const $ = id => document.getElementById(id);
 const safe = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const toast = message => { const el=$("toast"); if(el){el.textContent=message;el.style.display="block";setTimeout(()=>el.style.display="none",3200);} else alert(message); };
@@ -129,17 +129,23 @@ async function joinCall(call){
   pc.onconnectionstatechange=()=>{$("myAminCallStatus").textContent="Call status: "+pc.connectionState;if(["failed","disconnected","closed"].includes(pc.connectionState)&&pc.connectionState==="failed")toast("Network connection failed. Please try again.");};
   if(signalChannel)await sb.removeChannel(signalChannel);
   signalChannel=sb.channel("booking-call-signals-"+call.id);
-  signalChannel.on("postgres_changes",{event:"INSERT",schema:"public",table:"booking_call_signals",filter:"call_id=eq."+call.id},async event=>{
-   const sig=event.new;if(sig.sender_user_id===user.id||!pc)return;
+  const handleSignal=async sig=>{
+   if(!sig||seenSignalIds.has(sig.id))return;seenSignalIds.add(sig.id);
+   if(sig.sender_user_id===user.id||!pc)return;
    try{
     if(sig.signal_type==="offer"){await pc.setRemoteDescription(sig.payload);const answer=await pc.createAnswer();await pc.setLocalDescription(answer);await insertSignal("answer",pc.localDescription.toJSON());}
     else if(sig.signal_type==="answer"){await pc.setRemoteDescription(sig.payload);}
     else if(sig.signal_type==="ice-candidate"){await pc.addIceCandidate(sig.payload);}
     else if(sig.signal_type==="hangup"){cleanupCall();}
    }catch(err){console.error("Call signal error",err);}
-  }).subscribe(async status=>{
-   if(status==="SUBSCRIBED"&&user.id===call.caller_user_id&&pc?.signalingState==="stable"){
-    const offer=await pc.createOffer();await pc.setLocalDescription(offer);await insertSignal("offer",pc.localDescription.toJSON());
+  };
+  signalChannel.on("postgres_changes",{event:"INSERT",schema:"public",table:"booking_call_signals",filter:"call_id=eq."+call.id},event=>handleSignal(event.new)).subscribe(async status=>{
+   if(status==="SUBSCRIBED"){
+    const {data:existing,error:signalError}=await sb.from("booking_call_signals").select("id,sender_user_id,signal_type,payload,created_at").eq("call_id",call.id).neq("sender_user_id",user.id).order("created_at",{ascending:true});
+    if(!signalError)for(const sig of existing||[])await handleSignal(sig);
+    if(user.id===call.caller_user_id&&pc?.signalingState==="stable"){
+     const offer=await pc.createOffer();await pc.setLocalDescription(offer);await insertSignal("offer",pc.localDescription.toJSON());
+    }
    }
   });
  }catch(e){$("myAminCallStatus").textContent=e.message||"Microphone/camera permission failed.";toast("Call could not start: "+(e.message||"Check microphone/camera permission."));}
