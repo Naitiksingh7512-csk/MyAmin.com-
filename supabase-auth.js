@@ -95,7 +95,7 @@ const showAuthState = async (session) => {
   let a = null;
   try {
     const result = await supabase.from("amin_profiles")
-      .select("profile_uid,display_name,phone,state,district,place,approval_status,photo_path,upi_id,upi_qr_path")
+      .select("profile_uid,display_name,phone,state,district,place,approval_status,account_status,photo_path,upi_id,upi_qr_path")
       .eq("user_id", session.user.id).maybeSingle();
     if (result.error) throw result.error;
     a = result.data || null;
