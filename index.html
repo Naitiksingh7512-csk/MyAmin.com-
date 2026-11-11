@@ -1013,7 +1013,7 @@ header{
   <!-- AMIN REGISTRATION -->
   <section id="registerAmin" class="panel">
     <h2>👷 Amin Registration | अमीन रजिस्ट्रेशन</h2>
-    <p data-en="Create a secure Amin account with email and password. Your application and profile details are saved online for review; public listing starts only after approval." data-hi="ईमेल और पासवर्ड से सुरक्षित Amin अकाउंट बनाएँ। आपकी प्रोफ़ाइल ऑनलाइन जाँच के लिए सेव होगी और अनुमति मिलने के बाद ही सार्वजनिक होगी।">Submit your details for review. Your application is currently saved on this device only. Online review and public publishing will start after secure account services are connected.</p>
+    <p data-en="Create a secure Amin account with email and password. Your application and profile details are saved online for review; public listing starts only after approval." data-hi="ईमेल और पासवर्ड से सुरक्षित Amin अकाउंट बनाएँ। आपकी प्रोफ़ाइल ऑनलाइन जाँच के लिए सेव होगी और अनुमति मिलने के बाद ही सार्वजनिक होगी।">Create your secure Amin account and submit your profile for review. Your application is saved in Supabase; public listing begins only after Admin approval.</p>
     <form id="aminForm">
       <div class="form-grid">
         <div class="field"><label for="regName">पूरा नाम *</label><input id="regName" autocomplete="name" maxlength="80" required><small>आपकी Profile ID: <strong id="regProfileIdPreview">पहला नाम@12345678</strong></small></div>
@@ -1143,7 +1143,7 @@ header{
     </form>
     <div id="reportMessage" class="success"></div>
     <div class="panel" style="margin-top:16px"><div class="panel-head"><h3>My Support Conversations / मेरी सहायता बातचीत</h3><button class="btn btn-outline" type="button" onclick="window.loadMySupportTickets?.()">Refresh</button></div><div id="mySupportTickets" class="list"><p>Login to view your support replies.</p></div></div>
-    <div class="notice" data-en="Reports are stored securely in Supabase and visible to the Admin team. You must be logged in to submit a report." data-hi="रिपोर्ट Supabase में सुरक्षित सेव होती है और Admin टीम उसे देख सकती है। रिपोर्ट भेजने के लिए लॉगिन जरूरी है।">रिपोर्ट अभी इसी डिवाइस के ब्राउज़र में सेव होती है। अभी सर्वर या ईमेल पर नहीं भेजी जाती।</div>
+    <div class="notice" data-en="Reports are stored securely in Supabase and visible to the Admin team. You must be logged in to submit a report." data-hi="रिपोर्ट Supabase में सुरक्षित सेव होती है और Admin टीम उसे देख सकती है। रिपोर्ट भेजने के लिए लॉगिन जरूरी है।">रिपोर्ट Supabase में सुरक्षित सेव होती है और Admin टीम उसे देख सकती है। रिपोर्ट भेजने के लिए लॉगिन जरूरी है।</div>
   </section>
 
   <!-- HELP -->
@@ -1151,7 +1151,7 @@ header{
     <h2>💬 Help & Support | सहायता</h2>
     <div class="grid">
       <div class="card"><div class="card-icon">📘</div><h3>Booking Help</h3><p>ग्राहक लॉगिन करें, बुकिंग फ़ॉर्म भरें और अमीन से तारीख की पुष्टि लें।</p><button class="btn btn-light" onclick="go('booking')">Booking खोलें</button></div>
-      <div class="card"><div class="card-icon">👷</div><h3>Amin Help</h3><p>अमीन बनने के लिए रजिस्ट्रेशन फ़ॉर्म भरें। ऑनलाइन प्रोफ़ाइल जाँच और स्वीकृति सेवा जुड़ना अभी बाकी है।</p><button class="btn btn-light" onclick="go('registerAmin')">Register</button></div>
+      <div class="card"><div class="card-icon">👷</div><h3>Amin Help</h3><p>अमीन बनने के लिए ईमेल और पासवर्ड से अकाउंट बनाकर प्रोफ़ाइल सबमिट करें। Admin की मंज़ूरी के बाद प्रोफ़ाइल सार्वजनिक होगी।</p><button class="btn btn-light" onclick="go('registerAmin')">Register</button></div>
       <div class="card"><div class="card-icon">🛠️</div><h3>Report a Problem</h3><p>समस्या और सुझाव वेबसाइट टीम के लिए दर्ज करें।</p><button class="btn btn-light" onclick="go('report')">Report</button></div>
     </div>
   </section>
