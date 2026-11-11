@@ -784,9 +784,11 @@ async function setAccountStatus(userId,status){
   const client=window.myAminSupabase;
   const {data,error}=await client.functions.invoke("admin-team",{body:{action:"set_account_status",user_id:userId,status}});
   if(error)throw error;if(!data?.success)throw new Error(data?.error||"Account status update failed.");
-  logAction("Account "+action,userId);notify(status==="blocked"?"Account blocked.":"Account unblocked.");
-  await Promise.all([renderCustomers(),loadAdminBackend(),loadAccountStats()]);
- }catch(e){notify("Account status update failed: "+(e.message||"Unknown error"));}
+ }catch(e){notify("Account status update failed: "+(e.message||"Unknown error"));return;}
+ logAction("Account "+action,userId);
+ notify(status==="blocked"?"Account blocked.":"Account unblocked.");
+ try{await Promise.all([renderCustomers(),loadAdminBackend(),loadAccountStats()]);}
+ catch(e){notify("Account status was saved, but the dashboard refresh failed: "+(e.message||"Unknown error"));}
 }
 async function deleteAccount(userId,name){
  if(!confirm("Permanently delete "+name+"'s account and associated profile, booking, call and message records? This cannot be undone."))return;
@@ -802,9 +804,11 @@ async function deleteAccount(userId,name){
    throw new Error(detail);
   }
   if(!data?.success)throw new Error(data?.error||"Account deletion failed.");
-  logAction("Account permanently deleted",name+" · "+userId);notify("Account permanently deleted.");
-  await Promise.all([renderCustomers(),loadAdminBackend(),loadAccountStats()]);
- }catch(e){notify("Account deletion failed: "+(e.message||"Unknown error"));}
+ }catch(e){notify("Account deletion failed: "+(e.message||"Unknown error"));return;}
+ logAction("Account permanently deleted",name+" · "+userId);
+ notify("Account permanently deleted.");
+ try{await Promise.all([renderCustomers(),loadAdminBackend(),loadAccountStats()]);}
+ catch(e){notify("Account was deleted successfully, but the dashboard could not refresh: "+(e.message||"Unknown error"));}
 }
 function renderBookings(){
  const q=$("bookingSearch").value.toLowerCase(),f=$("bookingFilter").value,d=allData();
