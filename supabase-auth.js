@@ -325,6 +325,11 @@ const handleAminSignup = async (event) => {
       if (profileError) throw profileError;
     }
     await showAuthState(data.session);
+    // Prepare the linked Amin ID card from the newly saved server profile.
+    if ($("idName")) $("idName").value = name;
+    if ($("idNumber")) $("idNumber").value = uid;
+    if ($("idRole") && !$("idRole").value.trim()) $("idRole").value = "Land Measurement Service";
+    if ($("idForm")) $("idForm").requestSubmit();
     say("aminRegMessage", "Amin profile saved. Profile ID: " + uid + " · Status: " + (previousProfile?.approval_status || "pending") + ".");
   } catch (e) { say("aminRegMessage", e.message || "Amin registration असफल हुआ।", true); }
   finally { submit.disabled = false; }
