@@ -1304,7 +1304,36 @@ $("menuBtn").addEventListener("click",openMenu);
 $("openCustomerAccount")?.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();openCustomerAccount();});
  $("customerMenuProfile")?.addEventListener("click",e=>{if(e.target.closest("button"))return;openCustomerAccount();});
 $("closeCustomerAccount")?.addEventListener("click",()=>$("customerAccountDialog").classList.remove("show"));
- $("customerAdminDashboardLink")?.addEventListener("click",e=>{e.preventDefault();$("customerAccountDialog")?.classList.remove("show");const ownerId="24dd2630-4624-46ee-8c54-37b9dc8fcd64";if(sessionStorage.getItem("myamin_admin_passkey_verified")===ownerId){window.location.href="ma-control-9f2c7a61b4e8.html";return;}const section=$("adminLogin");if(section){section.classList.add("active");section.scrollIntoView({behavior:"smooth",block:"start"});setTimeout(()=>$("adminEmail")?.focus({preventScroll:true}),350);}else{window.location.hash="adminLogin";}});
+ $("customerAdminDashboardLink")?.addEventListener("click",async e=>{
+  e.preventDefault();
+  $("customerAccountDialog")?.classList.remove("show");
+  const ownerId="24dd2630-4624-46ee-8c54-37b9dc8fcd64";
+  const client=window.myAminSupabase;
+  const section=$("adminLogin");
+  const showLogin=()=>{if(section){section.classList.add("active");section.scrollIntoView({behavior:"smooth",block:"start"});setTimeout(()=>$("adminEmail")?.focus({preventScroll:true}),350);}else{window.location.hash="adminLogin";}};
+  try{
+    if(!client?.auth)throw new Error("Secure sign-in is not ready. Refresh the page and try again.");
+    const {data:{user},error:userError}=await client.auth.getUser();
+    if(userError)throw userError;
+    if(!user||user.id!==ownerId||user.app_metadata?.role!=="admin"){showLogin();return;}
+    const {data:passkeyData,error:passkeyError}=await client.auth.signInWithPasskey();
+    if(passkeyError)throw passkeyError;
+    if(passkeyData?.user?.id!==ownerId||passkeyData?.user?.app_metadata?.role!=="admin"){
+      sessionStorage.removeItem("myamin_admin_passkey_verified");
+      await client.auth.signOut();
+      throw new Error("The passkey did not verify the Owner Admin account.");
+    }
+    const {data:membership,error:membershipError}=await client.from("admin_team_members").select("role,status").eq("user_id",ownerId).maybeSingle();
+    if(membershipError)throw membershipError;
+    if(membership?.role!=="admin"||membership?.status!=="active")throw new Error("Active Owner Admin membership could not be confirmed.");
+    sessionStorage.setItem("myamin_admin_passkey_verified",ownerId);
+    window.location.href="ma-control-9f2c7a61b4e8.html";
+  }catch(error){
+    sessionStorage.removeItem("myamin_admin_passkey_verified");
+    const message="Touch ID / Passkey verification failed. Admin Station was not opened. "+(error?.message||"Try again.");
+    if(typeof toast==="function")toast(message);else if($("customerAccountMessage"))$("customerAccountMessage").textContent=message;else alert(message);
+  }
+});
 $("customerAccountDialog")?.addEventListener("click",e=>{if(e.target===$("customerAccountDialog"))$("customerAccountDialog").classList.remove("show")});
 $("saveCustomerAccount")?.addEventListener("click",saveCustomerAccount);
 $("customerPhotoChoose")?.addEventListener("click",()=>$("customerPhotoInput")?.click());
