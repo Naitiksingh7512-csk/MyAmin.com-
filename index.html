@@ -1644,7 +1644,7 @@ document.querySelectorAll(".account-detail-grid>div").forEach((el,index)=>{
   b.addEventListener("click",async()=>{const a=read(DB.aminProfile,null);if(!a)return;const key=labels[index],columns=["phone","whatsapp","district","state","place","business_reference"],value=prompt("Edit "+keys[index],a[key]||"");if(value===null)return;try{const profile=await updateAminProfileRemote({[columns[index]]:value.trim()||null});a[key]=value.trim();if(key==="businessId")a.businessId=profile.business_reference||"";save(DB.aminProfile,a);save(DB.amins,read(DB.amins,[]).map(x=>x.profileId===a.profileId?{...x,[key]:a[key]}:x));openAminAccount();refreshAminMenuProfile();toast("Account detail saved to Supabase.");}catch(err){toast("Update failed: "+(err.message||"Unknown error"));}});el.appendChild(b);
 });
 $("aminMenuProfile").addEventListener("click",openAminAccount);$("openAminAccount").addEventListener("click",openAminAccount);$("closeAminAccount").addEventListener("click",()=>$("aminAccountDialog").classList.remove("show"));$("aminAccountDialog").addEventListener("click",e=>{if(e.target===$("aminAccountDialog"))$("aminAccountDialog").classList.remove("show");});
-$("editAminProfile").addEventListener("click",()=>{const a=read(DB.aminProfile,null);if(!a)return;$("aminAccountDialog").classList.remove("show");go("registerAmin");$("regName").value=a.name||"";$("regPhone").value=a.phone||"";$("regWhatsApp").value=a.whatsapp||"";$("regBusinessId").value=a.businessId||"";$("regUpiId").value=a.upiId||"";$("regState").value=a.state||"Bihar";$("regDistrict").value=a.district||"";$("regPlace").value=a.place||"";$("regDescription").value=a.description||"";$("regInstagram").value=a.instagram||"";$("regFacebook").value=a.facebook||"";$("regYouTube").value=a.youtube||"";});
+$("editAminProfile").addEventListener("click",()=>{const a=read(DB.aminProfile,null);if(!a)return;$("aminAccountDialog").classList.remove("show");go("registerAmin");$("regName").value=a.name||"";$("regPhone").value=a.phone||"";$("regWhatsApp").value=a.whatsapp||"";$("regBusinessId").value=a.businessId||"";$("regUpiId").value=a.upiId||"";$("regState").value=a.state||"Bihar";$("regDistrict").value=a.district||"";$("regPlace").value=a.place||"";$("regDescription").value=a.description||"";$("regServices").value=(a.services||[]).join(", ");$("regInstagram").value=a.instagram||"";$("regFacebook").value=a.facebook||"";$("regYouTube").value=a.youtube||"";});
 
 /* Show the existing ID card design from the Amin profile dashboard. */
 $("openAminProfileIdCard")?.addEventListener("click",()=>{
@@ -3214,7 +3214,7 @@ footer .logo-image{filter:drop-shadow(0 4px 9px rgba(0,0,0,.18))}
 @media(prefers-reduced-motion:reduce){#searchDialog .search-result:before{transition:none}}
 </style>
 
-<script type="module" src="supabase-auth.js?v=20261111-public-amin-directory-social-fix"></script>
+<script type="module" src="supabase-auth.js?v=20261111-public-profile-edit-fix"></script>
 <script type="module" src="booking-calls.js?v=20261111-booking-calls-v1"></script>
 <style>
 .customer-menu-card{gap:9px;padding:17px 14px;border:1px solid #dcebe2;background:linear-gradient(145deg,#fff 0%,#f0f8f2 100%);border-radius:20px;box-shadow:0 10px 26px rgba(18,59,50,.08)}
