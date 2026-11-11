@@ -2,7 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.105.0";
 
 const wait = ms => new Promise(r => setTimeout(r, ms));
 let sb, user, amin, activeCallId = "", pc = null, localStream = null, remoteStream = null;
-let callChannel = null, signalChannel = null, videoEnabled = false, refreshBusy = false, seenSignalIds = new Set();
+let callChannel = null, signalChannel = null, videoEnabled = false, refreshBusy = false, seenSignalIds = new Set(), pendingIceCandidates = [];
 const $ = id => document.getElementById(id);
 const safe = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const toast = message => { const el=$("toast"); if(el){el.textContent=message;el.style.display="block";setTimeout(()=>el.style.display="none",3200);} else alert(message); };
@@ -133,9 +133,9 @@ async function joinCall(call){
    if(!sig||seenSignalIds.has(sig.id))return;seenSignalIds.add(sig.id);
    if(sig.sender_user_id===user.id||!pc)return;
    try{
-    if(sig.signal_type==="offer"){await pc.setRemoteDescription(sig.payload);const answer=await pc.createAnswer();await pc.setLocalDescription(answer);await insertSignal("answer",pc.localDescription.toJSON());}
-    else if(sig.signal_type==="answer"){await pc.setRemoteDescription(sig.payload);}
-    else if(sig.signal_type==="ice-candidate"){await pc.addIceCandidate(sig.payload);}
+    if(sig.signal_type==="offer"){await pc.setRemoteDescription(sig.payload);for(const candidate of pendingIceCandidates.splice(0))await pc.addIceCandidate(candidate);const answer=await pc.createAnswer();await pc.setLocalDescription(answer);await insertSignal("answer",pc.localDescription.toJSON());}
+    else if(sig.signal_type==="answer"){await pc.setRemoteDescription(sig.payload);for(const candidate of pendingIceCandidates.splice(0))await pc.addIceCandidate(candidate);}
+    else if(sig.signal_type==="ice-candidate"){if(pc.remoteDescription)await pc.addIceCandidate(sig.payload);else pendingIceCandidates.push(sig.payload);}
     else if(sig.signal_type==="hangup"){cleanupCall();}
    }catch(err){console.error("Call signal error",err);}
   };
