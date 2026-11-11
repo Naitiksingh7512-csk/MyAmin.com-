@@ -844,6 +844,7 @@ header{
 </style>
 
 <style id="owner-admin-link-visibility-fix">#customerAdminDashboardLink[hidden]{display:none!important}</style>
+<style id="hide-internal-auth-email">#customerAccountEmail{display:none!important}</style>
 </head>
 
 <body>
@@ -1351,7 +1352,7 @@ document.querySelectorAll("[data-action='logout']").forEach(button=>{
   button.addEventListener("click",()=>{logout();closeMenu();});
 });
 function refreshAminMenuProfile(){const a=read(DB.aminProfile,null),b=$("aminMenuProfile");if(!b)return;b.style.display=a?"flex":"none";if(a){$("aminMenuProfileName").textContent=a.name;$("aminMenuProfileId").textContent=a.profileId;$("aminMenuAvatar").src=a.photo||"";$("aminMenuAvatar").hidden=!a.photo;$("aminMenuAvatarFallback").hidden=!!a.photo;}}
-function refreshCustomerMenuProfile(){const u=read(DB.user,null),b=$("customerMenuProfile");if(!b)return;b.style.display=u?"flex":"none";if(u){const name=u.name||u.full_name||u.username||u.email||"Customer";$("customerMenuProfileName").textContent=name;$("customerMenuProfileEmail").textContent=u.username?"Username: "+u.username:(u.email||"Customer account");const img=$("customerMenuAvatar"),fallback=$("customerMenuAvatarFallback"),photo=u.photo||u.photo_url||u.avatar_url||"";if(img){img.onload=()=>{img.hidden=false;if(fallback)fallback.hidden=true;};img.onerror=()=>{img.hidden=true;if(fallback)fallback.hidden=false;};img.hidden=!photo;if(photo)img.src=photo;else img.removeAttribute("src");}if(fallback)fallback.hidden=!photo;}}
+function refreshCustomerMenuProfile(){const u=read(DB.user,null),b=$("customerMenuProfile");if(!b)return;b.style.display=u?"flex":"none";if(u){const name=u.name||u.full_name||u.username||u.email||"Customer";$("customerMenuProfileName").textContent=name;$("customerMenuProfileEmail").textContent=u.username?"Username: "+u.username:"Customer account";const img=$("customerMenuAvatar"),fallback=$("customerMenuAvatarFallback"),photo=u.photo||u.photo_url||u.avatar_url||"";if(img){img.onload=()=>{img.hidden=false;if(fallback)fallback.hidden=true;};img.onerror=()=>{img.hidden=true;if(fallback)fallback.hidden=false;};img.hidden=!photo;if(photo)img.src=photo;else img.removeAttribute("src");}if(fallback)fallback.hidden=!photo;}}
 refreshCustomerMenuProfile();
 async function openCustomerAccount(){
  const client=window.myAminSupabase;
@@ -1383,7 +1384,7 @@ async function openCustomerAccount(){
   const district=p?.district||local.district||meta.district||"";
   const photo=p?.photo_url||local.photo||meta.avatar_url||meta.photo_url||"";
   $("customerAccountName").textContent=name;
-  $("customerAccountEmail").textContent=user.email|| (username?"Username: "+username:"Customer account");
+  $("customerAccountEmail").textContent="";
   $("customerAccountNameInput").value=name;
   $("customerAccountPhoneInput").value=phone;
   $("customerAccountDistrictInput").value=district;
