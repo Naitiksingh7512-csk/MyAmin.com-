@@ -57,7 +57,7 @@ const renderPasskeyControls = (session) => {
       const { data, error } = await supabase.auth.registerPasskey();
       if (error) throw error;
       // Registration completed through the device's biometric/passkey prompt.
-      sessionStorage.setItem("myamin_admin_passkey_verified", session.user.id);
+      sessionStorage.setItem("myamin_admin_passkey_verified", session.user.id + ":" + Date.now());
       const details = $("adminVerifiedDetails");
       if (details) details.hidden = false;
       say("adminLoginMessage", "Touch ID / Passkey सफलतापूर्वक register हो गई। Admin Dashboard खुल रहा है…");
@@ -367,7 +367,7 @@ const handleAdminLogin = async (event) => {
     await supabase.auth.signOut();
     throw new Error("Passkey के बाद Admin verification असफल हुआ।");
   }
-  sessionStorage.setItem("myamin_admin_passkey_verified", user.id);
+  sessionStorage.setItem("myamin_admin_passkey_verified", user.id + ":" + Date.now());
   if (message) { message.textContent = "Password और Touch ID / Passkey verified हैं। Admin Dashboard खोल सकते हैं।"; message.style.display = "block"; message.style.color = ""; }
   if (verified) verified.hidden = false;
   if (verifiedDetails) verifiedDetails.hidden = false;
