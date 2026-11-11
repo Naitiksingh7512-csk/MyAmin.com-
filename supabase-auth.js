@@ -297,6 +297,8 @@ const handleAminSignup = async (event) => {
     const photo = await uploadPublicAsset(userId, "profile", $("regPhoto").files[0]) || previousProfile?.photo_path || null;
     const upiQr = await uploadPublicAsset(userId, "upi-qr", $("regUpiQr").files[0]) || previousProfile?.upi_qr_path || null;
     const uid = previousProfile?.profile_uid || profileId(name);
+    const services = Array.from(new Set(($("regServices")?.value || "").split(",").map(value => value.trim()).filter(Boolean))).slice(0, 20);
+    if (services.some(value => value.length > 80)) throw new Error("हर सेवा का नाम 80 अक्षरों से छोटा रखें।");
     const record = {
       user_id: userId, profile_uid: uid, display_name: name, phone,
       whatsapp: $("regWhatsApp").value.trim() || null,
@@ -304,7 +306,7 @@ const handleAminSignup = async (event) => {
       place: $("regPlace").value.trim(),
       business_reference: $("regBusinessId").value.trim() || null,
       experience: $("regDescription").value.trim() || previousProfile?.experience || null,
-      services: previousProfile?.services || [], photo_path: photo,
+      services: services.length ? services : (previousProfile?.services || []), photo_path: photo,
       upi_id: $("regUpiId").value.trim() || previousProfile?.upi_id || null,
       upi_qr_path: upiQr, approval_status: previousProfile?.approval_status || "pending"
     };
@@ -313,7 +315,7 @@ const handleAminSignup = async (event) => {
         action: "update_amin_profile", display_name: name, phone,
         whatsapp: $("regWhatsApp").value.trim(), state: $("regState").value.trim(),
         district: $("regDistrict").value.trim(), place: $("regPlace").value.trim(),
-        business_reference: $("regBusinessId").value.trim(), experience: $("regDescription").value.trim(), photo_path: photo,
+        business_reference: $("regBusinessId").value.trim(), experience: $("regDescription").value.trim(), services, photo_path: photo,
         upi_id: $("regUpiId").value.trim() || previousProfile.upi_id, upi_qr_path: upiQr
       }});
       if (profileError) throw profileError;
