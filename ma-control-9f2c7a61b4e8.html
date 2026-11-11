@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <style>html:not(.admin-ready) body{visibility:visible}.admin-boot-gate{position:fixed;inset:0;z-index:999990;display:grid;place-items:center;padding:24px;background:#f6f5ff;color:#202044;font:600 15px/1.5 system-ui;text-align:center}.admin-boot-gate>div{max-width:420px;padding:24px;border-radius:18px;background:white;box-shadow:0 12px 40px #20204422}.backend-status{display:inline-flex;align-items:center;border-radius:999px;padding:6px 10px;background:#e8f8ef;color:#12643b;font-size:12px;font-weight:700;margin-left:8px}</style>
-<script type="module" src="admin-guard.js?v=20261111-owner-only-v1"></script>
+<script type="module" src="admin-guard.js?v=20261111-passkey-data-gate"></script>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#073f30"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="googlebot" content="noindex,nofollow">
 <title>My Amin | Administration</title>
@@ -423,6 +423,7 @@ function customersFrom(bs){const map=new Map();bs.forEach(b=>{const key=String(b
 function allData(){return {amins:read(DB.amins,[]),bookings:read(DB.bookings,[]),reports:read(DB.reports,[]),activity:read(DB.activity,[])}}
 let adminBackendLoading=false;
 async function loadAdminBackend(){
+ if(!document.documentElement.classList.contains("admin-ready"))return;
  if(adminBackendLoading)return;adminBackendLoading=true;
  try{
   const client=window.myAminSupabase;if(!client)return;
@@ -444,8 +445,24 @@ async function loadAdminBackend(){
  }catch(e){const badge=document.getElementById("backendStatus");if(badge)badge.textContent="Backend error";notify("Supabase: "+(e.message||"Could not load live data"));}
  finally{adminBackendLoading=false;}
 }
+async function startAdminSupportRealtime(){
+ if(!document.documentElement.classList.contains("admin-ready"))return;
+ const client=window.myAminSupabase;if(!client)return;
+ const {data:{user},error}=await client.auth.getUser();
+ if(error||!user||user.app_metadata?.role!=="admin")return;
+ if(window.adminSupportRealtimeChannel)await client.removeChannel(window.adminSupportRealtimeChannel);
+ window.adminSupportRealtimeChannel=client.channel("myamin-admin-support-"+user.id)
+  .on("postgres_changes",{event:"*",schema:"public",table:"support_tickets"},()=>renderReports())
+  .on("postgres_changes",{event:"INSERT",schema:"public",table:"support_ticket_messages"},()=>{
+   document.querySelectorAll('[id^="ticket-chat-"]').forEach(box=>{
+    if(!box.hidden)openTicketConversation(box.id.slice("ticket-chat-".length));
+   });
+  })
+  .subscribe();
+}
+window.startAdminSupportRealtime=startAdminSupportRealtime;
 function initAdminBackend(){
-  let tries=0;const timer=setInterval(()=>{tries++;if(window.myAminSupabase){clearInterval(timer);loadAdminBackend();loadAdminCard();loadSecureTeamMembers();loadSecureTasks();loadSecureAttendance();loadWebsiteSettings();renderContentManager();loadServiceCategories();renderCustomerAddresses();}else if(tries>30)clearInterval(timer);},400);
+  let tries=0;const timer=setInterval(()=>{tries++;if(window.myAminSupabase&&document.documentElement.classList.contains("admin-ready")){clearInterval(timer);loadAdminBackend();loadAdminCard();loadSecureTeamMembers();loadSecureTasks();loadSecureAttendance();loadWebsiteSettings();renderContentManager();loadServiceCategories();renderCustomerAddresses();}else if(tries>150)clearInterval(timer);},400);
 }
 let adminCardPhotoPath="";
 const ADMIN_CARD_SETTING="main_admin_card";
@@ -726,7 +743,7 @@ $("downloadAdminCardSheet").addEventListener("click",downloadAdminCardPrintSheet
 
 ["adminCardName","adminCardRole","adminCardPhone","adminCardEmail"].forEach(id=>$(id).addEventListener("input",()=>renderAdminCardPreview({name:$("adminCardName").value,role:$("adminCardRole").value,phone:$("adminCardPhone").value,email:$("adminCardEmail").value,photo_url:$("adminCardPreviewPhoto").hidden?"":$("adminCardPreviewPhoto").src})));
 
-function refresh(){const d=allData(),bs=d.bookings;const completed=bs.filter(b=>String(b.status||"pending").toLowerCase()==="completed");$("totalAmins").textContent=d.amins.length;$("pendingAmins").textContent=d.amins.filter(a=>statusOf(a)==="pending").length;$("approvedAmins").textContent=d.amins.filter(a=>statusOf(a)==="approved").length;$("totalBookings").textContent=bs.length;loadAccountStats();$("overviewCompleted").textContent=completed.length;$("overviewReports").textContent=d.reports.length;renderApplications();renderDirectory();renderCustomers();renderBookings();renderReports();renderCommission();renderPayments();renderRecent(d);renderActivity();renderTeam();renderPaymentRequests();renderAminNotices();renderContentManager()}
+function refresh(){if(!document.documentElement.classList.contains("admin-ready"))return;const d=allData(),bs=d.bookings;const completed=bs.filter(b=>String(b.status||"pending").toLowerCase()==="completed");$("totalAmins").textContent=d.amins.length;$("pendingAmins").textContent=d.amins.filter(a=>statusOf(a)==="pending").length;$("approvedAmins").textContent=d.amins.filter(a=>statusOf(a)==="approved").length;$("totalBookings").textContent=bs.length;loadAccountStats();$("overviewCompleted").textContent=completed.length;$("overviewReports").textContent=d.reports.length;renderApplications();renderDirectory();renderCustomers();renderBookings();renderReports();renderCommission();renderPayments();renderRecent(d);renderActivity();renderTeam();renderPaymentRequests();renderAminNotices();renderContentManager()}
 function messageAmin(id){const amin=read(DB.amins,[]).find(a=>String(a.profileId||a.id)===String(id));if(!amin){notify(lang==="hi"?"अमीन नहीं मिला।":"Amin not found.");return}document.querySelectorAll(".tab").forEach(b=>{const active=b.dataset.tab==="paymentRequests";b.classList.toggle("active",active);if(active)b.click()});$("noticeAminSelect").value=String(amin.profileId||amin.id||"");$("noticeTitle").value="";$("noticeDescription").value="";$("noticeImageFile").value="";$("noticeImagePreview").hidden=true;$("noticeTitle").focus();notify(lang==="hi"?amin.name+" के लिए संदेश लिखें।": "Write a message for "+amin.name+".")}
 function renderApplications(){const q=$("applicationSearch").value.toLowerCase(),f=$("applicationFilter").value,d=allData(),list=d.amins.filter(a=>(f==="all"||statusOf(a)===f)&&[a.name,a.profileId,a.phone,a.district,a.place,a.state].join(" ").toLowerCase().includes(q));$("applicationRows").innerHTML=list.length?list.map(a=>{const st=statusOf(a),id=esc(a.profileId||a.id||"");return '<tr><td><div class="person">'+(a.photo?'<img class="avatar" src="'+esc(a.photo)+'" alt="">':'<span class="avatar">👤</span>')+'<div><strong>'+esc(a.name)+'</strong><small>'+id+'</small></div></div></td><td>'+esc(a.phone||"—")+'<br><small>'+esc(a.whatsapp||"")+'</small></td><td>'+esc([a.place,a.district,a.state].filter(Boolean).join(", "))+'</td><td>'+date(a.createdAt)+'</td><td><span class="pill '+st+'">'+tr(st)+'</span></td><td><div class="actions">'+(st!=="approved"?'<button class="btn primary" onclick="setAmin(\''+id+'\',\'approve\')">'+tr("approve")+'</button>':'')+(st!=="rejected"?'<button class="btn danger" onclick="setAmin(\''+id+'\',\'reject\')">'+tr("reject")+'</button>':'<button class="btn outline" onclick="setAmin(\''+id+'\',\'restore\')">'+tr("restore")+'</button>')+'<button class="btn soft" onclick="messageAmin(\''+id+'\')">'+(lang==="hi"?"Message":"Message") +'</button>'+'<button class="btn danger" onclick="deleteAmin(\''+id+'\')">'+(lang==="hi"?"Delete":"Delete")+'</button>'+(a.phone?'<a class="btn soft" href="tel:'+esc(a.phone)+'">Call</a>':'')+'</div></td></tr>'}).join(""):'<tr><td colspan="6"><div class="empty"><b>No applications found</b>New applications saved in Supabase will appear here.</div></td></tr>'}
 async function setAmin(id,action){
@@ -921,8 +938,8 @@ $("customerSearch").addEventListener("input",renderCustomers);
 ["bookingSearch","bookingFilter"].forEach(id=>$(id).addEventListener("input",renderBookings));
 $("refreshBtn").addEventListener("click",()=>{loadAdminBackend();notify(lang==="hi"?"Supabase से डेटा refresh हो रहा है।":"Refreshing data from Supabase.")});
 $("clearActivity").addEventListener("click",()=>{if(!confirm(lang==="hi"?"क्या इसी ब्राउज़र का गतिविधि इतिहास साफ़ करें?":"Clear activity history saved in this browser?"))return;write(DB.activity,[]);refresh()});
-window.addEventListener("storage",refresh);
-applyLanguage();refresh();initAdminBackend();
+window.addEventListener("storage",()=>{if(document.documentElement.classList.contains("admin-ready"))refresh();});
+applyLanguage();initAdminBackend();
 
 
 const AMIN_PAYMENT_NOTICES_KEY="myamin_amin_payment_notices_v1";
