@@ -9,7 +9,7 @@
   "theme_color": "#123b32",
   "icons": [
     {
-      "src": "assets/myamin-home-icon.svg",
+      "src": "assets/myamin-home-icon.svg?v=20261111-1",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
