@@ -476,6 +476,40 @@ document.addEventListener("DOMContentLoaded", () => {
   $("loginForm")?.addEventListener("submit", handleCustomerLogin, true);
   $("aminForm")?.addEventListener("submit", handleAminSignup, true);
   $("bookingForm")?.addEventListener("submit", handleBooking, true);
+  // Persist website reports as secure support tickets in Supabase.
+  const reportForm = $("reportForm");
+  if (reportForm) {
+    reportForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const button = reportForm.querySelector('button[type="submit"]');
+      const message = $("reportMessage");
+      const title = $("reportTitle")?.value.trim() || "";
+      const details = $("reportDetails")?.value.trim() || "";
+      const kind = $("reportType")?.value || "Other";
+      if (!title || !details) { say("reportMessage", "कृपया शीर्षक और पूरी जानकारी भरें।", true); return; }
+      if (button) { button.disabled = true; button.textContent = "रिपोर्ट भेजी जा रही है…"; }
+      try {
+        const user = await currentUser();
+        if (!user) throw new Error("रिपोर्ट भेजने के लिए पहले Customer Login करें।");
+        const { error } = await supabase.from("support_tickets").insert({
+          user_id: user.id,
+          subject: "[" + kind + "] " + title.slice(0, 180),
+          description: details.slice(0, 8000),
+          priority: kind === "Security Concern" ? "high" : "normal",
+          status: "open"
+        });
+        if (error) throw error;
+        reportForm.reset();
+        say("reportMessage", "रिपोर्ट Supabase में सुरक्षित सेव हो गई है। Admin/Support टीम इसे देख सकती है।");
+        if (typeof window.loadMySupportTickets === "function") await window.loadMySupportTickets();
+      } catch (error) {
+        say("reportMessage", error.message || "रिपोर्ट भेजी नहीं जा सकी।", true);
+      } finally {
+        if (button) { button.disabled = false; button.textContent = "रिपोर्ट सेव करें"; }
+      }
+    });
+  }
   $("adminLoginForm")?.addEventListener("submit", handleAdminLogin, true);
 
   $("loginForm")?.querySelector('button[onclick="logout()"]')?.addEventListener("click", window.logout);
