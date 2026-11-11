@@ -169,6 +169,6 @@ async function init(){
  sb=window.myAminSupabase;if(!sb)return;
  mountCallUi();await loadContext();await refreshCalls();await subscribeCalls();
  setInterval(()=>{if(user)refreshCalls();},8000);
- sb.auth.onAuthStateChange(async(_event,session)=>{if(session?.user?.id!==user?.id){cleanupCall();user=null;amin=null;videoEnabled=false;if(session?.user){await loadContext();await refreshCalls();await subscribeCalls();}}});
+ sb.auth.onAuthStateChange((_event,session)=>{if(session?.user?.id!==user?.id){setTimeout(async()=>{cleanupCall();user=null;amin=null;videoEnabled=false;if(session?.user){try{await loadContext();await refreshCalls();await subscribeCalls();}catch(e){console.error(e);}}},0);}});
 }
 init().catch(e=>console.error("My Amin booking calls:",e));
