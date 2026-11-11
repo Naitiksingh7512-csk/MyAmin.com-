@@ -2535,7 +2535,7 @@ async function openQrAminProfile(){
 }
 
 const nearbySearchInput=$("nearbyLocationQuery");if(nearbySearchInput)nearbySearchInput.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();searchNearbyLocation();}});
-openQrAminProfile();
+// QR profile loading is started after the secure Supabase client initializes.
 
 async function downloadAminIdCard(){
  const preview=$("idPreview");if(!preview||preview.style.display==="none")return;
