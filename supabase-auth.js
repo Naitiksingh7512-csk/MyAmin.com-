@@ -328,6 +328,8 @@ const handleAminSignup = async (event) => {
   finally { submit.disabled = false; }
 };
 
+const OWNER_ADMIN_USER_ID = "24dd2630-4624-46ee-8c54-37b9dc8fcd64";
+
 const handleAdminLogin = async (event) => {
  event.preventDefault();event.stopImmediatePropagation();
  const button=$("adminLoginForm")?.querySelector('button[type="submit"]'),message=$("adminLoginMessage"),verified=$("adminVerifiedPanel");
@@ -337,7 +339,9 @@ const handleAdminLogin = async (event) => {
   if(!username)throw new Error("अपना Customer username भरें।");
   const email=await customerAuthEmail(username);
   const {data,error}=await supabase.auth.signInWithPassword({email,password});if(error)throw error;
-  const user=data.user,trustedRole=user?.app_metadata?.role==="admin";
+  const user=data.user;
+  if(user?.id!==OWNER_ADMIN_USER_ID){await supabase.auth.signOut();throw new Error("यह Admin verification केवल Owner account Naitiksingh@7512-csk के लिए उपलब्ध है।");}
+  const trustedRole=user?.app_metadata?.role==="admin";
   const {data:member,error:memberError}=await supabase.from("admin_team_members").select("role,status").eq("user_id",user.id).maybeSingle();if(memberError)throw memberError;
   if(!trustedRole||member?.role!=="admin"||member?.status!=="active"){await supabase.auth.signOut();throw new Error("यह account Admin के रूप में verified नहीं है।");}
   const { data: savedPasskeys, error: passkeyListError } = await supabase.auth.passkey.list();
@@ -375,6 +379,10 @@ const verifyAdminOAuthSession = async (session) => {
   const panel = $("adminVerifiedPanel");
   try {
     const user = session?.user || await currentUser();
+    if (user?.id !== OWNER_ADMIN_USER_ID) {
+      await supabase.auth.signOut();
+      throw new Error("Admin verification is restricted to the Owner account Naitiksingh@7512-csk.");
+    }
     const { data: membership, error } = await supabase.from("admin_team_members")
       .select("role,status").eq("user_id", user.id).maybeSingle();
     if (error) throw error;
