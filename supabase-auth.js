@@ -227,7 +227,7 @@ const handleCustomerLogin = async (event) => {
   button.disabled = true;
   button.textContent = mode === "signup" ? "Creating account…" : "Logging in…";
   try {
-    const authEmail = mode === "login" && /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(username) ? username.toLowerCase() : await customerAuthEmail(username);
+    const authEmail = mode === "login" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(username) ? username.toLowerCase() : await customerAuthEmail(username);
     if (mode === "signup") {
       const { data, error } = await supabase.functions.invoke("customer-signup", {
         body: { username, password }
