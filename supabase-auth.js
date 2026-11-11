@@ -169,7 +169,7 @@ const ensureCustomerFields = () => {
   const grid = form.querySelector(".form-grid");
   if (!grid) return;
   grid.innerHTML = `
-    <div class="field full"><label for="customerUsername">Username or Amin Email / यूज़रनेम या Amin Email</label><input id="customerUsername" type="text" autocomplete="username" maxlength="160" placeholder="Naitik Singh@7512" required></div>
+    <div class="field full"><label for="customerUsername">Username / यूज़रनेम</label><input id="customerUsername" type="text" autocomplete="username" maxlength="160" placeholder="Naitik Singh@7512" required></div>
     <div class="field full"><label for="customerPassword">Password / पासवर्ड</label><div class="password-wrap"><input id="customerPassword" type="password" minlength="8" maxlength="72" autocomplete="new-password" required><button type="button" class="password-eye" data-target="customerPassword" aria-label="Show password">👁</button></div><small>कम-से-कम 8 characters.</small></div>`;
   const actions = form.querySelector(".form-actions");
   actions.innerHTML = '<button class="btn btn-green" type="submit">Create Account</button><button class="btn btn-outline" type="button" id="customerModeToggle">Already have an account? Login</button>';
@@ -179,6 +179,8 @@ const ensureCustomerFields = () => {
     mode = mode === "signup" ? "login" : "signup";
     $("customerPassword").autocomplete = mode === "login" ? "current-password" : "new-password";
     toggle.textContent = mode === "signup" ? "Already have an account? Login" : "Create a new account";
+    const usernameLabel = form.querySelector('label[for="customerUsername"]');
+    if (usernameLabel) usernameLabel.textContent = mode === "signup" ? "Username / यूज़रनेम" : "Username or Amin Email / यूज़रनेम या Amin Email";
     form.querySelector('button[type="submit"]').textContent = mode === "signup" ? "Create Account" : "Login";
     form.dataset.authMode = mode;
   });
