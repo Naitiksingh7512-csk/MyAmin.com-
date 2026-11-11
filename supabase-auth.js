@@ -42,6 +42,26 @@ const currentUser = async () => {
   if (error) throw error;
   return data.user;
 };
+let supportRealtimeChannel = null;
+let supportRealtimeUserId = "";
+const syncSupportRealtime = async (user) => {
+  const userId = user?.id || "";
+  if (userId === supportRealtimeUserId) return;
+  if (supportRealtimeChannel) {
+    await supabase.removeChannel(supportRealtimeChannel);
+    supportRealtimeChannel = null;
+  }
+  supportRealtimeUserId = userId;
+  if (!userId) return;
+  supportRealtimeChannel = supabase.channel("myamin-support-" + userId)
+    .on("postgres_changes", { event: "*", schema: "public", table: "support_tickets", filter: "user_id=eq." + userId }, () => {
+      if (typeof window.loadMySupportTickets === "function") window.loadMySupportTickets();
+    })
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "support_ticket_messages" }, () => {
+      if (typeof window.loadMySupportTickets === "function") window.loadMySupportTickets();
+    })
+    .subscribe();
+};
 const renderPasskeyControls = (session) => {
   const panel = $("adminVerifiedPanel");
   if (!panel || !session?.user || session.user.app_metadata?.role !== "admin") return;
@@ -73,6 +93,7 @@ const showAuthState = async (session) => {
   hideAuthStatus();
   if (!box) return;
   if (!session?.user) {
+    await syncSupportRealtime(null);
     box.textContent = "Secure account: signed out";
     if (typeof window.refreshCustomerMenuProfile === "function") window.refreshCustomerMenuProfile();
     renderPasskeyControls(null);
@@ -105,11 +126,13 @@ const showAuthState = async (session) => {
 
   if (p?.account_status === "blocked" || p?.account_status === "deleted" || a?.account_status === "blocked" || a?.account_status === "deleted") {
     await supabase.auth.signOut();
+    await syncSupportRealtime(null);
     box.textContent = "This account is blocked or inactive. Contact My Amin support.";
     if (typeof window.refreshCustomerMenuProfile === "function") window.refreshCustomerMenuProfile();
     return;
   }
 
+  await syncSupportRealtime(session.user);
   box.textContent = "Secure account: " + (p?.full_name || session.user.email) +
     " · " + (session.user.app_metadata?.role === "admin" ? "Admin / Owner" : (a ? "Amin" : "Customer"));
 
