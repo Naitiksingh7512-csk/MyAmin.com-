@@ -169,7 +169,7 @@ const ensureCustomerFields = () => {
   const grid = form.querySelector(".form-grid");
   if (!grid) return;
   grid.innerHTML = `
-    <div class="field full"><label for="customerUsername">Username / यूज़रनेम</label><input id="customerUsername" type="text" autocomplete="username" maxlength="160" placeholder="Naitik Singh@7512" required></div>
+    <div class="field full"><label for="customerUsername">Username or Amin Email / यूज़रनेम या Amin Email</label><input id="customerUsername" type="text" autocomplete="username" maxlength="160" placeholder="Naitik Singh@7512" required></div>
     <div class="field full"><label for="customerPassword">Password / पासवर्ड</label><div class="password-wrap"><input id="customerPassword" type="password" minlength="8" maxlength="72" autocomplete="new-password" required><button type="button" class="password-eye" data-target="customerPassword" aria-label="Show password">👁</button></div><small>कम-से-कम 8 characters.</small></div>`;
   const actions = form.querySelector(".form-actions");
   actions.innerHTML = '<button class="btn btn-green" type="submit">Create Account</button><button class="btn btn-outline" type="button" id="customerModeToggle">Already have an account? Login</button>';
@@ -227,7 +227,7 @@ const handleCustomerLogin = async (event) => {
   button.disabled = true;
   button.textContent = mode === "signup" ? "Creating account…" : "Logging in…";
   try {
-    const authEmail = await customerAuthEmail(username);
+    const authEmail = mode === "login" && /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(username) ? username.toLowerCase() : await customerAuthEmail(username);
     if (mode === "signup") {
       const { data, error } = await supabase.functions.invoke("customer-signup", {
         body: { username, password }
@@ -250,9 +250,10 @@ const handleCustomerLogin = async (event) => {
     if (!user) throw new Error("Login session verify नहीं हुआ।");
     localStorage.setItem("myamin_demo_user_v1", JSON.stringify({
       id: user.id,
-      name: user.user_metadata?.username || username,
-      username: user.user_metadata?.username || username,
-      phone: "", district: "", photo: "", email: user.user_metadata?.username || username
+      name: user.user_metadata?.username || user.user_metadata?.full_name || (username.includes("@") ? username.split("@")[0] : username),
+      username: user.user_metadata?.username || user.user_metadata?.full_name || (username.includes("@") ? username.split("@")[0] : username),
+      phone: user.user_metadata?.phone || "", district: "", photo: "",
+      email: user.user_metadata?.username || user.user_metadata?.full_name || (username.includes("@") ? username.split("@")[0] : username)
     }));
     localStorage.removeItem("myamin_demo_logged_in_amin_v1");
     if (typeof window.refreshCustomerMenuProfile === "function") window.refreshCustomerMenuProfile();
@@ -288,7 +289,7 @@ const handleAminSignup = async (event) => {
       data = result.data;
     }
     if (!data.session || !data.user) {
-      say("aminRegMessage", "अकाउंट बन गया। ईमेल verification पूरा करें, फिर Customer Login सेक्शन में उसी ईमेल/पासवर्ड से लॉगिन करें। उसके बाद Amin Registration दोबारा भरकर प्रोफ़ाइल सबमिट करें।");
+      say("aminRegMessage", "अकाउंट बन गया। ईमेल verification पूरा करें। फिर Customer Login में Username की जगह अपना registered Amin email और वही password डालकर Login करें। उसके बाद Amin Registration दोबारा भरकर प्रोफ़ाइल सबमिट करें।");
       return;
     }
     const userId = data.user.id;
