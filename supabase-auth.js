@@ -291,7 +291,7 @@ const handleAminSignup = async (event) => {
     }
     const userId = data.user.id;
     const { data: previousProfile, error: previousError } = await supabase.from("amin_profiles")
-      .select("profile_uid,approval_status,photo_path,upi_id,upi_qr_path,services,experience")
+      .select("profile_uid,approval_status,photo_path,upi_id,upi_qr_path,services,experience,instagram_url,facebook_url,youtube_url")
       .eq("user_id", userId).maybeSingle();
     if (previousError) throw previousError;
     const photo = await uploadPublicAsset(userId, "profile", $("regPhoto").files[0]) || previousProfile?.photo_path || null;
@@ -308,7 +308,11 @@ const handleAminSignup = async (event) => {
       experience: $("regDescription").value.trim() || previousProfile?.experience || null,
       services: services.length ? services : (previousProfile?.services || []), photo_path: photo,
       upi_id: $("regUpiId").value.trim() || previousProfile?.upi_id || null,
-      upi_qr_path: upiQr, approval_status: previousProfile?.approval_status || "pending"
+      upi_qr_path: upiQr,
+      instagram_url: $("regInstagram").value.trim() || null,
+      facebook_url: $("regFacebook").value.trim() || null,
+      youtube_url: $("regYouTube").value.trim() || null,
+      approval_status: previousProfile?.approval_status || "pending"
     };
     if (previousProfile) {
       const { data: updated, error: profileError } = await supabase.functions.invoke("admin-team", { body: {
@@ -316,7 +320,10 @@ const handleAminSignup = async (event) => {
         whatsapp: $("regWhatsApp").value.trim(), state: $("regState").value.trim(),
         district: $("regDistrict").value.trim(), place: $("regPlace").value.trim(),
         business_reference: $("regBusinessId").value.trim(), experience: $("regDescription").value.trim(), services, photo_path: photo,
-        upi_id: $("regUpiId").value.trim() || previousProfile.upi_id, upi_qr_path: upiQr
+        upi_id: $("regUpiId").value.trim() || previousProfile.upi_id, upi_qr_path: upiQr,
+        instagram_url: $("regInstagram").value.trim(),
+        facebook_url: $("regFacebook").value.trim(),
+        youtube_url: $("regYouTube").value.trim()
       }});
       if (profileError) throw profileError;
       if (!updated?.success) throw new Error(updated?.error || "Amin profile update failed.");
