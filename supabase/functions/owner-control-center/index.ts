@@ -240,6 +240,13 @@ Deno.serve(async (req: Request) => {
     }
 
 
+    if (action === "record_export") {
+      const tableCount = Math.max(0,Math.min(25,Number(body.table_count)||0));
+      const recordCount = Math.max(0,Math.min(10000000,Number(body.record_count)||0));
+      await audit("owner_data_export_completed","database_export",null,{table_count:tableCount,record_count:recordCount,format:"json"});
+      return reply({success:true});
+    }
+
     if (action === "record_detail") {
       const table = String(body.table || "");
       const recordId = String(body.record_id || "");
