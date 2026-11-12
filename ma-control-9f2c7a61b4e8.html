@@ -1104,4 +1104,30 @@ $("websiteSettingsForm").addEventListener("submit",saveWebsiteSettings);$("reset
 #adminBusinessCardPreview .admin-id-brand,
 #adminBusinessCardBackPreview .admin-id-brand { background:transparent!important; }
 </style>
+
+<!-- Transparent logo override v5: beats the earlier white-background cleanup rule. -->
+<style id="myamin-transparent-card-logo-final-v5">
+#adminCardPreview .admin-id-brand img.admin-id-logo,
+#adminCardBackPreview .admin-id-brand img.admin-id-logo,
+#adminBusinessCardPreview .admin-id-brand img.admin-id-logo,
+#adminBusinessCardBackPreview .admin-id-brand img.admin-id-logo,
+body[data-print-target="admin"] #adminCardPreview .admin-id-brand img.admin-id-logo,
+body[data-print-target="admin"] #adminCardBackPreview .admin-id-brand img.admin-id-logo,
+body[data-print-target="admin"] #adminBusinessCardPreview .admin-id-brand img.admin-id-logo,
+body[data-print-target="admin"] #adminBusinessCardBackPreview .admin-id-brand img.admin-id-logo {
+  background:transparent!important;
+  background-color:transparent!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  mix-blend-mode:normal!important;
+  filter:none!important;
+  -webkit-filter:none!important;
+  opacity:1!important;
+  object-fit:contain!important;
+  image-rendering:auto!important;
+}
+</style>
+
 </body></html>
