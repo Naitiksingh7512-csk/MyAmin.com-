@@ -223,8 +223,8 @@
   function exportTableCsv() {
     if(!currentTableRows.length){notify("Load records before exporting.");return;}
     const quote=v=>'"'+String(v===null||v===undefined?"":typeof v==="object"?JSON.stringify(v):v).replace(/"/g,'""')+'"';
-    const csv=[currentTableColumns.map(quote).join(","),...currentTableRows.map(r=>currentTableColumns.map(c=>quote(r[c])).join(","))].join("\\r\\n");
-    const blob=new Blob(["\\ufeff",csv],{type:"text/csv;charset=utf-8"});
+    const csv=[currentTableColumns.map(quote).join(","),...currentTableRows.map(r=>currentTableColumns.map(c=>quote(r[c])).join(","))].join("\r\n");
+    const blob=new Blob(["\ufeff",csv],{type:"text/csv;charset=utf-8"});
     const url=URL.createObjectURL(blob),a=document.createElement("a");
     a.href=url;a.download="myamin-"+$("ccTableSelect").value+"-page-"+(Math.floor(tableOffset/50)+1)+".csv";
     document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
