@@ -70,7 +70,7 @@ Deno.serve(async (req: Request) => {
         const { count, error } = await root.from(table).select("*", { count: "exact", head: true });
         counts[table] = error ? null : (count || 0);
       }));
-      return reply({ success: true, counts, total_tables: TABLES.length, server_only_tables: [...SERVER_ONLY] });
+      return reply({ success: true, counts, total_tables: TABLES.length });
     }
 
     if (action === "list_accounts") {
