@@ -1,0 +1,194 @@
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+
+const OWNER_ID = "24dd2630-4624-46ee-8c54-37b9dc8fcd64";
+const cors = {
+  "Access-Control-Allow-Origin": "https://naitiksingh7512-csk.github.io",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Vary": "Origin",
+};
+const reply = (data: unknown, status = 200) =>
+  new Response(JSON.stringify(data), { status, headers: { ...cors, "Content-Type": "application/json" } });
+
+const TABLES = [
+  "admin_announcements","admin_audit_logs","admin_settings","admin_team_members",
+  "ai_conversations","ai_messages","ai_usage_daily","amin_favorites","amin_payment_requests",
+  "amin_profiles","amin_reviews","booking_call_signals","booking_calls","booking_messages",
+  "bookings","customer_signup_attempts","notifications","payment_records","service_categories",
+  "support_ticket_messages","support_tickets","team_attendance","team_member_tasks","user_addresses","user_profiles"
+];
+const SERVER_ONLY = new Set(["ai_conversations","ai_messages","ai_usage_daily","customer_signup_attempts"]);
+const BOOKING_STATES = new Set(["pending","confirmed","in_progress","completed","cancelled"]);
+const PAYMENT_REQUEST_STATES = new Set(["requested","submitted","verified","rejected"]);
+const AMIN_APPROVAL_STATES = new Set(["pending","approved","rejected","blocked"]);
+
+Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
+  if (req.method !== "POST") return reply({ error: "Method not allowed" }, 405);
+  const jwt = (req.headers.get("Authorization") || "").replace(/^Bearer\\s+/i, "");
+  if (!jwt) return reply({ error: "Owner sign-in required" }, 401);
+
+  const url = Deno.env.get("SUPABASE_URL");
+  const anon = Deno.env.get("SUPABASE_ANON_KEY");
+  const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!url || !anon || !service) return reply({ error: "Server configuration is incomplete" }, 500);
+
+  const callerClient = createClient(url, anon, { auth: { persistSession: false, autoRefreshToken: false } });
+  const root = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } });
+  const { data: auth, error: authError } = await callerClient.auth.getUser(jwt);
+  if (authError || !auth.user) return reply({ error: "Valid sign-in required" }, 401);
+  const caller = auth.user;
+  if (caller.id !== OWNER_ID || caller.app_metadata?.role !== "admin") return reply({ error: "Owner-only operation" }, 403);
+
+  const { data: membership, error: membershipError } = await root.from("admin_team_members")
+    .select("role,status").eq("user_id", caller.id).maybeSingle();
+  if (membershipError || membership?.role !== "admin" || membership?.status !== "active") {
+    return reply({ error: "Active Owner membership required" }, 403);
+  }
+
+  let body: Record<string, unknown>;
+  try { body = await req.json(); } catch { return reply({ error: "Invalid JSON" }, 400); }
+  const action = String(body.action || "");
+  const audit = async (name: string, targetType: string | null, targetId: string | null, metadata: Record<string, unknown> = {}) => {
+    const { error } = await root.from("admin_audit_logs").insert({
+      actor_user_id: caller.id, action: name, target_type: targetType, target_id: targetId, metadata
+    });
+    if (error) throw error;
+  };
+  const notify = async (userId: string, title: string, message: string, type = "admin_notice", relatedTable: string | null = null, relatedId: string | null = null) => {
+    const { error } = await root.from("notifications").insert({
+      user_id: userId, title: title.slice(0, 100), body: message.slice(0, 1200),
+      notification_type: type, related_table: relatedTable, related_id: relatedId
+    });
+    if (error) throw error;
+  };
+
+  try {
+    if (action === "overview") {
+      const counts: Record<string, number | null | string> = {};
+      await Promise.all(TABLES.map(async table => {
+        if (SERVER_ONLY.has(table)) { counts[table] = "server-only"; return; }
+        const { count, error } = await root.from(table).select("*", { count: "exact", head: true });
+        counts[table] = error ? null : (count || 0);
+      }));
+      return reply({ success: true, counts, total_tables: TABLES.length, server_only_tables: [...SERVER_ONLY] });
+    }
+
+    if (action === "list_accounts") {
+      const limit = Math.max(1, Math.min(100, Number(body.limit) || 50));
+      const offset = Math.max(0, Number(body.offset) || 0);
+      const query = String(body.query || "").trim().slice(0, 80);
+      let q = root.from("user_profiles")
+        .select("id,full_name,phone,district,account_type,account_status,created_at,photo_url")
+        .order("created_at", { ascending: false }).range(offset, offset + limit - 1);
+      if (query) q = q.or("full_name.ilike.%"+query+"%,phone.ilike.%"+query+"%,district.ilike.%"+query+"%");
+      const { data, error, count } = await q;
+      if (error) return reply({ error: error.message }, 400);
+      const ids = (data || []).map(x => x.id);
+      const { data: amins, error: aminError } = ids.length
+        ? await root.from("amin_profiles").select("user_id,profile_uid,display_name,approval_status,account_status").in("user_id", ids)
+        : { data: [], error: null };
+      if (aminError) return reply({ error: aminError.message }, 400);
+      const aminMap = new Map((amins || []).map(a => [a.user_id, a]));
+      return reply({ success: true, total: count || 0, offset, limit, accounts: (data || []).map(x => ({ ...x, amin: aminMap.get(x.id) || null })) });
+    }
+
+    if (action === "set_account_status") {
+      const userId = String(body.user_id || "");
+      const status = String(body.status || "");
+      if (!/^[0-9a-f-]{36}$/i.test(userId) || !["active","blocked"].includes(status)) return reply({ error: "Invalid account or status" }, 400);
+      if (userId === OWNER_ID) return reply({ error: "Owner account cannot be blocked here" }, 403);
+      const { data: profile, error: profileError } = await root.from("user_profiles").select("id,full_name").eq("id", userId).maybeSingle();
+      if (profileError) return reply({ error: profileError.message }, 400);
+      if (!profile) return reply({ error: "Account profile not found" }, 404);
+      const { error: authBanError } = await root.auth.admin.updateUserById(userId, {
+        ban_duration: status === "blocked" ? "876000h" : "none"
+      });
+      if (authBanError) return reply({ error: "Auth status update failed: " + authBanError.message }, 400);
+      const { error } = await root.from("user_profiles").update({ account_status: status, updated_at: new Date().toISOString() }).eq("id", userId);
+      if (error) {
+        await root.auth.admin.updateUserById(userId, { ban_duration: status === "blocked" ? "none" : "876000h" });
+        return reply({ error: error.message }, 400);
+      }
+      await root.from("amin_profiles").update({ account_status: status, updated_at: new Date().toISOString() }).eq("user_id", userId);
+      await audit("account_status_changed","auth_user",userId,{status});
+      await notify(userId, status === "blocked" ? "My Amin account blocked" : "My Amin account reactivated",
+        status === "blocked" ? "Your account access has been temporarily blocked. Contact support if you believe this is an error." : "Your account access has been restored.");
+      return reply({ success: true, user_id: userId, status });
+    }
+
+    if (action === "set_amin_approval") {
+      const profileUid = String(body.profile_uid || "");
+      const status = String(body.status || "");
+      if (!profileUid || profileUid.length > 80 || !AMIN_APPROVAL_STATES.has(status)) return reply({ error: "Invalid Amin profile or approval status" }, 400);
+      const { data: amin, error } = await root.from("amin_profiles").update({
+        approval_status: status, updated_at: new Date().toISOString()
+      }).eq("profile_uid", profileUid).select("user_id,profile_uid,display_name").maybeSingle();
+      if (error) return reply({ error: error.message }, 400);
+      if (!amin) return reply({ error: "Amin profile not found" }, 404);
+      await audit("amin_approval_status_changed","amin_profile",profileUid,{status});
+      await notify(amin.user_id,"Amin profile status updated","Your Amin profile status is now: "+status,"amin_status","amin_profiles",null);
+      return reply({ success: true, profile_uid: profileUid, status });
+    }
+
+    if (action === "set_booking_status") {
+      const bookingId = String(body.booking_id || "");
+      const status = String(body.status || "");
+      if (!/^[0-9a-f-]{36}$/i.test(bookingId) || !BOOKING_STATES.has(status)) return reply({ error: "Invalid booking or status" }, 400);
+      const patch: Record<string, unknown> = { status, updated_at: new Date().toISOString() };
+      if (status === "completed") patch.completed_at = new Date().toISOString();
+      const { data: booking, error } = await root.from("bookings").update(patch)
+        .eq("id", bookingId).select("id,customer_user_id,amin_user_id,status").maybeSingle();
+      if (error) return reply({ error: error.message }, 400);
+      if (!booking) return reply({ error: "Booking not found" }, 404);
+      await audit("booking_status_changed","booking",bookingId,{status});
+      const recipients = [...new Set([booking.customer_user_id,booking.amin_user_id].filter(Boolean))] as string[];
+      for (const userId of recipients) await notify(userId,"Booking status updated","Your booking status is now: "+status,"booking_status","bookings",bookingId);
+      return reply({ success: true, booking_id: bookingId, status });
+    }
+
+    if (action === "set_payment_request_status") {
+      const requestId = String(body.request_id || "");
+      const status = String(body.status || "");
+      if (!/^[0-9a-f-]{36}$/i.test(requestId) || !PAYMENT_REQUEST_STATES.has(status)) return reply({ error: "Invalid request or status" }, 400);
+      const patch: Record<string, unknown> = { status, updated_at: new Date().toISOString() };
+      if (status === "verified") { patch.verified_by = caller.id; patch.verified_at = new Date().toISOString(); }
+      const { data: request, error } = await root.from("amin_payment_requests").update(patch)
+        .eq("id", requestId).select("id,amin_user_id,status").maybeSingle();
+      if (error) return reply({ error: error.message }, 400);
+      if (!request) return reply({ error: "Payment request not found" }, 404);
+      await audit("amin_payment_request_status_changed","amin_payment_request",requestId,{status});
+      await notify(request.amin_user_id,"Payment request updated","Your payment request status is now: "+status,"payment_request","amin_payment_requests",requestId);
+      return reply({ success: true, request_id: requestId, status });
+    }
+
+    if (action === "send_notification") {
+      const userId = String(body.user_id || "");
+      const title = String(body.title || "").trim();
+      const message = String(body.message || "").trim();
+      if (!/^[0-9a-f-]{36}$/i.test(userId) || !title || !message || title.length > 100 || message.length > 1200) {
+        return reply({ error: "A valid recipient, title and message are required" }, 400);
+      }
+      await notify(userId,title,message);
+      await audit("owner_notification_sent","user",userId,{title});
+      return reply({ success: true });
+    }
+
+    if (action === "set_website_setting") {
+      const key = String(body.setting_key || "");
+      const value = body.setting_value;
+      if (!/^[a-z][a-z0-9_]{1,59}$/.test(key) || value === undefined) return reply({ error: "Invalid website setting" }, 400);
+      const { error } = await root.from("admin_settings").upsert({
+        setting_key: key, setting_value: value, updated_by: caller.id, updated_at: new Date().toISOString()
+      }, { onConflict: "setting_key" });
+      if (error) return reply({ error: error.message }, 400);
+      await audit("website_setting_updated","setting",key,{});
+      return reply({ success: true, setting_key: key });
+    }
+
+    return reply({ error: "Unknown action" }, 400);
+  } catch (error) {
+    return reply({ error: error instanceof Error ? error.message : "Unexpected server error" }, 500);
+  }
+});
