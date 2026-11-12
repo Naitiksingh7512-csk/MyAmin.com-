@@ -73,6 +73,7 @@
         <div class="cc-box"><h3 style="margin-top:0">Security watch</h3><div id="ccSecurity"></div></div>
         <div class="cc-box"><h3 style="margin-top:0">Administration modules</h3><div id="ccModules"></div></div>
         <div class="cc-box"><h3 style="margin-top:0">Platform & backup readiness</h3><div id="ccPlatform"></div></div><div class="cc-box" style="grid-column:1/-1"><h3 style="margin-top:0">Complete database inventory · 25 tables</h3><p class="cc-muted">Aggregate row counts only. Auth secrets and server-only AI/signup data are intentionally not exposed to the browser.</p><div id="ccInventory" class="cc-grid"></div></div>
+      <div class="cc-box" style="grid-column:1/-1"><h3 style="margin-top:0">Owner account operations</h3><p class="cc-muted">Secure server-side account controls. Blocking an account prevents sign-in; it does not delete user data.</p><div class="cc-actions"><input id="ccAccountSearch" type="search" placeholder="Search name, phone or district" style="flex:1;min-width:180px;padding:9px;border-radius:9px;border:1px solid #38516b;background:#07172b;color:white"><button class="cc-btn" id="ccLoadAccounts" type="button">Load accounts</button></div><div id="ccAccounts" class="cc-muted" style="margin-top:12px">Press Load accounts to view customer and Amin account records.</div><form id="ccNoticeForm" style="display:none;margin-top:16px;padding-top:14px;border-top:1px solid #27435f"><strong id="ccNoticeRecipient">Send account notification</strong><input id="ccNoticeUserId" type="hidden"><input id="ccNoticeTitle" maxlength="100" required placeholder="Notification title" style="display:block;width:100%;margin-top:8px;padding:10px;border-radius:9px;border:1px solid #38516b;background:#07172b;color:white"><textarea id="ccNoticeMessage" maxlength="1200" required placeholder="Write a message…" style="display:block;width:100%;margin-top:8px;padding:10px;border-radius:9px;border:1px solid #38516b;background:#07172b;color:white"></textarea><div class="cc-actions"><button class="cc-btn" type="submit">Send notification</button><button class="cc-btn secondary" id="ccNoticeCancel" type="button">Cancel</button></div></form></div>
       </div>
       <p class="cc-foot" id="ccUpdated">Live database metrics are loaded only after Owner verification. No secrets, payment credentials, or customer message bodies are displayed here.</p>`;
     const overview = $("overview");
@@ -158,9 +159,64 @@
       $("ccPlatform").textContent = "Platform status unavailable.";
     }
   }
-  function boot() {
+
+  async function ownerAction(body) {
+    const client = window.myAminSupabase;
+    if (!client) throw new Error("Supabase client unavailable");
+    const {data,error} = await client.functions.invoke("owner-control-center",{body});
+    if (error) throw error;
+    if (!data?.success) throw new Error(data?.error || "Owner operation failed");
+    return data;
+  }
+  function renderAccounts(accounts) {
+    const box=$("ccAccounts");
+    if (!accounts.length) { box.textContent="No matching accounts."; return; }
+    box.innerHTML=accounts.map(a=>{
+      const amin=a.amin;
+      const blocked=a.account_status==="blocked";
+      return '<article class="cc-card" style="margin:10px 0"><div class="cc-row"><div><strong style="font-size:16px">'+esc(a.full_name||"Unnamed account")+'</strong><small>'+esc(a.account_type||"customer")+' · '+esc(a.district||"District not set")+'</small><small>'+esc(a.phone||"Phone not set")+' · '+esc(a.id)+'</small></div><span class="cc-status '+(blocked?"bad":"")+'">'+esc(a.account_status||"unknown")+'</span></div>'+
+      (amin?'<div class="cc-row"><span>Amin ID '+esc(amin.profile_uid)+' · '+esc(amin.approval_status)+'</span><span class="cc-muted">'+esc(amin.display_name)+'</span></div>':'')+
+      '<div class="cc-actions"><button class="cc-btn '+(blocked?"":"secondary")+'" type="button" data-account-status="'+esc(a.id)+'" data-next-status="'+(blocked?"active":"blocked")+'">'+(blocked?"Reactivate account":"Block account")+'</button>'+
+      (amin&&amin.approval_status==="pending"?'<button class="cc-btn" type="button" data-amin-approval="'+esc(amin.profile_uid)+'" data-next-approval="approved">Approve Amin</button><button class="cc-btn secondary" type="button" data-amin-approval="'+esc(amin.profile_uid)+'" data-next-approval="rejected">Reject Amin</button>':'')+
+      '<button class="cc-btn secondary" type="button" data-notice-user="'+esc(a.id)+'" data-notice-name="'+esc(a.full_name||"Account")+'">Send notice</button></div></article>';
+    }).join("");
+    box.querySelectorAll("[data-account-status]").forEach(b=>b.addEventListener("click",async()=>{
+      const status=b.dataset.nextStatus;
+      if(!confirm((status==="blocked"?"Block":"Reactivate")+" this account?"))return;
+      b.disabled=true;try{await ownerAction({action:"set_account_status",user_id:b.dataset.accountStatus,status});await loadAccounts();notify("Account status updated.");}catch(e){notify("Account update failed: "+(e.message||"Unknown error"));b.disabled=false;}
+    }));
+    box.querySelectorAll("[data-amin-approval]").forEach(b=>b.addEventListener("click",async()=>{
+      const status=b.dataset.nextApproval;
+      if(!confirm((status==="approved"?"Approve":"Reject")+" this Amin profile?"))return;
+      b.disabled=true;try{await ownerAction({action:"set_amin_approval",profile_uid:b.dataset.aminApproval,status});await loadAccounts();notify("Amin approval status updated.");}catch(e){notify("Amin update failed: "+(e.message||"Unknown error"));b.disabled=false;}
+    }));
+    box.querySelectorAll("[data-notice-user]").forEach(b=>b.addEventListener("click",()=>{
+      $("ccNoticeUserId").value=b.dataset.noticeUser;
+      $("ccNoticeRecipient").textContent="Send notification to "+b.dataset.noticeName;
+      $("ccNoticeForm").style.display="block";$("ccNoticeTitle").focus();
+    }));
+  }
+  async function loadAccounts() {
+    const box=$("ccAccounts");box.textContent="Loading accounts securely…";
+    try {
+      const data=await ownerAction({action:"list_accounts",limit:100,offset:0,query:$("ccAccountSearch").value.trim()});
+      renderAccounts(data.accounts||[]);
+    } catch(e) { box.textContent="Account controls unavailable: "+(e.message||"Owner Edge Function not deployed yet."); }
+  }
+  function bindAccountControls() {
+    $("ccLoadAccounts")?.addEventListener("click",loadAccounts);
+    $("ccAccountSearch")?.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();loadAccounts();}});
+    $("ccNoticeCancel")?.addEventListener("click",()=>{$("ccNoticeForm").style.display="none";});
+    $("ccNoticeForm")?.addEventListener("submit",async e=>{
+      e.preventDefault();const btn=$("ccNoticeForm").querySelector('button[type="submit"]');btn.disabled=true;
+      try {await ownerAction({action:"send_notification",user_id:$("ccNoticeUserId").value,title:$("ccNoticeTitle").value.trim(),message:$("ccNoticeMessage").value.trim()});$("ccNoticeForm").reset();$("ccNoticeForm").style.display="none";notify("Notification sent.");}
+      catch(err){notify("Notification failed: "+(err.message||"Unknown error"));}
+      finally{btn.disabled=false;}
+    });
+  }
+\n  function boot() {
     if (!document.documentElement.classList.contains("admin-ready")) { setTimeout(boot,300); return; }
-    renderBase(); moduleRows(); refresh();
+    renderBase(); moduleRows(); bindAccountControls(); refresh();
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded",boot,{once:true});
   else boot();
