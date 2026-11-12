@@ -130,9 +130,9 @@
       $("ccOperations").innerHTML =
         row("Supabase project","ACTIVE_HEALTHY")+
         row("Database tables", "25 public tables")+
-        row("Edge Functions","4 active")+
+        row("Edge Functions","5 active")+
         row("Website settings","Supabase-backed")+
-        row("Realtime support updates","Enabled")+
+        row("Realtime support updates","Configured · runtime test pending","warn")+
         row("Backup / restore controls","Not implemented", "warn");
       $("ccSecurity").innerHTML =
         row("Owner identity + active membership","Verified")+
@@ -140,11 +140,11 @@
         row("Leaked-password protection","Disabled · enable in Auth settings","warn")+
         row("Public SECURITY DEFINER RPCs","2 flagged for review","warn")+
         row("RLS enabled without policy","1 table · service-role-only candidate","warn")+
-        row("RLS policy performance advisories","22 findings","warn");
+        row("RLS policy performance advisories","22 findings","warn")+\n        row("Multiple permissive RLS policies","35 findings","warn")+\n        row("Unused indexes","7 candidates","warn");
       $("ccPlatform").innerHTML =
         row("Database engine","PostgreSQL 17")+
         row("Supabase region","ap-southeast-1")+
-        row("Application branch","GitHub staging")+
+        row("Dashboard source","GitHub staging")+
         row("Automated backup export","Not verified","warn")+
         row("Disaster recovery restore drill","Not performed","warn")+
         row("Payments gateway / bank webhook","Not connected","warn");
