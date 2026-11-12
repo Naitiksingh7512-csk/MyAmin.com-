@@ -1367,6 +1367,24 @@ async function openCustomerAccount(){
  if(status)status.textContent="प्रोफ़ाइल लोड हो रही है…";
  if(bookingBox)bookingBox.innerHTML="<p>बुकिंग लोड हो रही है…</p>";
  if(messageBox)messageBox.innerHTML="<p>Messages लोड हो रहे हैं…</p>";
+ // Render the last locally saved customer profile immediately, before network/auth requests.
+ // This prevents the profile panel from appearing empty while Supabase is loading.
+ const cachedProfile=read(DB.user,{})||{};
+ const cachedName=cachedProfile.name||cachedProfile.full_name||cachedProfile.username||"Customer";
+ const cachedPhoto=cachedProfile.photo||cachedProfile.photo_url||cachedProfile.avatar_url||"";
+ if($("customerAccountName"))$("customerAccountName").textContent=cachedName;
+ if($("customerAccountNameInput"))$("customerAccountNameInput").value=cachedProfile.name||cachedProfile.full_name||"";
+ if($("customerAccountPhoneInput"))$("customerAccountPhoneInput").value=cachedProfile.phone||"";
+ if($("customerAccountDistrictInput"))$("customerAccountDistrictInput").value=cachedProfile.district||"";
+ if($("customerAccountUsername"))$("customerAccountUsername").value=cachedProfile.username||"";
+ const cachedAvatar=$("customerAccountAvatar"),cachedFallback=$("customerAccountAvatarFallback");
+ if(cachedAvatar){
+   cachedAvatar.onload=()=>{cachedAvatar.hidden=false;if(cachedFallback)cachedFallback.hidden=true;};
+   cachedAvatar.onerror=()=>{cachedAvatar.hidden=true;if(cachedFallback)cachedFallback.hidden=false;};
+   cachedAvatar.hidden=!cachedPhoto;
+   if(cachedPhoto)cachedAvatar.src=cachedPhoto;else cachedAvatar.removeAttribute("src");
+ }
+ if(cachedFallback)cachedFallback.hidden=!!cachedPhoto;
  if(!client){if(status)status.textContent="Secure backend connection नहीं मिला। कृपया पेज reload करें।";return;}
  try{
   const {data:{user},error:userError}=await client.auth.getUser();
