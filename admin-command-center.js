@@ -193,14 +193,18 @@
     const overlay=$("ccDetailOverlay"),content=$("ccDetailContent");
     if(!overlay||!content)return;
     $("ccDetailTitle").textContent=title;
-    const sections=Array.isArray(data)?data:[data];
-    content.innerHTML=sections.map((section,index)=>{
-      if(section===null||typeof section!=="object")return '<div class="cc-detail-field"><div>'+esc(section)+'</div></div>';
-      return '<div class="cc-detail-section">'+(Array.isArray(data)?"Related record "+(index+1):"Record information")+'</div><div class="cc-detail-grid">'+Object.entries(section).map(([key,value])=>{
-        const shown=value===null||value===undefined||value===""?"—":typeof value==="object"?JSON.stringify(value,null,2):String(value);
-        return '<div class="cc-detail-field"><small>'+esc(key.replaceAll("_"," "))+'</small><div>'+esc(shown)+'</div></div>';
-      }).join("")+'</div>';
-    }).join("");
+    const field=(key,value)=>'<div class="cc-detail-field"><small>'+esc(String(key).replaceAll("_"," "))+'</small><div>'+esc(value===null||value===undefined||value===""?"—":typeof value==="object"?JSON.stringify(value,null,2):String(value))+'</div></div>';
+    const section=(name,html)=>'<div class="cc-detail-section">'+esc(name.replaceAll("_"," "))+'</div>'+html;
+    const renderObject=(obj)=>'<div class="cc-detail-grid">'+Object.entries(obj||{}).map(([k,v])=>field(k,v)).join("")+'</div>';
+    if(Array.isArray(data)){
+      content.innerHTML=data.map((item,i)=>section("Related record "+(i+1),item&&typeof item==="object"?renderObject(item):field("value",item))).join("");
+    } else if(data&&typeof data==="object"&&Object.values(data).some(v=>Array.isArray(v)||(v&&typeof v==="object"))){
+      content.innerHTML=Object.entries(data).map(([key,value])=>{
+        if(Array.isArray(value))return section(key,value.length?value.map((item,i)=>'<div class="cc-card" style="margin:8px 0"><small>Record '+(i+1)+'</small>'+(item&&typeof item==="object"?renderObject(item):field("value",item))+'</div>').join(""):'<div class="cc-muted">No records found.</div>');
+        if(value&&typeof value==="object")return section(key,renderObject(value));
+        return section(key,renderObject({[key]:value}));
+      }).join("");
+    } else content.innerHTML=section("Record information",renderObject(data||{}));
     overlay.style.display="flex";
   }
   function closeDetails(){const overlay=$("ccDetailOverlay");if(overlay)overlay.style.display="none";}
