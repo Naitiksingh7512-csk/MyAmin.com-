@@ -72,7 +72,7 @@
         <div class="cc-box"><h3 style="margin-top:0">Website operations</h3><div id="ccOperations" class="cc-muted">Loading…</div></div>
         <div class="cc-box"><h3 style="margin-top:0">Security watch</h3><div id="ccSecurity"></div></div>
         <div class="cc-box"><h3 style="margin-top:0">Administration modules</h3><div id="ccModules"></div></div>
-        <div class="cc-box"><h3 style="margin-top:0">Platform & backup readiness</h3><div id="ccPlatform"></div></div>
+        <div class="cc-box"><h3 style="margin-top:0">Platform & backup readiness</h3><div id="ccPlatform"></div></div><div class="cc-box" style="grid-column:1/-1"><h3 style="margin-top:0">Complete database inventory · 25 tables</h3><p class="cc-muted">Aggregate row counts only. Auth secrets and server-only AI/signup data are intentionally not exposed to the browser.</p><div id="ccInventory" class="cc-grid"></div></div>
       </div>
       <p class="cc-foot" id="ccUpdated">Live database metrics are loaded only after Owner verification. No secrets, payment credentials, or customer message bodies are displayed here.</p>`;
     const overview = $("overview");
