@@ -140,7 +140,9 @@
         row("Leaked-password protection","Disabled · enable in Auth settings","warn")+
         row("Public SECURITY DEFINER RPCs","2 flagged for review","warn")+
         row("RLS enabled without policy","1 table · service-role-only candidate","warn")+
-        row("RLS policy performance advisories","22 findings","warn")+\n        row("Multiple permissive RLS policies","35 findings","warn")+\n        row("Unused indexes","7 candidates","warn");
+        row("RLS policy performance advisories","22 findings","warn")+
+        row("Multiple permissive RLS policies","35 findings","warn")+
+        row("Unused indexes","7 candidates","warn");
       $("ccPlatform").innerHTML =
         row("Database engine","PostgreSQL 17")+
         row("Supabase region","ap-southeast-1")+
