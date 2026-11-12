@@ -26,7 +26,7 @@ const AMIN_APPROVAL_STATES = new Set(["pending","approved","rejected","blocked"]
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return reply({ error: "Method not allowed" }, 405);
-  const jwt = (req.headers.get("Authorization") || "").replace(/^Bearer\\s+/i, "");
+  const jwt = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
   if (!jwt) return reply({ error: "Owner sign-in required" }, 401);
 
   const url = Deno.env.get("SUPABASE_URL");
@@ -185,6 +185,50 @@ Deno.serve(async (req: Request) => {
       if (error) return reply({ error: error.message }, 400);
       await audit("website_setting_updated","setting",key,{});
       return reply({ success: true, setting_key: key });
+    }
+
+
+    if (action === "list_table") {
+      const TABLE_COLUMNS: Record<string, string[]> = {
+        admin_announcements: ["id","title","body","link_url","is_active","created_by","created_at","updated_at","content_type","image_url","starts_at","ends_at"],
+        admin_audit_logs: ["id","actor_user_id","action","target_type","target_id","metadata","created_at"],
+        admin_settings: ["setting_key","setting_value","updated_by","updated_at"],
+        admin_team_members: ["id","user_id","role","status","added_by","created_at","updated_at","full_name","email","phone","department","permissions","must_change_password","last_login_at"],
+        ai_conversations: ["id","user_id","title","created_at","updated_at"],
+        ai_messages: ["id","conversation_id","user_id","role","content","created_at"],
+        ai_usage_daily: ["user_id","usage_date","request_count"],
+        amin_favorites: ["customer_user_id","amin_user_id","created_at"],
+        amin_payment_requests: ["id","amin_user_id","created_by","amount","note","payment_link","status","transaction_reference","proof_path","verified_by","verified_at","created_at","updated_at"],
+        amin_profiles: ["id","user_id","profile_uid","display_name","phone","whatsapp","state","district","place","business_reference","experience","services","photo_path","upi_id","upi_qr_path","approval_status","created_at","updated_at","location_lat","location_lng","location_shared_at","account_status","video_call_enabled","instagram_url","facebook_url","youtube_url"],
+        amin_reviews: ["id","booking_id","customer_user_id","amin_user_id","rating","review","is_visible","created_at"],
+        booking_call_signals: ["id","call_id","sender_user_id","signal_type","created_at"],
+        booking_calls: ["id","booking_id","caller_user_id","callee_user_id","call_type","status","created_at","accepted_at","ended_at","updated_at"],
+        booking_messages: ["id","booking_id","sender_user_id","message","attachment_path","read_at","created_at"],
+        bookings: ["id","customer_user_id","amin_user_id","service","state","district","place","preferred_date","preferred_time","details","status","confirmed_date","confirmed_time","created_at","updated_at","service_amount","commission_paid","completed_at"],
+        customer_signup_attempts: ["id","ip_hash","created_at"],
+        notifications: ["id","user_id","title","body","notification_type","related_table","related_id","read_at","created_at","attachment_path"],
+        payment_records: ["id","booking_id","payer_user_id","payee_user_id","amount","currency","payment_method","transaction_reference","status","proof_path","verified_by","verified_at","created_at","updated_at"],
+        service_categories: ["id","slug","name_en","name_hi","description","icon","is_active","sort_order","created_at","updated_at"],
+        support_ticket_messages: ["id","ticket_id","sender_user_id","message","created_at"],
+        support_tickets: ["id","user_id","subject","description","status","priority","assigned_to","created_at","updated_at"],
+        team_attendance: ["id","member_user_id","work_date","check_in_at","check_out_at","note","created_at","updated_at"],
+        team_member_tasks: ["id","assigned_to","title","description","module","status","due_at","created_by","created_at","updated_at"],
+        user_addresses: ["id","user_id","label","address_line","state","district","pincode","latitude","longitude","is_default","created_at","updated_at"],
+        user_profiles: ["id","full_name","phone","district","created_at","updated_at","account_type","location_lat","location_lng","location_shared_at","photo_url","account_status"]
+      };
+      const table = String(body.table || "");
+      const columns = TABLE_COLUMNS[table];
+      if (!columns) return reply({ error: "Table is not available in the Owner data explorer" }, 400);
+      const limit = Math.max(1, Math.min(100, Number(body.limit) || 50));
+      const offset = Math.max(0, Number(body.offset) || 0);
+      const orderColumn = table === "admin_settings" ? "updated_at" : table === "service_categories" ? "sort_order" : table === "ai_usage_daily" ? "usage_date" : "created_at";
+      let query = root.from(table).select(columns.join(","), { count: "exact" });
+      if (orderColumn === "sort_order") query = query.order(orderColumn, { ascending: true });
+      else query = query.order(orderColumn, { ascending: false, nullsFirst: false });
+      const { data, error, count } = await query.range(offset, offset + limit - 1);
+      if (error) return reply({ error: error.message }, 400);
+      await audit("owner_table_viewed", "table", table, { offset, limit, rows_returned: (data || []).length });
+      return reply({ success: true, table, columns, total: count || 0, offset, limit, rows: data || [] });
     }
 
     return reply({ error: "Unknown action" }, 400);
