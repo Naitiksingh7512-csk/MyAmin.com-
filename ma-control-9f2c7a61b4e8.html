@@ -1081,4 +1081,27 @@ async function saveWebsiteSettings(e){e.preventDefault();const s={siteName:$("se
 $("websiteSettingsForm").addEventListener("submit",saveWebsiteSettings);$("resetWebsiteSettings").addEventListener("click",async()=>{if(!confirm("Reset shared website settings to defaults?"))return;try{const client=window.myAminSupabase;const {data:{user},error:userError}=await client.auth.getUser();if(userError)throw userError;if(!user||user.app_metadata?.role!=="admin")throw new Error("Admin login required.");const {error}=await client.from("admin_settings").upsert({setting_key:"website_settings",setting_value:DEFAULT_SITE_SETTINGS,updated_by:user.id,updated_at:new Date().toISOString()},{onConflict:"setting_key"});if(error)throw error;write(SITE_SETTINGS_KEY,DEFAULT_SITE_SETTINGS);await loadWebsiteSettings();notify("Website settings reset in Supabase.");}catch(e){notify("Reset failed: "+(e.message||"Unknown error"));}});loadWebsiteSettings();
 </script>
 <script src="admin-command-center.js?v=20261112-owner-command-center-v4" defer></script>
+<!-- Transparent MyAmin logo treatment for all owner cards -->
+<style id="myamin-transparent-card-logo-final">
+/* Keep the logo canvas transparent; preserve the original SVG colors and proportions. */
+#adminCardPreview .admin-id-logo,
+#adminCardBackPreview .admin-id-logo,
+#adminBusinessCardPreview .admin-id-logo,
+#adminBusinessCardBackPreview .admin-id-logo {
+  display:block!important;
+  background:transparent!important;
+  background-color:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  mix-blend-mode:normal!important;
+  filter:none!important;
+  opacity:1!important;
+  object-fit:contain!important;
+  image-rendering:auto!important;
+}
+#adminCardPreview .admin-id-brand,
+#adminCardBackPreview .admin-id-brand,
+#adminBusinessCardPreview .admin-id-brand,
+#adminBusinessCardBackPreview .admin-id-brand { background:transparent!important; }
+</style>
 </body></html>
