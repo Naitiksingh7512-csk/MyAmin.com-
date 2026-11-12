@@ -214,7 +214,7 @@
       finally{btn.disabled=false;}
     });
   }
-\n  function boot() {
+  function boot() {
     if (!document.documentElement.classList.contains("admin-ready")) { setTimeout(boot,300); return; }
     renderBase(); moduleRows(); bindAccountControls(); refresh();
   }
