@@ -38,6 +38,18 @@
   #${PANEL_ID} .cc-btn{border:1px solid #3984b6;background:#0d4269;color:#eff9ff;border-radius:10px;padding:9px 12px;font-weight:750}
   #${PANEL_ID} .cc-btn.secondary{background:#13283d;border-color:#38516b}
   #${PANEL_ID} .cc-foot{font-size:12px;color:var(--cc-muted);margin-top:14px}
+  #${PANEL_ID} .cc-clickable{display:block;width:100%;text-align:left;color:inherit;font:inherit;cursor:pointer}
+  #${PANEL_ID} .cc-clickable:hover{border-color:#55b9f5;box-shadow:0 0 0 1px #168bd255,0 10px 28px #0005;transform:translateY(-1px)}
+  #${PANEL_ID} tr[data-cc-row]{cursor:pointer}
+  #${PANEL_ID} tr[data-cc-row]:hover{background:#164365}
+  #${PANEL_ID} .cc-detail-overlay{position:fixed;inset:0;z-index:99999;background:#020914d9;display:flex;align-items:center;justify-content:center;padding:14px}
+  #${PANEL_ID} .cc-detail-dialog{width:min(900px,100%);max-height:88vh;overflow:auto;background:#0a1b2d;border:1px solid #3479a8;border-radius:18px;padding:18px;box-shadow:0 24px 80px #000b}
+  #${PANEL_ID} .cc-detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:9px}
+  #${PANEL_ID} .cc-detail-field{padding:11px;border:1px solid #284760;border-radius:10px;background:#0d2439;min-width:0}
+  #${PANEL_ID} .cc-detail-field small{display:block;color:#9eb6ce;font-size:11px;margin-bottom:5px}
+  #${PANEL_ID} .cc-detail-field div{overflow-wrap:anywhere;white-space:pre-wrap;font-size:13px}
+  #${PANEL_ID} .cc-detail-section{margin:16px 0 8px;color:#78d6ff;font-weight:800}
+  
   @media(max-width:560px){#${PANEL_ID} .cc-hero{padding:17px}#${PANEL_ID} .cc-card strong{font-size:23px}}
   `;
   function openSection(id) {
@@ -78,12 +90,22 @@
       <div class="cc-box" style="grid-column:1/-1"><h3 style="margin-top:0">Website Settings · Owner editor</h3><p class="cc-muted">Save a setting to the Supabase admin_settings table. Use valid JSON for the value, for example true, 25, or "Maintenance notice". Existing site modules may require their own supported setting keys.</p><div class="cc-actions"><input id="ccSettingKey" maxlength="60" placeholder="setting_key" style="flex:1;min-width:150px;padding:9px;border-radius:9px;border:1px solid #38516b;background:#07172b;color:white"><input id="ccSettingValue" placeholder='JSON value, e.g. "hello" or true' style="flex:2;min-width:200px;padding:9px;border-radius:9px;border:1px solid #38516b;background:#07172b;color:white"><button class="cc-btn" id="ccSaveSetting" type="button">Save setting</button></div><div id="ccSettingStatus" class="cc-muted" style="margin-top:8px"></div></div>
       <div class="cc-box" style="grid-column:1/-1"><h3 style="margin-top:0">Owner account operations</h3><p class="cc-muted">Secure server-side account controls. Blocking an account prevents sign-in; it does not delete user data.</p><div class="cc-actions"><input id="ccAccountSearch" type="search" placeholder="Search name, phone or district" style="flex:1;min-width:180px;padding:9px;border-radius:9px;border:1px solid #38516b;background:#07172b;color:white"><button class="cc-btn" id="ccLoadAccounts" type="button">Load accounts</button></div><div id="ccAccounts" class="cc-muted" style="margin-top:12px">Press Load accounts to view customer and Amin account records.</div><form id="ccNoticeForm" style="display:none;margin-top:16px;padding-top:14px;border-top:1px solid #27435f"><strong id="ccNoticeRecipient">Send account notification</strong><input id="ccNoticeUserId" type="hidden"><input id="ccNoticeTitle" maxlength="100" required placeholder="Notification title" style="display:block;width:100%;margin-top:8px;padding:10px;border-radius:9px;border:1px solid #38516b;background:#07172b;color:white"><textarea id="ccNoticeMessage" maxlength="1200" required placeholder="Write a message…" style="display:block;width:100%;margin-top:8px;padding:10px;border-radius:9px;border:1px solid #38516b;background:#07172b;color:white"></textarea><div class="cc-actions"><button class="cc-btn" type="submit">Send notification</button><button class="cc-btn secondary" id="ccNoticeCancel" type="button">Cancel</button></div></form></div>
       </div>
+      <div id="ccDetailOverlay" class="cc-detail-overlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="ccDetailTitle"><div class="cc-detail-dialog"><div class="cc-row" style="align-items:center"><div><div class="cc-eyebrow">OWNER SECURE RECORD VIEW</div><h2 id="ccDetailTitle" style="margin:5px 0">Record details</h2></div><button class="cc-btn secondary" id="ccDetailClose" type="button">Close ✕</button></div><div id="ccDetailContent" style="margin-top:14px"></div></div></div>
       <p class="cc-foot" id="ccUpdated">Live database metrics are loaded only after Owner verification. No secrets, payment credentials, or customer message bodies are displayed here.</p>`;
     const overview = $("overview");
     if (overview?.parentNode) overview.insertAdjacentElement("afterend", panel);
     else document.querySelector("main.wrap")?.appendChild(panel);
     const st = document.createElement("style"); st.textContent = style; document.head.appendChild(st);
     $("ccRefresh")?.addEventListener("click", refresh);
+    $("ccDetailClose")?.addEventListener("click",closeDetails);
+    $("ccDetailOverlay")?.addEventListener("click",ev=>{if(ev.target.id==="ccDetailOverlay")closeDetails();});
+    document.addEventListener("keydown",ev=>{if(ev.key==="Escape")closeDetails();});
+    $(PANEL_ID)?.addEventListener("click",ev=>{
+      const b=ev.target.closest("[data-cc-table]");
+      if(!b||!b.dataset.ccTable)return;
+      $("ccTableSelect").value=b.dataset.ccTable;tableOffset=0;loadTable();
+      $("ccTableData").scrollIntoView({behavior:"smooth",block:"nearest"});
+    });
   }
   async function verifyOwner(client) {
     const {data:{user},error} = await client.auth.getUser();
@@ -101,7 +123,8 @@
     if (error) throw error;
     return count || 0;
   }
-  const card = (label,value,sub="Live Supabase count") => '<div class="cc-card"><small>'+esc(label)+'</small><strong>'+number(value)+'</strong><small>'+esc(sub)+'</small></div>';
+  const CARD_TABLES={"Registered accounts":"user_profiles","Amin applications":"amin_profiles","Bookings":"bookings","Support tickets":"support_tickets","Payment records":"payment_records","Team members":"admin_team_members","Notifications":"notifications","Audit events":"admin_audit_logs","Payment requests":"amin_payment_requests","Published content":"admin_announcements","Team tasks":"team_member_tasks","Service categories":"service_categories"};
+  const card = (label,value,sub="Live Supabase count",table=CARD_TABLES[label]) => '<button type="button" class="cc-card cc-clickable" data-cc-table="'+esc(table||"")+'"><small>'+esc(label)+'</small><strong>'+number(value)+'</strong><small>'+esc(sub)+' · Tap to view records</small></button>';
   const row = (label,status,kind="") => '<div class="cc-row"><span>'+esc(label)+'</span><span class="cc-status '+kind+'">'+esc(status)+'</span></div>';
   function moduleRows() {
     $("ccModules").innerHTML = sections.map(([id,label]) => '<div class="cc-row"><span>'+esc(label)+'</span><button class="cc-btn secondary" type="button" data-cc-open="'+esc(id)+'">Open</button></div>').join("");
@@ -153,7 +176,7 @@
         row("Automated backup export","Not verified","warn")+
         row("Disaster recovery restore drill","Not performed","warn")+
         row("Payments gateway / bank webhook","Not connected","warn");
-      $("ccInventory").innerHTML = tables.map(t=>card(t.replaceAll("_"," "),data[t],data[t]==="server-only"?"Restricted server-side table":"Secure backend row count")).join("");
+      $("ccInventory").innerHTML = tables.map(t=>card(t.replaceAll("_"," "),data[t],data[t]==="server-only"?"Restricted server-side table":"Secure backend row count",t)).join("");
       $("ccUpdated").textContent = "Last refreshed: "+fmtTime(new Date().toISOString())+". Counts are retrieved through the Owner-verified Edge Function.";
       if (connection) {connection.textContent="Owner verified · Supabase live";connection.className="cc-status";}
       moduleRows();
@@ -166,6 +189,21 @@
     }
   }
 
+  function showDetails(title,data) {
+    const overlay=$("ccDetailOverlay"),content=$("ccDetailContent");
+    if(!overlay||!content)return;
+    $("ccDetailTitle").textContent=title;
+    const sections=Array.isArray(data)?data:[data];
+    content.innerHTML=sections.map((section,index)=>{
+      if(section===null||typeof section!=="object")return '<div class="cc-detail-field"><div>'+esc(section)+'</div></div>';
+      return '<div class="cc-detail-section">'+(Array.isArray(data)?"Related record "+(index+1):"Record information")+'</div><div class="cc-detail-grid">'+Object.entries(section).map(([key,value])=>{
+        const shown=value===null||value===undefined||value===""?"—":typeof value==="object"?JSON.stringify(value,null,2):String(value);
+        return '<div class="cc-detail-field"><small>'+esc(key.replaceAll("_"," "))+'</small><div>'+esc(shown)+'</div></div>';
+      }).join("")+'</div>';
+    }).join("");
+    overlay.style.display="flex";
+  }
+  function closeDetails(){const overlay=$("ccDetailOverlay");if(overlay)overlay.style.display="none";}
   async function ownerAction(body) {
     const client = window.myAminSupabase;
     if (!client) throw new Error("Supabase client unavailable");
@@ -184,8 +222,12 @@
       (amin?'<div class="cc-row"><span>Amin ID '+esc(amin.profile_uid)+' · '+esc(amin.approval_status)+'</span><span class="cc-muted">'+esc(amin.display_name)+'</span></div>':'')+
       '<div class="cc-actions"><button class="cc-btn '+(blocked?"":"secondary")+'" type="button" data-account-status="'+esc(a.id)+'" data-next-status="'+(blocked?"active":"blocked")+'">'+(blocked?"Reactivate account":"Block account")+'</button>'+
       (amin&&amin.approval_status==="pending"?'<button class="cc-btn" type="button" data-amin-approval="'+esc(amin.profile_uid)+'" data-next-approval="approved">Approve Amin</button><button class="cc-btn secondary" type="button" data-amin-approval="'+esc(amin.profile_uid)+'" data-next-approval="rejected">Reject Amin</button>':'')+
-      '<button class="cc-btn secondary" type="button" data-notice-user="'+esc(a.id)+'" data-notice-name="'+esc(a.full_name||"Account")+'">Send notice</button></div></article>';
+      '<button class="cc-btn secondary" type="button" data-account-detail="'+esc(a.id)+'">View full account information</button><button class="cc-btn secondary" type="button" data-notice-user="'+esc(a.id)+'" data-notice-name="'+esc(a.full_name||"Account")+'">Send notice</button></div></article>';
     }).join("");
+    box.querySelectorAll("[data-account-detail]").forEach(b=>b.addEventListener("click",async()=>{
+      b.disabled=true;try{const data=await ownerAction({action:"account_detail",user_id:b.dataset.accountDetail});showDetails("Registered account · Full information",data.account||data);}
+      catch(err){notify("Account details could not be loaded: "+(err.message||"Unknown error"));}finally{b.disabled=false;}
+    }));
     box.querySelectorAll("[data-account-status]").forEach(b=>b.addEventListener("click",async()=>{
       const status=b.dataset.nextStatus;
       if(!confirm((status==="blocked"?"Block":"Reactivate")+" this account?"))return;
@@ -219,7 +261,12 @@
       status.textContent=table+" · "+number(currentTableTotal)+" total records · showing "+(currentTableRows.length?tableOffset+1:0)+"–"+(tableOffset+currentTableRows.length);
       if(!currentTableRows.length){box.innerHTML='<div class="cc-muted">No records in this page.</div>';return;}
       const cell=v=>esc(v===null||v===undefined?"—":typeof v==="object"?JSON.stringify(v):String(v));
-      box.innerHTML='<table style="min-width:900px"><thead><tr>'+currentTableColumns.map(c=>'<th>'+esc(c)+'</th>').join("")+'</tr></thead><tbody>'+currentTableRows.map(r=>'<tr>'+currentTableColumns.map(c=>'<td style="max-width:260px;overflow-wrap:anywhere;white-space:pre-wrap">'+cell(r[c])+'</td>').join("")+'</tr>').join("")+'</tbody></table>';
+      box.innerHTML='<table style="min-width:900px"><thead><tr>'+currentTableColumns.map(c=>'<th>'+esc(c)+'</th>').join("")+'</tr></thead><tbody>'+currentTableRows.map((r,i)=>'<tr data-cc-row="'+i+'" tabindex="0" title="Tap to view full record">'+currentTableColumns.map(c=>'<td style="max-width:260px;overflow-wrap:anywhere;white-space:pre-wrap">'+cell(r[c])+'</td>').join("")+'</tr>').join("")+'</tbody></table>';
+      box.querySelectorAll("[data-cc-row]").forEach(tr=>{
+        const open=()=>showDetails(table+" · Record details",currentTableRows[Number(tr.dataset.ccRow)]);
+        tr.addEventListener("click",open);
+        tr.addEventListener("keydown",ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();open();}});
+      });
     } catch(e){status.textContent="Data could not be loaded: "+(e.message||"Unknown error");}
   }
   function exportTableCsv() {
@@ -255,6 +302,7 @@
         const statuses=OP_STATUS[table]||[];
         return '<article class="cc-card" style="margin:8px 0"><div class="cc-row"><div><strong style="font-size:14px">'+label(summary||id)+'</strong><small>'+label(id)+'</small></div><span class="cc-status">'+label(current)+'</span></div><div class="cc-actions"><select data-op-status="'+label(id)+'" style="padding:8px;border-radius:9px;background:#07172b;color:white;border:1px solid #38516b">'+statuses.map(s=>'<option value="'+s+'" '+(s===current?"selected":"")+'>'+s+'</option>').join("")+'</select><button class="cc-btn" type="button" data-op-save="'+label(id)+'">Update status</button></div></article>';
       }).join("");
+      box.querySelectorAll(".cc-card").forEach((el,i)=>{el.style.cursor="pointer";el.title="Tap to view full record";el.addEventListener("click",ev=>{if(ev.target.closest("button,select"))return;showDetails(table+" · Full record",rows[i]);});});
       box.querySelectorAll("[data-op-save]").forEach(btn=>btn.addEventListener("click",async()=>{
         const id=btn.dataset.opSave, select=box.querySelector('[data-op-status="'+CSS.escape(id)+'"]'), next=select.value;
         if(!confirm("Update "+table+" status to "+next+"?"))return;
