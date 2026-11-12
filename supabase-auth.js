@@ -375,6 +375,65 @@ const handleAminSignup = async (event) => {
 
 const OWNER_ADMIN_USER_ID = "24dd2630-4624-46ee-8c54-37b9dc8fcd64";
 
+const initializeAdminQrPasskeyGate = () => {
+  const gate = $("adminQrPasskeyGate");
+  if (!gate || window.location.hash !== "#adminPasskey") return;
+  const login = $("adminLogin");
+  if (login) login.hidden = true;
+  gate.hidden = false;
+  gate.scrollIntoView({ behavior: "instant", block: "center" });
+
+  const button = $("adminQrPasskeyButton");
+  const status = $("adminQrPasskeyStatus");
+  if (!button || !status) return;
+  let inFlight = false;
+
+  const verifyOwnerPasskey = async () => {
+    if (inFlight) return;
+    inFlight = true;
+    button.disabled = true;
+    status.textContent = "आपके device का Touch ID / Passkey prompt खोला जा रहा है…";
+    try {
+      if (typeof supabase.auth.signInWithPasskey !== "function") {
+        throw new Error("Passkey sign-in उपलब्ध नहीं है। पेज refresh करके फिर कोशिश करें।");
+      }
+      const { data, error } = await supabase.auth.signInWithPasskey();
+      if (error) throw error;
+      const user = data?.user || data?.session?.user;
+      if (user?.id !== OWNER_ADMIN_USER_ID || user?.app_metadata?.role !== "admin") {
+        await supabase.auth.signOut();
+        throw new Error("यह Passkey Owner Admin account की नहीं है। प्रवेश रोक दिया गया है।");
+      }
+
+      const { data: member, error: memberError } = await supabase
+        .from("admin_team_members")
+        .select("role,status")
+        .eq("user_id", OWNER_ADMIN_USER_ID)
+        .maybeSingle();
+      if (memberError) throw memberError;
+      if (member?.role !== "admin" || member?.status !== "active") {
+        await supabase.auth.signOut();
+        throw new Error("Owner Admin membership active नहीं है। Dashboard नहीं खोला गया।");
+      }
+
+      sessionStorage.setItem("myamin_admin_passkey_verified", OWNER_ADMIN_USER_ID + ":" + Date.now());
+      status.textContent = "Passkey और Owner Admin membership verified. Administration खोला जा रहा है…";
+      window.location.replace("ma-control-9f2c7a61b4e8.html");
+    } catch (error) {
+      sessionStorage.removeItem("myamin_admin_passkey_verified");
+      status.textContent = "Verification पूरी नहीं हुई: " + (error?.message || "कृपया दोबारा कोशिश करें।") + " नीचे बटन दबाकर फिर Passkey prompt खोलें।";
+      button.disabled = false;
+    } finally {
+      inFlight = false;
+    }
+  };
+
+  button.addEventListener("click", verifyOwnerPasskey);
+  // Try to show the device Passkey prompt immediately after the QR landing page opens.
+  // If the browser requires a user gesture or the user cancels, the visible button is the fallback.
+  window.setTimeout(() => { verifyOwnerPasskey(); }, 250);
+};
+
 const handleAdminLogin = async (event) => {
  event.preventDefault();event.stopImmediatePropagation();
  const button=$("adminLoginForm")?.querySelector('button[type="submit"]'),message=$("adminLoginMessage"),verified=$("adminVerifiedPanel");
@@ -531,6 +590,7 @@ window.logout = async () => {
   say("loginMessage", "आप सुरक्षित रूप से Logout हो गए।");
 };
 document.addEventListener("DOMContentLoaded", () => {
+  initializeAdminQrPasskeyGate();
   ensureCustomerFields();
   ensureAminFields();
   $("loginForm")?.addEventListener("submit", handleCustomerLogin, true);
