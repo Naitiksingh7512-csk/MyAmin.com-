@@ -1130,4 +1130,42 @@ body[data-print-target="admin"] #adminBusinessCardBackPreview .admin-id-brand im
 }
 </style>
 
+
+<!-- Business-card print sizing: keep the card at 96 x 54 mm and enlarge only its QR. -->
+<style id="business-card-print-qr-size-v2">
+#adminBusinessCardPreview .admin-id-media,
+#adminBusinessCardPreview .admin-id-qr-wrap {
+  min-width:0!important;
+}
+#adminBusinessCardPreview .admin-id-qr-wrap {
+  width:100%!important;
+  box-sizing:border-box!important;
+  padding:5px!important;
+  gap:3px!important;
+}
+#adminBusinessCardPreview .admin-id-qr-frame {
+  width:184px!important;
+  height:184px!important;
+  max-width:100%!important;
+  padding:4px!important;
+  box-sizing:border-box!important;
+}
+#adminBusinessCardPreview #businessCardQrImage {
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:100%!important;
+  object-fit:contain!important;
+  image-rendering:pixelated!important;
+}
+@media print {
+  body[data-print-target="admin"] #adminBusinessCardPreview .admin-id-qr-frame {
+    width:17mm!important;
+    height:17mm!important;
+    max-width:17mm!important;
+    padding:0.6mm!important;
+  }
+}
+</style>
+
 </body></html>
