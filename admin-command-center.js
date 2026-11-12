@@ -267,7 +267,14 @@
       const cell=v=>esc(v===null||v===undefined?"—":typeof v==="object"?JSON.stringify(v):String(v));
       box.innerHTML='<table style="min-width:900px"><thead><tr>'+currentTableColumns.map(c=>'<th>'+esc(c)+'</th>').join("")+'</tr></thead><tbody>'+currentTableRows.map((r,i)=>'<tr data-cc-row="'+i+'" tabindex="0" title="Tap to view full record">'+currentTableColumns.map(c=>'<td style="max-width:260px;overflow-wrap:anywhere;white-space:pre-wrap">'+cell(r[c])+'</td>').join("")+'</tr>').join("")+'</tbody></table>';
       box.querySelectorAll("[data-cc-row]").forEach(tr=>{
-        const open=()=>showDetails(table+" · Record details",currentTableRows[Number(tr.dataset.ccRow)]);
+        const open=async()=>{
+          const record=currentTableRows[Number(tr.dataset.ccRow)];
+          try {
+            if(table==="user_profiles"&&record.id){const detail=await ownerAction({action:"account_detail",user_id:record.id});showDetails("Registered account · Full information",detail.account||detail);}
+            else if(["amin_profiles","bookings","payment_records","amin_payment_requests","support_tickets"].includes(table)&&record.id){const detail=await ownerAction({action:"record_detail",table,record_id:record.id});showDetails(table.replaceAll("_"," ")+" · Full information",detail.detail||detail);}
+            else showDetails(table+" · Record details",record);
+          } catch(err){notify("Full record details could not be loaded: "+(err.message||"Unknown error"));}
+        };
         tr.addEventListener("click",open);
         tr.addEventListener("keydown",ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();open();}});
       });
