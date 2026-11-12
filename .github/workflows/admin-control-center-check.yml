@@ -9,7 +9,7 @@ on:
       - "supabase/functions/owner-control-center/**"
       - ".github/workflows/admin-control-center-check.yml"
   push:
-    branches: [admin-control-center-staging]
+    branches: [main, admin-control-center-staging]
     paths:
       - "admin-command-center.js"
       - "ma-control-9f2c7a61b4e8.html"
