@@ -18,7 +18,6 @@ const TABLES = [
   "bookings","customer_signup_attempts","notifications","payment_records","service_categories",
   "support_ticket_messages","support_tickets","team_attendance","team_member_tasks","user_addresses","user_profiles"
 ];
-const SERVER_ONLY = new Set(["ai_conversations","ai_messages","ai_usage_daily","customer_signup_attempts"]);
 const BOOKING_STATES = new Set(["pending","confirmed","in_progress","completed","cancelled"]);
 const PAYMENT_REQUEST_STATES = new Set(["requested","submitted","verified","rejected"]);
 const AMIN_APPROVAL_STATES = new Set(["pending","approved","rejected","blocked"]);
@@ -68,7 +67,6 @@ Deno.serve(async (req: Request) => {
     if (action === "overview") {
       const counts: Record<string, number | null | string> = {};
       await Promise.all(TABLES.map(async table => {
-        if (SERVER_ONLY.has(table)) { counts[table] = "server-only"; return; }
         const { count, error } = await root.from(table).select("*", { count: "exact", head: true });
         counts[table] = error ? null : (count || 0);
       }));
