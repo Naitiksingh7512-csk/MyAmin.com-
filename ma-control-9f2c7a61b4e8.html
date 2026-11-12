@@ -746,8 +746,8 @@ async function renderPrintCardCanvas(source,html2canvas,width,height){
  await Promise.all([...clone.querySelectorAll(".admin-id-logo")].map(async img=>{
   const response=await fetch(new URL(img.getAttribute("src"),document.baseURI).href,{cache:"no-store"});if(!response.ok)throw new Error("MyAmin logo fetch failed (HTTP "+response.status+").");
   const svg=await response.text(),url=URL.createObjectURL(new Blob([svg],{type:"image/svg+xml;charset=utf-8"}));
-  try{const im=new Image();await new Promise((resolve,reject)=>{im.onload=resolve;im.onerror=()=>reject(new Error("SVG logo decode failed"));im.src=url;});const png=document.createElement("canvas");png.width=1600;png.height=416;const ctx=png.getContext("2d");if(!ctx)throw new Error("PNG canvas unavailable");ctx.fillStyle="#fff";ctx.fillRect(0,0,png.width,png.height);ctx.drawImage(im,0,0,png.width,png.height);img.src=png.toDataURL("image/png");}finally{URL.revokeObjectURL(url);}
-  img.style.setProperty("display","block","important");img.style.setProperty("visibility","visible","important");img.style.setProperty("opacity","1","important");img.style.setProperty("width","250px","important");img.style.setProperty("height","65px","important");img.style.setProperty("max-width","none","important");img.style.setProperty("flex","0 0 250px","important");img.style.setProperty("object-fit","contain","important");img.style.setProperty("object-position","left center","important");img.style.setProperty("background","#fff","important");img.style.setProperty("border-radius","6px","important");img.style.setProperty("padding","3px 6px","important");img.style.setProperty("mix-blend-mode","normal","important");img.style.setProperty("filter","none","important");await img.decode();
+  try{const im=new Image();await new Promise((resolve,reject)=>{im.onload=resolve;im.onerror=()=>reject(new Error("SVG logo decode failed"));im.src=url;});const png=document.createElement("canvas");png.width=1600;png.height=416;const ctx=png.getContext("2d");if(!ctx)throw new Error("PNG canvas unavailable");ctx.clearRect(0,0,png.width,png.height);ctx.drawImage(im,0,0,png.width,png.height);img.src=png.toDataURL("image/png");}finally{URL.revokeObjectURL(url);}
+  img.style.setProperty("display","block","important");img.style.setProperty("visibility","visible","important");img.style.setProperty("opacity","1","important");img.style.setProperty("width","250px","important");img.style.setProperty("height","65px","important");img.style.setProperty("max-width","none","important");img.style.setProperty("flex","0 0 250px","important");img.style.setProperty("object-fit","contain","important");img.style.setProperty("object-position","left center","important");img.style.setProperty("background","transparent","important");img.style.setProperty("border-radius","0","important");img.style.setProperty("padding","0","important");img.style.setProperty("mix-blend-mode","normal","important");img.style.setProperty("filter","none","important");await img.decode();
  }));
  const brand=clone.querySelector(".admin-id-brand");if(brand){brand.style.setProperty("display","flex","important");brand.style.setProperty("flex-direction","row","important");brand.style.setProperty("align-items","center","important");brand.style.setProperty("gap","10px","important");brand.style.setProperty("min-width","0","important");brand.style.setProperty("flex","1 1 auto","important");}
  wrapper.appendChild(clone);document.body.appendChild(wrapper);
@@ -1132,26 +1132,89 @@ body[data-print-target="admin"] #adminBusinessCardBackPreview .admin-id-brand im
 
 
 <!-- Business-card print sizing: keep the card at 96 x 54 mm and enlarge only its QR. -->
-<style id="business-card-print-qr-size-v3">
-.business-card-print-qr .admin-id-media,
-.business-card-print-qr .admin-id-qr-wrap { min-width:0!important; }
-.business-card-print-qr .admin-id-qr-wrap {
- width:100%!important;box-sizing:border-box!important;padding:5px!important;gap:3px!important;
-}
-.business-card-print-qr .admin-id-qr-frame {
- width:184px!important;height:184px!important;max-width:100%!important;
- padding:4px!important;box-sizing:border-box!important;
-}
-.business-card-print-qr #businessCardQrImage,
-.business-card-print-qr .admin-id-qr-frame img {
- display:block!important;width:100%!important;height:100%!important;
- max-width:100%!important;object-fit:contain!important;image-rendering:pixelated!important;
-}
+
+<!-- Print-only card refinement: preserve screen preview; restore transparent logo and readable print typography/QR. -->
+<style id="admin-business-print-layout-final">
 @media print {
- body[data-print-target="admin"] .business-card-print-qr .admin-id-qr-frame {
-  width:17mm!important;height:17mm!important;max-width:17mm!important;padding:0.6mm!important;
+ @page { size: 90mm 60mm; margin: 0; }
+ body[data-print-target="admin"] { background:#fff!important; }
+ body[data-print-target="admin"] .admin-print-page {
+  box-sizing:border-box!important;width:85.6mm!important;height:54mm!important;
+  min-height:54mm!important;max-height:54mm!important;max-width:85.6mm!important;
+  margin:0!important;padding:0!important;overflow:hidden!important;
+  display:flex!important;flex-direction:column!important;position:relative!important;
+  border-radius:2mm!important;box-shadow:none!important;
+  -webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;
+  break-after:page!important;page-break-after:always!important;
+ }
+ body[data-print-target="admin"] .admin-print-page .admin-id-top {
+  flex:0 0 13mm!important;height:13mm!important;min-height:13mm!important;
+  box-sizing:border-box!important;padding:2mm 3mm!important;
+ }
+ body[data-print-target="admin"] .admin-print-page .admin-id-brand {
+  display:flex!important;align-items:center!important;gap:2mm!important;min-width:0!important;
+ }
+ body[data-print-target="admin"] .admin-print-page .admin-id-logo {
+  display:block!important;width:24mm!important;height:8mm!important;max-width:24mm!important;
+  object-fit:contain!important;object-position:left center!important;
+  background:transparent!important;padding:0!important;border:0!important;border-radius:0!important;
+  box-shadow:none!important;mix-blend-mode:normal!important;filter:none!important;
+  opacity:1!important;
+ }
+ body[data-print-target="admin"] .admin-print-page .admin-id-brand strong {
+  font-size:10pt!important;letter-spacing:.6px!important;
+ }
+ body[data-print-target="admin"] .admin-print-page .admin-id-brand small {
+  font-size:6.5pt!important;letter-spacing:.3px!important;
+ }
+ body[data-print-target="admin"] .admin-print-page .admin-id-chip {
+  font-size:7pt!important;padding:1mm 1.5mm!important;
+ }
+ body[data-print-target="admin"] .admin-print-page .admin-id-body {
+  flex:1 1 auto!important;height:auto!important;min-height:0!important;
+  box-sizing:border-box!important;grid-template-columns:minmax(0,1fr) 25mm!important;
+  gap:2mm!important;padding:2.5mm 3mm!important;align-items:center!important;
+ }
+ body[data-print-target="admin"] .admin-print-page .admin-id-details h2 {
+  font-size:13pt!important;line-height:1.12!important;margin:1mm 0!important;
+ }
+ body[data-print-target="admin"] .admin-print-page .admin-id-eyebrow,
+ body[data-print-target="admin"] .admin-print-page .admin-id-role {
+  font-size:8pt!important;letter-spacing:.5px!important;
+ }
+ body[data-print-target="admin"] .admin-print-page .admin-id-details p {
+  font-size:8pt!important;line-height:1.3!important;margin:1mm 0!important;
+ }
+ body[data-print-target="admin"] .admin-print-page .admin-id-footer {
+  font-size:6.5pt!important;gap:2mm!important;margin-top:2mm!important;padding-top:1.5mm!important;
+ }
+ body[data-print-target="admin"] .admin-print-page .admin-id-media {gap:1mm!important;min-width:0!important;}
+ body[data-print-target="admin"] .admin-print-page .admin-id-photo-wrap {
+  width:18mm!important;height:21mm!important;border-width:.5mm!important;
+ }
+ body[data-print-target="admin"] .admin-print-page .admin-id-qr-wrap {
+  width:100%!important;box-sizing:border-box!important;padding:1mm!important;gap:.5mm!important;
+  background:transparent!important;border:0!important;box-shadow:none!important;
+ }
+ body[data-print-target="admin"] .admin-print-page .admin-id-qr-frame {
+  width:19mm!important;height:19mm!important;max-width:19mm!important;
+  padding:.5mm!important;box-sizing:border-box!important;background:#fff!important;
+ }
+ body[data-print-target="admin"] .admin-print-page .admin-id-qr-frame img,
+ body[data-print-target="admin"] .admin-print-page .admin-id-qr-frame canvas {
+  display:block!important;width:100%!important;height:100%!important;object-fit:contain!important;
+ }
+ body[data-print-target="admin"] .admin-print-page .admin-id-qr-wrap small {
+  font-size:6.5pt!important;line-height:1.1!important;
+ }
+ body[data-print-target="admin"] .admin-print-page .admin-id-qr-wrap span {
+  font-size:6pt!important;line-height:1.1!important;
+ }
+ body[data-print-target="admin"] #adminBusinessCardBackPreview .admin-id-body {
+  grid-template-columns:1fr!important;
  }
 }
 </style>
+
 
 </body></html>
