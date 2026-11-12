@@ -161,6 +161,37 @@ Deno.serve(async (req: Request) => {
       return reply({ success: true, request_id: requestId, status });
     }
 
+    if (action === "set_payment_record_status") {
+      const paymentId = String(body.payment_id || "");
+      const status = String(body.status || "");
+      const allowed = new Set(["pending","submitted","verified","failed","refunded"]);
+      if (!/^[0-9a-f-]{36}$/i.test(paymentId) || !allowed.has(status)) return reply({ error: "Invalid payment record or status" }, 400);
+      const patch: Record<string, unknown> = { status, updated_at: new Date().toISOString() };
+      if (status === "verified") { patch.verified_by = caller.id; patch.verified_at = new Date().toISOString(); }
+      const { data: payment, error } = await root.from("payment_records").update(patch)
+        .eq("id", paymentId).select("id,payer_user_id,payee_user_id,status,amount,currency").maybeSingle();
+      if (error) return reply({ error: error.message }, 400);
+      if (!payment) return reply({ error: "Payment record not found" }, 404);
+      await audit("payment_record_status_changed","payment_record",paymentId,{status,administrative_only:true});
+      const recipients = [...new Set([payment.payer_user_id,payment.payee_user_id].filter(Boolean))] as string[];
+      for (const userId of recipients) await notify(userId,"Payment record updated","Your payment record status is now: "+status,"payment_status","payment_records",paymentId);
+      return reply({ success: true, payment_id: paymentId, status, administrative_only: true });
+    }
+
+    if (action === "set_support_ticket_status") {
+      const ticketId = String(body.ticket_id || "");
+      const status = String(body.status || "");
+      const allowed = new Set(["open","in_progress","resolved","closed"]);
+      if (!/^[0-9a-f-]{36}$/i.test(ticketId) || !allowed.has(status)) return reply({ error: "Invalid support ticket or status" }, 400);
+      const { data: ticket, error } = await root.from("support_tickets").update({ status, updated_at: new Date().toISOString() })
+        .eq("id",ticketId).select("id,user_id,subject,status").maybeSingle();
+      if (error) return reply({ error: error.message }, 400);
+      if (!ticket) return reply({ error: "Support ticket not found" }, 404);
+      await audit("support_ticket_status_changed","support_ticket",ticketId,{status});
+      await notify(ticket.user_id,"Support ticket updated","Your support ticket '"+String(ticket.subject||"").slice(0,100)+"' is now "+status+".","support_status","support_tickets",ticketId);
+      return reply({ success: true, ticket_id: ticketId, status });
+    }
+
     if (action === "send_notification") {
       const userId = String(body.user_id || "");
       const title = String(body.title || "").trim();
