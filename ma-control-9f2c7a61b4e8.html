@@ -223,7 +223,35 @@ body{font-family:Inter,"SF Pro Display","Segoe UI",Arial,sans-serif}
  body[data-print-target="admin"] .admin-id-card .admin-id-top{height:15%!important;min-height:0!important}
  body[data-print-target="admin"] .admin-id-card .admin-id-body{height:85%!important;padding:3mm!important}
 }
-</style></head>
+</style>
+<style id="admin-card-logo-final-cleanup-v4">
+/* Final cascade override: old premium refresh styles applied multiply/contrast and caused the grey logo smudge. */
+.admin-id-card .admin-id-brand img.admin-id-logo,
+#adminCardPreview .admin-id-brand img.admin-id-logo,
+#adminCardBackPreview .admin-id-brand img.admin-id-logo,
+#adminBusinessCardPreview .admin-id-brand img.admin-id-logo,
+#adminBusinessCardBackPreview .admin-id-brand img.admin-id-logo,
+body[data-print-target="admin"] .admin-id-card .admin-id-brand img.admin-id-logo {
+ display:block!important;visibility:visible!important;opacity:1!important;
+ width:145px!important;height:48px!important;max-width:100%!important;flex:0 1 145px!important;
+ object-fit:contain!important;object-position:center!important;
+ background:#fff!important;padding:4px 7px!important;border:0!important;border-radius:7px!important;
+ box-shadow:0 2px 8px rgba(0,20,45,.18)!important;
+ mix-blend-mode:normal!important;filter:none!important;
+ -webkit-filter:none!important;transform:none!important;
+}
+@media(max-width:560px){
+ .admin-id-card .admin-id-brand img.admin-id-logo{width:112px!important;height:40px!important;flex-basis:112px!important}
+}
+@media print{
+ body[data-print-target="admin"] .admin-id-card .admin-id-brand img.admin-id-logo{
+  width:32mm!important;height:10mm!important;max-width:none!important;flex-basis:32mm!important;
+  background:#fff!important;mix-blend-mode:normal!important;filter:none!important;-webkit-filter:none!important;
+  -webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;
+ }
+}
+</style>
+</head>
 <body><div id="adminBootGate" class="admin-boot-gate"><div><h2>My Amin Admin</h2><p>Secure Admin password, session और Passkey verification जाँची जा रही है…</p></div></div>
 <header class="top"><div class="brand"><img src="assets/myamin-logo.svg" alt="My Amin logo"><div><strong data-en="Administration" data-hi="प्रशासन">Administration</strong><small data-en="My Amin control centre" data-hi="My Amin नियंत्रण केंद्र">My Amin control centre</small></div></div><div class="top-actions"><button id="topAdminCardBtn" type="button">🪪 Admin ID Card</button><button id="langBtn" type="button">हिंदी</button><button type="button" onclick="location.href='index.html'" data-en="← Website" data-hi="← वेबसाइट">← Website</button></div></header>
 <main class="wrap">
@@ -272,14 +300,14 @@ body{font-family:Inter,"SF Pro Display","Segoe UI",Arial,sans-serif}
   <p id="adminCardMessage" class="notice" aria-live="polite">Your saved card will appear below.</p>
  </form>
  <article id="adminCardPreview" class="admin-id-card">
-  <div class="admin-id-top"><div class="admin-id-brand"><img class="admin-id-logo" src="assets/myamin-logo.svg?v=20261112-vector-color" alt="MyAmin.com logo"><div><strong>ADMINISTRATION</strong><small>OFFICIAL DIGITAL IDENTITY</small></div></div><span class="admin-id-chip">OFFICIAL ID</span></div>
+  <div class="admin-id-top"><div class="admin-id-brand"><img class="admin-id-logo" src="assets/myamin-logo.svg?v=20261112-clean-card-logo" alt="MyAmin.com logo"><div><strong>ADMINISTRATION</strong><small>OFFICIAL DIGITAL IDENTITY</small></div></div><span class="admin-id-chip">OFFICIAL ID</span></div>
   <div class="admin-id-body">
    <div class="admin-id-details"><div class="admin-id-eyebrow">ADMINISTRATION</div><h2 id="adminCardPreviewName">Main Administrator</h2><div id="adminCardPreviewRole" class="admin-id-role">Main Administrator</div><p id="adminCardPreviewPhone"></p><p id="adminCardPreviewEmail" class="admin-id-email"></p><div class="admin-id-footer"><span>AUTHORIZED ADMINISTRATOR</span><span>MYAMIN.COM</span></div></div>
    <div class="admin-id-media"><div class="admin-id-photo-wrap"><img id="adminCardPreviewPhoto" alt="Admin profile" hidden><div id="adminCardPreviewInitials">MA</div></div><div class="admin-id-qr-wrap"><div class="admin-id-qr-frame"><img id="adminCardQrImage" alt="Scan to open MyAmin Admin Panel QR code" loading="eager"></div><small>SCAN TO OPEN ADMIN PANEL</small><span id="adminCardQrStatus" aria-live="polite">Preparing secure QR…</span></div></div>
   </div>
  </article>
  <article id="adminCardBackPreview" class="admin-id-card admin-print-page">
-  <div class="admin-id-top"><div class="admin-id-brand"><img class="admin-id-logo" src="assets/myamin-logo.svg?v=20261112-vector-color" alt="MyAmin.com logo"><div><strong>FOUNDER IDENTITY</strong><small>MY AMIN · OFFICIAL RECORD</small></div></div><span class="admin-id-chip">BACK SIDE</span></div>
+  <div class="admin-id-top"><div class="admin-id-brand"><img class="admin-id-logo" src="assets/myamin-logo.svg?v=20261112-clean-card-logo" alt="MyAmin.com logo"><div><strong>FOUNDER IDENTITY</strong><small>MY AMIN · OFFICIAL RECORD</small></div></div><span class="admin-id-chip">BACK SIDE</span></div>
   <div class="admin-id-body" style="grid-template-columns:1fr">
    <div class="admin-id-details"><div class="admin-id-eyebrow">OFFICIAL FOUNDER ID</div><h2>Naitik Singh</h2><div class="admin-id-role">Founder · My Amin</div><p style="font-size:14px;line-height:1.7">This is the official ID card issued to the Founder of My Amin, Naitik Singh.</p><div class="admin-id-footer"><span>FOUNDER: NAITIK SINGH</span><span>MYAMIN.COM</span></div></div>
   </div>
@@ -290,11 +318,11 @@ body{font-family:Inter,"SF Pro Display","Segoe UI",Arial,sans-serif}
  </div>
  <p id="businessCardDownloadStatus" class="notice" aria-live="polite">PDF में A4 के पहले पेज पर 10 front और दूसरे पेज पर 10 back business cards होंगे। Print करके cut करें।</p>
  <article id="adminBusinessCardPreview" class="admin-id-card admin-print-page">
-  <div class="admin-id-top"><div class="admin-id-brand"><img class="admin-id-logo" src="assets/myamin-logo.svg?v=20261112-vector-color" alt="MyAmin.com logo"><div><strong>MY AMIN</strong><small>LAND SERVICES · DIGITAL INDIA</small></div></div><span class="admin-id-chip">BUSINESS CARD</span></div>
+  <div class="admin-id-top"><div class="admin-id-brand"><img class="admin-id-logo" src="assets/myamin-logo.svg?v=20261112-clean-card-logo" alt="MyAmin.com logo"><div><strong>MY AMIN</strong><small>LAND SERVICES · DIGITAL INDIA</small></div></div><span class="admin-id-chip">BUSINESS CARD</span></div>
   <div class="admin-id-body"><div class="admin-id-details"><div class="admin-id-eyebrow">FOUNDER</div><h2>Naitik Singh</h2><div class="admin-id-role">Founder · My Amin</div><p>Discover land services and connect with Amin professionals.</p><div class="admin-id-footer"><span>MYAMIN.COM</span><span>LAND SERVICES</span></div></div><div class="admin-id-media"><div class="admin-id-qr-wrap"><div class="admin-id-qr-frame"><img id="businessCardQrImage" alt="Scan to open MyAmin website"></div><small>SCAN TO VISIT WEBSITE</small><span id="businessCardQrStatus">Preparing website QR…</span></div></div></div>
  </article>
  <article id="adminBusinessCardBackPreview" class="admin-id-card admin-print-page">
-  <div class="admin-id-top"><div class="admin-id-brand"><img class="admin-id-logo" src="assets/myamin-logo.svg?v=20261112-vector-color" alt="MyAmin.com logo"><div><strong>ABOUT MY AMIN</strong><small>LAND SERVICES · DIGITAL INDIA</small></div></div><span class="admin-id-chip">BACK SIDE</span></div>
+  <div class="admin-id-top"><div class="admin-id-brand"><img class="admin-id-logo" src="assets/myamin-logo.svg?v=20261112-clean-card-logo" alt="MyAmin.com logo"><div><strong>ABOUT MY AMIN</strong><small>LAND SERVICES · DIGITAL INDIA</small></div></div><span class="admin-id-chip">BACK SIDE</span></div>
   <div class="admin-id-body" style="grid-template-columns:1fr"><div class="admin-id-details"><div class="admin-id-eyebrow">ONE PLATFORM · LOCAL LAND SERVICES</div><h2>My Amin</h2><p style="font-size:13px;line-height:1.7">Find nearby Amin professionals, explore land measurement services, request appointments and connect with service providers.</p><div class="admin-id-footer"><span>VISIT: MYAMIN.COM</span><span>SCAN THE FRONT QR TO OPEN THE WEBSITE</span></div></div></div>
  </article>
 </section>
