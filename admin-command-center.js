@@ -1,4 +1,4 @@
-/* MyAmin Owner Command Center — read-only operational overview.
+/* MyAmin Owner Command Center — Owner-only operational dashboard and controls.
    The existing admin-guard.js remains the authority gate. This module re-checks
    the immutable Owner identity, app_metadata role, and active DB membership. */
 (() => {
@@ -74,6 +74,8 @@
         <div class="cc-box"><h3 style="margin-top:0">Administration modules</h3><div id="ccModules"></div></div>
         <div class="cc-box"><h3 style="margin-top:0">Platform & backup readiness</h3><div id="ccPlatform"></div></div><div class="cc-box" style="grid-column:1/-1"><h3 style="margin-top:0">Complete database inventory · 25 tables</h3><p class="cc-muted">Live counts from the secure Owner backend. Authentication credentials and token hashes are never exposed.</p><div id="ccInventory" class="cc-grid"></div></div>
       <div class="cc-box" style="grid-column:1/-1"><h3 style="margin-top:0">Owner data explorer · all 25 tables</h3><p class="cc-muted">Owner-only, server-side paginated records. Personal information and user-submitted content are confidential. Credential hashes and live call signaling payloads are excluded.</p><div class="cc-actions"><select id="ccTableSelect" style="min-width:220px;padding:9px;border-radius:9px;background:#07172b;color:white;border:1px solid #38516b"><option value="user_profiles">User profiles</option><option value="amin_profiles">Amin profiles</option><option value="bookings">Bookings</option><option value="payment_records">Payment records</option><option value="amin_payment_requests">Amin payment requests</option><option value="support_tickets">Support tickets</option><option value="support_ticket_messages">Support messages</option><option value="notifications">Notifications</option><option value="admin_team_members">Admin team members</option><option value="team_member_tasks">Team tasks</option><option value="team_attendance">Team attendance</option><option value="admin_announcements">Announcements & ads</option><option value="admin_settings">Website settings</option><option value="admin_audit_logs">Audit logs</option><option value="user_addresses">Customer addresses</option><option value="service_categories">Service categories</option><option value="amin_reviews">Amin reviews</option><option value="amin_favorites">Amin favorites</option><option value="booking_calls">Booking calls</option><option value="booking_call_signals">Call signals (metadata)</option><option value="booking_messages">Booking messages</option><option value="ai_conversations">AI conversations</option><option value="ai_messages">AI messages</option><option value="ai_usage_daily">AI daily usage</option><option value="customer_signup_attempts">Signup attempts (hashed IP)</option></select><button class="cc-btn" id="ccLoadTable" type="button">Load records</button><button class="cc-btn secondary" id="ccPrevPage" type="button">Previous</button><button class="cc-btn secondary" id="ccNextPage" type="button">Next</button><button class="cc-btn secondary" id="ccExportTable" type="button">Export current page CSV</button></div><div id="ccTableStatus" class="cc-muted" style="margin-top:12px">Choose a table and press Load records.</div><div id="ccTableData" class="table-wrap" style="margin-top:12px"></div></div>
+      <div class="cc-box" style="grid-column:1/-1"><h3 style="margin-top:0">Live Operations Control · Bookings, Payments & Support</h3><p class="cc-muted">These actions update Supabase and create audit events. Payment status is an administrative record only; it does not confirm settlement with a bank or payment gateway.</p><div class="cc-actions"><select id="ccOpsTable" style="min-width:220px;padding:9px;border-radius:9px;background:#07172b;color:white;border:1px solid #38516b"><option value="bookings">Bookings</option><option value="amin_payment_requests">Amin payment requests</option><option value="payment_records">Payment records</option><option value="support_tickets">Support tickets</option></select><button class="cc-btn" id="ccLoadOps" type="button">Load latest records</button></div><div id="ccOpsStatus" class="cc-muted" style="margin-top:12px">Select an operational area and load records.</div><div id="ccOpsRows" style="margin-top:12px"></div></div>
+      <div class="cc-box" style="grid-column:1/-1"><h3 style="margin-top:0">Website Settings · Owner editor</h3><p class="cc-muted">Save a setting to the Supabase admin_settings table. Use valid JSON for the value, for example true, 25, or "Maintenance notice". Existing site modules may require their own supported setting keys.</p><div class="cc-actions"><input id="ccSettingKey" maxlength="60" placeholder="setting_key" style="flex:1;min-width:150px;padding:9px;border-radius:9px;border:1px solid #38516b;background:#07172b;color:white"><input id="ccSettingValue" placeholder='JSON value, e.g. "hello" or true' style="flex:2;min-width:200px;padding:9px;border-radius:9px;border:1px solid #38516b;background:#07172b;color:white"><button class="cc-btn" id="ccSaveSetting" type="button">Save setting</button></div><div id="ccSettingStatus" class="cc-muted" style="margin-top:8px"></div></div>
       <div class="cc-box" style="grid-column:1/-1"><h3 style="margin-top:0">Owner account operations</h3><p class="cc-muted">Secure server-side account controls. Blocking an account prevents sign-in; it does not delete user data.</p><div class="cc-actions"><input id="ccAccountSearch" type="search" placeholder="Search name, phone or district" style="flex:1;min-width:180px;padding:9px;border-radius:9px;border:1px solid #38516b;background:#07172b;color:white"><button class="cc-btn" id="ccLoadAccounts" type="button">Load accounts</button></div><div id="ccAccounts" class="cc-muted" style="margin-top:12px">Press Load accounts to view customer and Amin account records.</div><form id="ccNoticeForm" style="display:none;margin-top:16px;padding-top:14px;border-top:1px solid #27435f"><strong id="ccNoticeRecipient">Send account notification</strong><input id="ccNoticeUserId" type="hidden"><input id="ccNoticeTitle" maxlength="100" required placeholder="Notification title" style="display:block;width:100%;margin-top:8px;padding:10px;border-radius:9px;border:1px solid #38516b;background:#07172b;color:white"><textarea id="ccNoticeMessage" maxlength="1200" required placeholder="Write a message…" style="display:block;width:100%;margin-top:8px;padding:10px;border-radius:9px;border:1px solid #38516b;background:#07172b;color:white"></textarea><div class="cc-actions"><button class="cc-btn" type="submit">Send notification</button><button class="cc-btn secondary" id="ccNoticeCancel" type="button">Cancel</button></div></form></div>
       </div>
       <p class="cc-foot" id="ccUpdated">Live database metrics are loaded only after Owner verification. No secrets, payment credentials, or customer message bodies are displayed here.</p>`;
@@ -147,7 +149,7 @@
       $("ccPlatform").innerHTML =
         row("Database engine","PostgreSQL 17")+
         row("Supabase region","ap-southeast-1")+
-        row("Dashboard source","GitHub staging")+
+        row("Dashboard source","GitHub main · Pages deployed")+
         row("Automated backup export","Not verified","warn")+
         row("Disaster recovery restore drill","Not performed","warn")+
         row("Payments gateway / bank webhook","Not connected","warn");
@@ -229,8 +231,56 @@
     a.href=url;a.download="myamin-"+$("ccTableSelect").value+"-page-"+(Math.floor(tableOffset/50)+1)+".csv";
     document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
   }
+  const OP_STATUS = {
+    bookings:["pending","confirmed","in_progress","completed","cancelled"],
+    amin_payment_requests:["requested","submitted","verified","rejected","cancelled"],
+    payment_records:["pending","submitted","verified","failed","refunded"],
+    support_tickets:["open","in_progress","resolved","closed"]
+  };
+  async function loadOps() {
+    const table=$("ccOpsTable").value, status=$("ccOpsStatus"), box=$("ccOpsRows");
+    status.textContent="Loading latest "+table.replaceAll("_"," ")+"…";box.innerHTML="";
+    try {
+      const r=await ownerAction({action:"list_table",table,limit:50,offset:0});
+      const cols=r.columns||[], rows=r.rows||[];
+      status.textContent=number(r.total||0)+" total records · latest "+rows.length+" shown";
+      if(!rows.length){box.textContent="No records found.";return;}
+      const label=(v)=>esc(v===null||v===undefined?"—":typeof v==="object"?JSON.stringify(v):String(v));
+      box.innerHTML=rows.map(rec=>{
+        const id=rec.id, current=rec.status||"unknown";
+        const summary=table==="bookings" ? [rec.service,rec.place,rec.preferred_date].filter(Boolean).join(" · ")
+          : table==="amin_payment_requests" ? ["₹"+rec.amount,rec.note,rec.transaction_reference].filter(Boolean).join(" · ")
+          : table==="payment_records" ? ["₹"+rec.amount,rec.currency,rec.transaction_reference].filter(Boolean).join(" · ")
+          : [rec.subject,rec.priority].filter(Boolean).join(" · ");
+        const statuses=OP_STATUS[table]||[];
+        return '<article class="cc-card" style="margin:8px 0"><div class="cc-row"><div><strong style="font-size:14px">'+label(summary||id)+'</strong><small>'+label(id)+'</small></div><span class="cc-status">'+label(current)+'</span></div><div class="cc-actions"><select data-op-status="'+label(id)+'" style="padding:8px;border-radius:9px;background:#07172b;color:white;border:1px solid #38516b">'+statuses.map(s=>'<option value="'+s+'" '+(s===current?"selected":"")+'>'+s+'</option>').join("")+'</select><button class="cc-btn" type="button" data-op-save="'+label(id)+'">Update status</button></div></article>';
+      }).join("");
+      box.querySelectorAll("[data-op-save]").forEach(btn=>btn.addEventListener("click",async()=>{
+        const id=btn.dataset.opSave, select=box.querySelector('[data-op-status="'+CSS.escape(id)+'"]'), next=select.value;
+        if(!confirm("Update "+table+" status to "+next+"?"))return;
+        btn.disabled=true;
+        try {
+          const action=table==="bookings"?"set_booking_status":table==="amin_payment_requests"?"set_payment_request_status":table==="payment_records"?"set_payment_record_status":"set_support_ticket_status";
+          const payload=table==="bookings"?{booking_id:id,status:next}:table==="amin_payment_requests"?{request_id:id,status:next}:table==="payment_records"?{payment_id:id,status:next}:{ticket_id:id,status:next};
+          await ownerAction({action,...payload});notify("Status updated in Supabase.");await loadOps();
+        } catch(err){notify("Update failed: "+(err.message||"Unknown error"));btn.disabled=false;}
+      }));
+    } catch(e){status.textContent="Could not load operational records: "+(e.message||"Unknown error");}
+  }
+  async function saveSetting() {
+    const key=$("ccSettingKey").value.trim(), raw=$("ccSettingValue").value.trim(), status=$("ccSettingStatus");
+    if(!key||!raw){status.textContent="Enter both a setting key and JSON value.";return;}
+    let value;try{value=JSON.parse(raw);}catch{status.textContent="Value must be valid JSON (strings need double quotes).";return;}
+    const btn=$("ccSaveSetting");btn.disabled=true;status.textContent="Saving securely…";
+    try{await ownerAction({action:"set_website_setting",setting_key:key,setting_value:value});status.textContent="Saved to Supabase. Check the relevant website module to confirm it consumes this key.";notify("Website setting saved.");}
+    catch(e){status.textContent="Save failed: "+(e.message||"Unknown error");}
+    finally{btn.disabled=false;}
+  }
   function bindAccountControls() {
     $("ccLoadAccounts")?.addEventListener("click",loadAccounts);
+    $("ccLoadOps")?.addEventListener("click",loadOps);
+    $("ccOpsTable")?.addEventListener("change",loadOps);
+    $("ccSaveSetting")?.addEventListener("click",saveSetting);
     $("ccLoadTable")?.addEventListener("click",()=>{tableOffset=0;loadTable();});
     $("ccPrevPage")?.addEventListener("click",()=>{tableOffset=Math.max(0,tableOffset-50);loadTable();});
     $("ccNextPage")?.addEventListener("click",()=>{if(tableOffset+50<currentTableTotal){tableOffset+=50;loadTable();}});
