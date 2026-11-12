@@ -92,6 +92,29 @@ Deno.serve(async (req: Request) => {
       return reply({ success: true, total: count || 0, offset, limit, accounts: (data || []).map(x => ({ ...x, amin: aminMap.get(x.id) || null })) });
     }
 
+    if (action === "account_detail") {
+      const userId = String(body.user_id || "");
+      if (!/^[0-9a-f-]{36}$/i.test(userId)) return reply({ error: "Invalid account ID" }, 400);
+      const [{ data: profile, error: profileError }, { data: amin, error: aminError }, { data: addresses, error: addressError }, { data: bookings, error: bookingError }, { data: payments, error: paymentError }, { data: requests, error: requestError }, { data: reviews, error: reviewError }, { data: authResult, error: authError }] = await Promise.all([
+        root.from("user_profiles").select("*").eq("id", userId).maybeSingle(),
+        root.from("amin_profiles").select("id,user_id,profile_uid,display_name,phone,whatsapp,state,district,place,business_reference,experience,services,photo_path,upi_id,upi_qr_path,approval_status,created_at,updated_at,location_lat,location_lng,location_shared_at,account_status,video_call_enabled,instagram_url,facebook_url,youtube_url").eq("user_id", userId).maybeSingle(),
+        root.from("user_addresses").select("id,label,address_line,state,district,pincode,latitude,longitude,is_default,created_at,updated_at").eq("user_id", userId).order("created_at",{ascending:false}).limit(20),
+        root.from("bookings").select("id,service,state,district,place,preferred_date,preferred_time,status,service_amount,commission_paid,created_at,completed_at,amin_user_id").or("customer_user_id.eq."+userId+",amin_user_id.eq."+userId).order("created_at",{ascending:false}).limit(20),
+        root.from("payment_records").select("id,booking_id,payer_user_id,payee_user_id,amount,currency,payment_method,transaction_reference,status,proof_path,verified_by,verified_at,created_at,updated_at").or("payer_user_id.eq."+userId+",payee_user_id.eq."+userId).order("created_at",{ascending:false}).limit(20),
+        root.from("amin_payment_requests").select("id,amount,note,payment_link,status,transaction_reference,proof_path,verified_by,verified_at,created_at,updated_at").eq("amin_user_id",userId).order("created_at",{ascending:false}).limit(20),
+        root.from("amin_reviews").select("id,booking_id,rating,review,is_visible,created_at,customer_user_id").eq("amin_user_id",userId).order("created_at",{ascending:false}).limit(20),
+        root.auth.admin.getUserById(userId)
+      ]);
+      const err = profileError || aminError || addressError || bookingError || paymentError || requestError || reviewError || authError;
+      if (err) return reply({ error: "Account detail lookup failed: " + err.message }, 400);
+      if (!profile && !amin) return reply({ error: "Account not found" }, 404);
+      await audit("owner_account_detail_viewed","auth_user",userId,{has_amin_profile:!!amin});
+      return reply({ success:true, account:{
+        auth:{email:authResult?.user?.email||null,phone:authResult?.user?.phone||null,created_at:authResult?.user?.created_at||null,last_sign_in_at:authResult?.user?.last_sign_in_at||null,email_confirmed_at:authResult?.user?.email_confirmed_at||null},
+        profile,amin_profile:amin,addresses:addresses||[],bookings:bookings||[],payment_records:payments||[],amin_payment_requests:requests||[],amin_reviews:reviews||[]
+      }});
+    }
+
     if (action === "set_account_status") {
       const userId = String(body.user_id || "");
       const status = String(body.status || "");
