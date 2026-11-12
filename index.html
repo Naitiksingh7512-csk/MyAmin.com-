@@ -1356,7 +1356,7 @@ document.querySelectorAll("[data-action='logout']").forEach(button=>{
   button.addEventListener("click",()=>{logout();closeMenu();});
 });
 function refreshAminMenuProfile(){const a=read(DB.aminProfile,null),b=$("aminMenuProfile");if(!b)return;b.style.display=a?"flex":"none";if(a){$("aminMenuProfileName").textContent=a.name;$("aminMenuProfileId").textContent=a.profileId;$("aminMenuAvatar").src=a.photo||"";$("aminMenuAvatar").hidden=!a.photo;$("aminMenuAvatarFallback").hidden=!!a.photo;}}
-function refreshCustomerMenuProfile(){const u=read(DB.user,null),b=$("customerMenuProfile");if(!b)return;b.style.display=u?"flex":"none";if(u){const name=u.name||u.full_name||u.username||u.email||"Customer";$("customerMenuProfileName").textContent=name;$("customerMenuProfileEmail").textContent=u.username?"Username: "+u.username:"Customer account";const img=$("customerMenuAvatar"),fallback=$("customerMenuAvatarFallback"),photo=u.photo||u.photo_url||u.avatar_url||"";if(img){img.onload=()=>{img.hidden=false;if(fallback)fallback.hidden=true;};img.onerror=()=>{img.hidden=true;if(fallback)fallback.hidden=false;};img.hidden=!photo;if(photo)img.src=photo;else img.removeAttribute("src");}if(fallback)fallback.hidden=!photo;}}
+function refreshCustomerMenuProfile(){const u=read(DB.user,null),b=$("customerMenuProfile");if(!b)return;b.style.display=u?"flex":"none";if(u){const name=u.name||u.full_name||u.username||u.email||"Customer";$("customerMenuProfileName").textContent=name;$("customerMenuProfileEmail").textContent=u.role==="owner_admin"?"Owner · Admin":(u.username?"Username: "+u.username:"Customer account");const img=$("customerMenuAvatar"),fallback=$("customerMenuAvatarFallback"),photo=u.photo||u.photo_url||u.avatar_url||"";if(img){img.onload=()=>{img.hidden=false;if(fallback)fallback.hidden=true;};img.onerror=()=>{img.hidden=true;if(fallback)fallback.hidden=false;};img.hidden=!photo;if(photo)img.src=photo;else img.removeAttribute("src");}if(fallback)fallback.hidden=!photo;}}
 refreshCustomerMenuProfile();
 async function openCustomerAccount(){
  const client=window.myAminSupabase;
@@ -1414,7 +1414,7 @@ async function openCustomerAccount(){
   const img=$("customerAccountAvatar"),fallback=$("customerAccountAvatarFallback");
   if(img){img.onload=()=>{img.hidden=false;if(fallback)fallback.hidden=true;};img.onerror=()=>{img.hidden=true;if(fallback)fallback.hidden=false;};img.src=photo||"";img.hidden=!photo;}
   if(fallback)fallback.hidden=!!photo;
-  save(DB.user,{...local,id:user.id,name,phone,district,photo,username});
+  save(DB.user,{...local,id:user.id,role:isAdmin?"owner_admin":"customer",accountLabel:isAdmin?"Owner · Admin":"Customer account",name,phone,district,photo,username});
   refreshCustomerMenuProfile();
   if(!p){
    try{const {error}=await client.from("user_profiles").upsert({id:user.id,full_name:name,phone:phone||null,district:district||null,photo_url:photo||null},{onConflict:"id"});if(error)throw error;}
