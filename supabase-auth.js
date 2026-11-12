@@ -167,13 +167,16 @@ const showAuthState = async (session) => {
     if (typeof window.refreshAminMenuProfile === "function") window.refreshAminMenuProfile();
   } else {
     const meta = session.user.user_metadata || {};
+    const isOwnerAdmin = session.user.id === "24dd2630-4624-46ee-8c54-37b9dc8fcd64" && session.user.app_metadata?.role === "admin";
     let previous = {};
     try { previous = JSON.parse(localStorage.getItem("myamin_demo_user_v1") || "{}"); } catch {}
     const emailName = (session.user.email || "").split("@")[0];
     const username = meta.username || meta.name || meta.full_name || previous.username || emailName || "";
     localStorage.setItem("myamin_demo_user_v1", JSON.stringify({
       id: session.user.id,
-      name: p?.full_name || meta.full_name || meta.name || meta.username || previous.name || previous.username || emailName || "Customer",
+      role: isOwnerAdmin ? "owner_admin" : "customer",
+      accountLabel: isOwnerAdmin ? "Owner · Admin" : "Customer account",
+      name: p?.full_name || meta.full_name || meta.name || meta.username || previous.name || previous.username || emailName || (isOwnerAdmin ? "Naitik Singh" : "Customer"),
       username,
       phone: p?.phone || meta.phone || session.user.phone || previous.phone || "",
       district: p?.district || meta.district || previous.district || "",
