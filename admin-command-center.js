@@ -72,7 +72,8 @@
         <div class="cc-box"><h3 style="margin-top:0">Website operations</h3><div id="ccOperations" class="cc-muted">Loading…</div></div>
         <div class="cc-box"><h3 style="margin-top:0">Security watch</h3><div id="ccSecurity"></div></div>
         <div class="cc-box"><h3 style="margin-top:0">Administration modules</h3><div id="ccModules"></div></div>
-        <div class="cc-box"><h3 style="margin-top:0">Platform & backup readiness</h3><div id="ccPlatform"></div></div><div class="cc-box" style="grid-column:1/-1"><h3 style="margin-top:0">Complete database inventory · 25 tables</h3><p class="cc-muted">Aggregate row counts only. Auth secrets and server-only AI/signup data are intentionally not exposed to the browser.</p><div id="ccInventory" class="cc-grid"></div></div>
+        <div class="cc-box"><h3 style="margin-top:0">Platform & backup readiness</h3><div id="ccPlatform"></div></div><div class="cc-box" style="grid-column:1/-1"><h3 style="margin-top:0">Complete database inventory · 25 tables</h3><p class="cc-muted">Live counts from the secure Owner backend. Authentication credentials and token hashes are never exposed.</p><div id="ccInventory" class="cc-grid"></div></div>
+      <div class="cc-box" style="grid-column:1/-1"><h3 style="margin-top:0">Owner data explorer · all 25 tables</h3><p class="cc-muted">Owner-only, server-side paginated records. Personal information and user-submitted content are confidential. Credential hashes and live call signaling payloads are excluded.</p><div class="cc-actions"><select id="ccTableSelect" style="min-width:220px;padding:9px;border-radius:9px;background:#07172b;color:white;border:1px solid #38516b"><option value="user_profiles">User profiles</option><option value="amin_profiles">Amin profiles</option><option value="bookings">Bookings</option><option value="payment_records">Payment records</option><option value="amin_payment_requests">Amin payment requests</option><option value="support_tickets">Support tickets</option><option value="support_ticket_messages">Support messages</option><option value="notifications">Notifications</option><option value="admin_team_members">Admin team members</option><option value="team_member_tasks">Team tasks</option><option value="team_attendance">Team attendance</option><option value="admin_announcements">Announcements & ads</option><option value="admin_settings">Website settings</option><option value="admin_audit_logs">Audit logs</option><option value="user_addresses">Customer addresses</option><option value="service_categories">Service categories</option><option value="amin_reviews">Amin reviews</option><option value="amin_favorites">Amin favorites</option><option value="booking_calls">Booking calls</option><option value="booking_call_signals">Call signals (metadata)</option><option value="booking_messages">Booking messages</option><option value="ai_conversations">AI conversations</option><option value="ai_messages">AI messages</option><option value="ai_usage_daily">AI daily usage</option><option value="customer_signup_attempts">Signup attempts (hashed IP)</option></select><button class="cc-btn" id="ccLoadTable" type="button">Load records</button><button class="cc-btn secondary" id="ccPrevPage" type="button">Previous</button><button class="cc-btn secondary" id="ccNextPage" type="button">Next</button><button class="cc-btn secondary" id="ccExportTable" type="button">Export current page CSV</button></div><div id="ccTableStatus" class="cc-muted" style="margin-top:12px">Choose a table and press Load records.</div><div id="ccTableData" class="table-wrap" style="margin-top:12px"></div></div>
       <div class="cc-box" style="grid-column:1/-1"><h3 style="margin-top:0">Owner account operations</h3><p class="cc-muted">Secure server-side account controls. Blocking an account prevents sign-in; it does not delete user data.</p><div class="cc-actions"><input id="ccAccountSearch" type="search" placeholder="Search name, phone or district" style="flex:1;min-width:180px;padding:9px;border-radius:9px;border:1px solid #38516b;background:#07172b;color:white"><button class="cc-btn" id="ccLoadAccounts" type="button">Load accounts</button></div><div id="ccAccounts" class="cc-muted" style="margin-top:12px">Press Load accounts to view customer and Amin account records.</div><form id="ccNoticeForm" style="display:none;margin-top:16px;padding-top:14px;border-top:1px solid #27435f"><strong id="ccNoticeRecipient">Send account notification</strong><input id="ccNoticeUserId" type="hidden"><input id="ccNoticeTitle" maxlength="100" required placeholder="Notification title" style="display:block;width:100%;margin-top:8px;padding:10px;border-radius:9px;border:1px solid #38516b;background:#07172b;color:white"><textarea id="ccNoticeMessage" maxlength="1200" required placeholder="Write a message…" style="display:block;width:100%;margin-top:8px;padding:10px;border-radius:9px;border:1px solid #38516b;background:#07172b;color:white"></textarea><div class="cc-actions"><button class="cc-btn" type="submit">Send notification</button><button class="cc-btn secondary" id="ccNoticeCancel" type="button">Cancel</button></div></form></div>
       </div>
       <p class="cc-foot" id="ccUpdated">Live database metrics are loaded only after Owner verification. No secrets, payment credentials, or customer message bodies are displayed here.</p>`;
@@ -111,9 +112,9 @@
     if (connection) {connection.textContent="Verifying Owner…";connection.className="cc-status warn";}
     try {
       await verifyOwner(client);
-      const tables = ["user_profiles","amin_profiles","bookings","support_tickets","payment_records","admin_team_members","notifications","admin_audit_logs","amin_payment_requests","admin_announcements","team_member_tasks","service_categories"];
-      const values = await Promise.all(tables.map(t=>count(client,t)));
-      const data = Object.fromEntries(tables.map((t,i)=>[t,values[i]]));
+      const overview = await ownerAction({action:"overview"});
+      const data = overview.counts || {};
+      const tables = Object.keys(data);
       $("ccMetrics").innerHTML =
         card("Registered accounts",data.user_profiles,"Customer/Amin profile rows")+
         card("Amin applications",data.amin_profiles,"All application statuses")+
@@ -150,7 +151,8 @@
         row("Automated backup export","Not verified","warn")+
         row("Disaster recovery restore drill","Not performed","warn")+
         row("Payments gateway / bank webhook","Not connected","warn");
-      $("ccUpdated").textContent = "Last refreshed: "+fmtTime(new Date().toISOString())+". Metrics are read from Supabase using the signed-in Owner session; no customer PII or secret keys are shown.";
+      $("ccInventory").innerHTML = tables.map(t=>card(t.replaceAll("_"," "),data[t],data[t]==="server-only"?"Restricted server-side table":"Secure backend row count")).join("");
+      $("ccUpdated").textContent = "Last refreshed: "+fmtTime(new Date().toISOString())+". Counts are retrieved through the Owner-verified Edge Function.";
       if (connection) {connection.textContent="Owner verified · Supabase live";connection.className="cc-status";}
       moduleRows();
     } catch (error) {
@@ -205,8 +207,34 @@
       renderAccounts(data.accounts||[]);
     } catch(e) { box.textContent="Account controls unavailable: "+(e.message||"Owner Edge Function not deployed yet."); }
   }
+  let tableOffset=0, currentTableRows=[], currentTableColumns=[], currentTableTotal=0;
+  async function loadTable() {
+    const table=$("ccTableSelect").value, status=$("ccTableStatus"), box=$("ccTableData");
+    status.textContent="Loading secure records…"; box.innerHTML="";
+    try {
+      const result=await ownerAction({action:"list_table",table,limit:50,offset:tableOffset});
+      currentTableRows=result.rows||[]; currentTableColumns=result.columns||[]; currentTableTotal=result.total||0;
+      status.textContent=table+" · "+number(currentTableTotal)+" total records · showing "+(currentTableRows.length?tableOffset+1:0)+"–"+(tableOffset+currentTableRows.length);
+      if(!currentTableRows.length){box.innerHTML='<div class="cc-muted">No records in this page.</div>';return;}
+      const cell=v=>esc(v===null||v===undefined?"—":typeof v==="object"?JSON.stringify(v):String(v));
+      box.innerHTML='<table style="min-width:900px"><thead><tr>'+currentTableColumns.map(c=>'<th>'+esc(c)+'</th>').join("")+'</tr></thead><tbody>'+currentTableRows.map(r=>'<tr>'+currentTableColumns.map(c=>'<td style="max-width:260px;overflow-wrap:anywhere;white-space:pre-wrap">'+cell(r[c])+'</td>').join("")+'</tr>').join("")+'</tbody></table>';
+    } catch(e){status.textContent="Data could not be loaded: "+(e.message||"Unknown error");}
+  }
+  function exportTableCsv() {
+    if(!currentTableRows.length){notify("Load records before exporting.");return;}
+    const quote=v=>'"'+String(v===null||v===undefined?"":typeof v==="object"?JSON.stringify(v):v).replace(/"/g,'""')+'"';
+    const csv=[currentTableColumns.map(quote).join(","),...currentTableRows.map(r=>currentTableColumns.map(c=>quote(r[c])).join(","))].join("\\r\\n");
+    const blob=new Blob(["\\ufeff",csv],{type:"text/csv;charset=utf-8"});
+    const url=URL.createObjectURL(blob),a=document.createElement("a");
+    a.href=url;a.download="myamin-"+$("ccTableSelect").value+"-page-"+(Math.floor(tableOffset/50)+1)+".csv";
+    document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+  }
   function bindAccountControls() {
     $("ccLoadAccounts")?.addEventListener("click",loadAccounts);
+    $("ccLoadTable")?.addEventListener("click",()=>{tableOffset=0;loadTable();});
+    $("ccPrevPage")?.addEventListener("click",()=>{tableOffset=Math.max(0,tableOffset-50);loadTable();});
+    $("ccNextPage")?.addEventListener("click",()=>{if(tableOffset+50<currentTableTotal){tableOffset+=50;loadTable();}});
+    $("ccExportTable")?.addEventListener("click",exportTableCsv);
     $("ccAccountSearch")?.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();loadAccounts();}});
     $("ccNoticeCancel")?.addEventListener("click",()=>{$("ccNoticeForm").style.display="none";});
     $("ccNoticeForm")?.addEventListener("submit",async e=>{
