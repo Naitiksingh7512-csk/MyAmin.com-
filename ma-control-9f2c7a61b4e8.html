@@ -237,6 +237,27 @@ body{font-family:Inter,"SF Pro Display","Segoe UI",Arial,sans-serif}
 #reports .summary-card{min-width:0}
 #reports .tools{align-items:center}
 #downloadAllAdminReports:disabled{opacity:.6;cursor:wait}
+</style><style id="myamin-admin-command-layout">
+@media(min-width:761px){
+ body{background:#f5f7fb!important}
+ .top{position:relative;margin-left:232px;width:calc(100% - 232px);padding-left:24px!important;background:#fff!important;color:#18243a!important;border-bottom:1px solid #e4e9f2;box-shadow:0 2px 12px #18243a0a}
+ .top:after{display:none}.top .brand img{display:none!important}.top .brand strong{color:#17243a}.top .brand small{color:#758198;opacity:1}
+ .top button{color:#26364d;border-color:#dce3ee;background:#fff}
+ main.wrap{margin:20px 0 30px 232px!important;max-width:none!important;padding:0 24px!important}
+ nav.tabs{position:fixed!important;z-index:35;left:0;top:0;bottom:0;width:232px;overflow-y:auto;display:flex!important;flex-direction:column;align-items:stretch;gap:4px;padding:92px 12px 18px!important;margin:0!important;background:#fff!important;border-right:1px solid #e4e9f2;box-shadow:3px 0 14px #1b2a4407}
+ nav.tabs:before{content:"";position:absolute;left:18px;top:15px;width:188px;height:54px;background:url("assets/myamin-logo.svg") left center/contain no-repeat}
+ nav.tabs .tab{flex:0 0 auto;width:100%;text-align:left;border:0!important;border-radius:10px!important;padding:11px 13px!important;background:transparent!important;color:#59677d!important;box-shadow:none!important;font-size:13px;font-weight:650}
+ nav.tabs .tab:hover{background:#f1f5fb!important;color:#253b5d!important;transform:none!important}
+ nav.tabs .tab.active{background:linear-gradient(100deg,#eef1ff,#f2f5ff)!important;color:#4c55bd!important;box-shadow:inset 3px 0 #625de0!important}
+ .head{margin-top:10px}.head h1{font-size:28px!important;color:#17243a}
+ .stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+ .stat,.panel{border:1px solid #e5eaf2!important;border-radius:14px!important;box-shadow:0 3px 14px #1c2d4808!important;background:#fff!important}
+ .stat{padding:18px!important}.stat:after{display:none}.stat strong{color:#263a58!important;font-size:28px!important}
+ .panel{padding:20px!important}.panel h2{color:#1d2a40}
+ #myaminCommandCenter{background:#fff!important;color:#1d2a40!important}
+}
+@media(max-width:760px){.top{margin:0!important;width:100%!important}main.wrap{margin:12px auto!important;padding:0 12px!important}nav.tabs{position:sticky!important;top:0;z-index:35;display:flex!important;flex-direction:row!important;overflow-x:auto!important;padding:8px 2px 12px!important;margin:0 0 14px!important;background:#f5f7fbf2!important}nav.tabs:before{display:none}nav.tabs .tab{flex:0 0 auto!important;width:auto!important}}
+@media print{nav.tabs,.top,.head button,#ccExportAllTable,#ccPrintAllTable{display:none!important}main.wrap{margin:0!important;padding:0!important}}
 </style></head>
 <body><div id="adminBootGate" class="admin-boot-gate"><div><h2>My Amin Admin</h2><p>Secure Admin password, session और Passkey verification जाँची जा रही है…</p></div></div>
 <header class="top"><div class="brand"><img src="assets/myamin-logo.svg" alt="My Amin logo"><div><strong data-en="Administration" data-hi="प्रशासन">Administration</strong><small data-en="My Amin control centre" data-hi="My Amin नियंत्रण केंद्र">My Amin control centre</small></div></div><div class="top-actions"><button id="topAdminCardBtn" type="button">🪪 Admin ID Card</button><button id="langBtn" type="button">हिंदी</button><button type="button" onclick="location.href='index.html'" data-en="← Website" data-hi="← वेबसाइट">← Website</button></div></header>
