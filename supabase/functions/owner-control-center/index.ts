@@ -74,7 +74,7 @@ Deno.serve(async (req: Request) => {
     }
 
     if (action === "list_accounts") {
-      const limit = Math.max(1, Math.min(100, Number(body.limit) || 50));
+      const limit = Math.max(1, Math.min(1000, Number(body.limit) || 50));
       const offset = Math.max(0, Number(body.offset) || 0);
       const query = String(body.query || "").trim().slice(0, 80);
       let q = root.from("user_profiles")
