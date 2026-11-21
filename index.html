@@ -1918,7 +1918,8 @@ const phrasePairs=[
 ["UPI PAYMENT","UPI भुगतान"],["Pay directly to the Amin","सीधे अमीन को भुगतान करें"],
 ["Add UPI ID or QR","UPI ID या QR जोड़ें"],
 ["Profile QR opens your page. UPI QR sends payment directly to your UPI app. Check the payee name before paying.","प्रोफ़ाइल QR आपका पेज खोलता है। UPI QR सीधे UPI ऐप में भुगतान के लिए जाता है। भुगतान से पहले प्राप्तकर्ता का नाम जाँचें।"],
-["Please enter a valid UPI ID, such as name@bank.","कृपया सही UPI ID डालें, जैसे name@bank."]
+["Please enter a valid UPI ID, such as name@bank.","कृपया सही UPI ID डालें, जैसे name@bank."],
+["पूरा नाम *","Full Name *"],["मोबाइल नंबर *","Mobile number *"],["WhatsApp नंबर","WhatsApp number"],["व्यवसाय / पहचान संदर्भ","Business / identity reference"],["राज्य *","State *"],["जिला *","District *"],["गाँव / शहर *","Village / City *"],["UPI ID (वैकल्पिक / Optional)","UPI ID (Optional)"],["Enter your UPI QR code (वैकल्पिक)","Enter your UPI QR code (Optional)"],["अपना payment QR image चुनें। इसे खाली छोड़ सकते हैं।","Choose your payment QR image. You may leave this blank."],["Profile photo / DP","Profile photo / DP"],["Clear face photo. It is uploaded to your secure Amin profile after account verification.","अपनी साफ़ फोटो चुनें। अकाउंट सत्यापन के बाद यह आपके सुरक्षित Amin प्रोफ़ाइल में अपलोड होगी।"],["Instagram profile link (Optional)","Instagram profile link (Optional)"],["Facebook profile link (Optional)","Facebook profile link (Optional)"],["YouTube channel link (Optional)","YouTube channel link (Optional)"],["सेवाएँ (कॉमा लगाकर अलग करें)","Services (separate with commas)"],["जैसे: भूमि मापी, सीमांकन, नक्शा कार्य","e.g. Land measurement, boundary demarcation, map work"],["अधिकतम 20 सेवाएँ लिखें।","Enter up to 20 services."],["अनुभव / परिचय","Experience / About"],["अपने अनुभव और काम के बारे में लिखें।","Describe your experience and work."],["रजिस्ट्रेशन भेजें","Submit registration"],["पहला नाम@12345678","FirstName@12345678"],["प्रोफ़ाइल ID:","Profile ID:"],["Amin Registration | अमीन रजिस्ट्रेशन","Amin Registration"],["अमीन रजिस्ट्रेशन","Amin Registration"],["अमीन पंजीकरण","Amin Registration"],["अपनी प्रोफ़ाइल की जानकारी भरें।","Enter your profile information."],["अभी यह जानकारी केवल इसी डिवाइस पर सेव होगी; यह अपने आप सार्वजनिक खोज में नहीं आएगी।","This information is saved on this device only and will not automatically appear in public search."],["व्यवसाय / पहचान संदर्भ","Business / identity reference"],["गाँव / शहर *","Village / City *"],["प्रोफ़ाइल फोटो","Profile photo"],["अनुभव और सेवाएँ","Experience and services"],["अपने अनुभव और सेवाओं का विवरण लिखें।","Describe your experience and services."],["रजिस्ट्रेशन भेजें","Submit registration"],["लॉगिन सफल।","Login successful."],["सुरक्षित Amin Registration सेवा लोड नहीं हुई। पेज Refresh करें और दोबारा कोशिश करें। कोई डेमो/स्थानीय अकाउंट सेव नहीं किया गया।","Secure Amin Registration did not load. Refresh the page and try again. No demo/local account was saved."]
 ];
 const phraseMap={};
 phrasePairs.forEach(([en,hi])=>{phraseMap.en??={};phraseMap.hi??={};phraseMap.en[hi]=en;phraseMap.hi[en]=hi;});
@@ -2015,6 +2016,9 @@ $("languageBtn").onclick=window.toggleMyAminLanguage;
 $("languageBtn").setAttribute("aria-label","Change website language");
 $("languageBtn").setAttribute("aria-live","polite");
 collectStaticText();
+// Apply the saved language on first load as well as on manual language changes.
+// This keeps registration labels, placeholders and static page text consistent after refresh.
+applyLanguage(currentLang);
 refreshAminMenuProfile();
 
 /* Customer login */
