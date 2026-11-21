@@ -220,7 +220,7 @@
       box.innerHTML='<table style="min-width:900px"><thead><tr>'+currentTableColumns.map(c=>'<th>'+esc(c)+'</th>').join("")+'</tr></thead><tbody>'+currentTableRows.map(r=>'<tr>'+currentTableColumns.map(c=>'<td style="max-width:260px;overflow-wrap:anywhere;white-space:pre-wrap">'+cell(r[c])+'</td>').join("")+'</tr>').join("")+'</tbody></table>';
     } catch(e){status.textContent="Data could not be loaded: "+(e.message||"Unknown error");}
   }
-  async function fetchAllRows(table,onProgress=()=>{}){const rows=[];let offset=0,total=null;while(total===null||offset<total){const {data,error}=await ownerAction({action:"list_table",table,limit:1000,offset});if(error)throw error;if(!data?.success)throw new Error(data?.error||("Could not export "+table));total=Number(data.total||0);rows.push(...(data.rows||[]));offset+=data.rows?.length||0;onProgress(rows.length,total);if(!data.rows?.length||offset>=total)break;}return rows;}
+  async function fetchAllRows(table,onProgress=()=>{}){const rows=[];let offset=0,total=null;while(total===null||offset<total){const data=await ownerAction({action:"list_table",table,limit:1000,offset});if(!data?.success)throw new Error(data?.error||("Could not export "+table));total=Number(data.total||0);rows.push(...(data.rows||[]));offset+=data.rows?.length||0;onProgress(rows.length,total);if(!data.rows?.length||offset>=total)break;}return rows;}
   function exportTableCsv() {
     if(!currentTableRows.length){notify("Load records before exporting.");return;}
     const quote=v=>'"'+String(v===null||v===undefined?"":typeof v==="object"?JSON.stringify(v):v).replace(/"/g,'""')+'"';
