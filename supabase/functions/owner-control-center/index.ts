@@ -92,6 +92,29 @@ Deno.serve(async (req: Request) => {
       return reply({ success: true, total: count || 0, offset, limit, accounts: (data || []).map(x => ({ ...x, amin: aminMap.get(x.id) || null })) });
     }
 
+    if (action === "account_detail") {
+      const userId = String(body.user_id || "");
+      if (!/^[0-9a-f-]{36}$/i.test(userId)) return reply({ error: "Invalid account ID" }, 400);
+      const [{ data: profile, error: profileError }, { data: amin, error: aminError }, { data: addresses, error: addressError }, { data: bookings, error: bookingError }, { data: payments, error: paymentError }, { data: requests, error: requestError }, { data: reviews, error: reviewError }, { data: authResult, error: authError }] = await Promise.all([
+        root.from("user_profiles").select("*").eq("id", userId).maybeSingle(),
+        root.from("amin_profiles").select("id,user_id,profile_uid,display_name,phone,whatsapp,state,district,place,business_reference,experience,services,photo_path,upi_id,upi_qr_path,approval_status,created_at,updated_at,location_lat,location_lng,location_shared_at,account_status,video_call_enabled,instagram_url,facebook_url,youtube_url").eq("user_id", userId).maybeSingle(),
+        root.from("user_addresses").select("id,label,address_line,state,district,pincode,latitude,longitude,is_default,created_at,updated_at").eq("user_id", userId).order("created_at",{ascending:false}).limit(20),
+        root.from("bookings").select("id,service,state,district,place,preferred_date,preferred_time,status,service_amount,commission_paid,created_at,completed_at,amin_user_id").or("customer_user_id.eq."+userId+",amin_user_id.eq."+userId).order("created_at",{ascending:false}).limit(20),
+        root.from("payment_records").select("id,booking_id,payer_user_id,payee_user_id,amount,currency,payment_method,transaction_reference,status,proof_path,verified_by,verified_at,created_at,updated_at").or("payer_user_id.eq."+userId+",payee_user_id.eq."+userId).order("created_at",{ascending:false}).limit(20),
+        root.from("amin_payment_requests").select("id,amount,note,payment_link,status,transaction_reference,proof_path,verified_by,verified_at,created_at,updated_at").eq("amin_user_id",userId).order("created_at",{ascending:false}).limit(20),
+        root.from("amin_reviews").select("id,booking_id,rating,review,is_visible,created_at,customer_user_id").eq("amin_user_id",userId).order("created_at",{ascending:false}).limit(20),
+        root.auth.admin.getUserById(userId)
+      ]);
+      const err = profileError || aminError || addressError || bookingError || paymentError || requestError || reviewError || authError;
+      if (err) return reply({ error: "Account detail lookup failed: " + err.message }, 400);
+      if (!profile && !amin) return reply({ error: "Account not found" }, 404);
+      await audit("owner_account_detail_viewed","auth_user",userId,{has_amin_profile:!!amin});
+      return reply({ success:true, account:{
+        auth:{email:authResult?.user?.email||null,phone:authResult?.user?.phone||null,created_at:authResult?.user?.created_at||null,last_sign_in_at:authResult?.user?.last_sign_in_at||null,email_confirmed_at:authResult?.user?.email_confirmed_at||null},
+        profile,amin_profile:amin,addresses:addresses||[],bookings:bookings||[],payment_records:payments||[],amin_payment_requests:requests||[],amin_reviews:reviews||[]
+      }});
+    }
+
     if (action === "set_account_status") {
       const userId = String(body.user_id || "");
       const status = String(body.status || "");
@@ -161,6 +184,37 @@ Deno.serve(async (req: Request) => {
       return reply({ success: true, request_id: requestId, status });
     }
 
+    if (action === "set_payment_record_status") {
+      const paymentId = String(body.payment_id || "");
+      const status = String(body.status || "");
+      const allowed = new Set(["pending","submitted","verified","failed","refunded"]);
+      if (!/^[0-9a-f-]{36}$/i.test(paymentId) || !allowed.has(status)) return reply({ error: "Invalid payment record or status" }, 400);
+      const patch: Record<string, unknown> = { status, updated_at: new Date().toISOString() };
+      if (status === "verified") { patch.verified_by = caller.id; patch.verified_at = new Date().toISOString(); }
+      const { data: payment, error } = await root.from("payment_records").update(patch)
+        .eq("id", paymentId).select("id,payer_user_id,payee_user_id,status,amount,currency").maybeSingle();
+      if (error) return reply({ error: error.message }, 400);
+      if (!payment) return reply({ error: "Payment record not found" }, 404);
+      await audit("payment_record_status_changed","payment_record",paymentId,{status,administrative_only:true});
+      const recipients = [...new Set([payment.payer_user_id,payment.payee_user_id].filter(Boolean))] as string[];
+      for (const userId of recipients) await notify(userId,"Payment record updated","Your payment record status is now: "+status,"payment_status","payment_records",paymentId);
+      return reply({ success: true, payment_id: paymentId, status, administrative_only: true });
+    }
+
+    if (action === "set_support_ticket_status") {
+      const ticketId = String(body.ticket_id || "");
+      const status = String(body.status || "");
+      const allowed = new Set(["open","in_progress","resolved","closed"]);
+      if (!/^[0-9a-f-]{36}$/i.test(ticketId) || !allowed.has(status)) return reply({ error: "Invalid support ticket or status" }, 400);
+      const { data: ticket, error } = await root.from("support_tickets").update({ status, updated_at: new Date().toISOString() })
+        .eq("id",ticketId).select("id,user_id,subject,status").maybeSingle();
+      if (error) return reply({ error: error.message }, 400);
+      if (!ticket) return reply({ error: "Support ticket not found" }, 404);
+      await audit("support_ticket_status_changed","support_ticket",ticketId,{status});
+      await notify(ticket.user_id,"Support ticket updated","Your support ticket '"+String(ticket.subject||"").slice(0,100)+"' is now "+status+".","support_status","support_tickets",ticketId);
+      return reply({ success: true, ticket_id: ticketId, status });
+    }
+
     if (action === "send_notification") {
       const userId = String(body.user_id || "");
       const title = String(body.title || "").trim();
@@ -185,6 +239,79 @@ Deno.serve(async (req: Request) => {
       return reply({ success: true, setting_key: key });
     }
 
+
+    if (action === "record_export") {
+      const tableCount = Math.max(0,Math.min(25,Number(body.table_count)||0));
+      const recordCount = Math.max(0,Math.min(10000000,Number(body.record_count)||0));
+      await audit("owner_data_export_completed","database_export",null,{table_count:tableCount,record_count:recordCount,format:"json"});
+      return reply({success:true});
+    }
+
+    if (action === "record_detail") {
+      const table = String(body.table || "");
+      const recordId = String(body.record_id || "");
+      const allowed = new Set(["amin_profiles","bookings","payment_records","amin_payment_requests","support_tickets"]);
+      if (!allowed.has(table) || !/^[0-9a-f-]{36}$/i.test(recordId)) return reply({ error: "Invalid record detail request" }, 400);
+      let detail: Record<string, unknown> = {};
+      if (table === "amin_profiles") {
+        const [{data:amin,error:aErr},{data:profile,error:pErr}] = await Promise.all([
+          root.from("amin_profiles").select("*").eq("id",recordId).maybeSingle(),
+          root.from("amin_profiles").select("user_id").eq("id",recordId).maybeSingle().then(async r=>r.data?.user_id?root.from("user_profiles").select("*").eq("id",r.data.user_id).maybeSingle():{data:null,error:r.error})
+        ]);
+        if(aErr||pErr)return reply({error:(aErr||pErr)?.message||"Amin lookup failed"},400);
+        if(!amin)return reply({error:"Amin application not found"},404);
+        const {data:authUser,error:authErr}=await root.auth.admin.getUserById(amin.user_id);
+        if(authErr)return reply({error:authErr.message},400);
+        const [{data:bookings,error:bErr},{data:requests,error:rErr},{data:reviews,error:revErr}] = await Promise.all([
+          root.from("bookings").select("id,service,place,preferred_date,status,service_amount,created_at").eq("amin_user_id",amin.user_id).order("created_at",{ascending:false}).limit(20),
+          root.from("amin_payment_requests").select("id,amount,note,status,transaction_reference,proof_path,verified_at,created_at").eq("amin_user_id",amin.user_id).order("created_at",{ascending:false}).limit(20),
+          root.from("amin_reviews").select("id,booking_id,rating,review,is_visible,created_at").eq("amin_user_id",amin.user_id).order("created_at",{ascending:false}).limit(20)
+        ]);
+        const error=bErr||rErr||revErr;if(error)return reply({error:error.message},400);
+        detail={application:amin,account:profile,auth:{email:authUser.user?.email||null,created_at:authUser.user?.created_at||null,last_sign_in_at:authUser.user?.last_sign_in_at||null},bookings:bookings||[],payment_requests:requests||[],reviews:reviews||[]};
+      } else if (table === "payment_records") {
+        const {data:payment,error}=await root.from("payment_records").select("*").eq("id",recordId).maybeSingle();
+        if(error)return reply({error:error.message},400);if(!payment)return reply({error:"Payment record not found"},404);
+        const [{data:booking,error:bErr},{data:payer,error:pErr},{data:payee,error:peErr}] = await Promise.all([
+          payment.booking_id?root.from("bookings").select("*").eq("id",payment.booking_id).maybeSingle():Promise.resolve({data:null,error:null}),
+          payment.payer_user_id?root.from("user_profiles").select("*").eq("id",payment.payer_user_id).maybeSingle():Promise.resolve({data:null,error:null}),
+          payment.payee_user_id?root.from("user_profiles").select("*").eq("id",payment.payee_user_id).maybeSingle():Promise.resolve({data:null,error:null})
+        ]);
+        const error2=bErr||pErr||peErr;if(error2)return reply({error:error2.message},400);
+        detail={payment_record:payment,booking, payer, payee};
+      } else if (table === "amin_payment_requests") {
+        const {data:request,error}=await root.from("amin_payment_requests").select("*").eq("id",recordId).maybeSingle();
+        if(error)return reply({error:error.message},400);if(!request)return reply({error:"Payment request not found"},404);
+        const [{data:amin,error:aErr},{data:creator,error:cErr}] = await Promise.all([
+          root.from("amin_profiles").select("*").eq("user_id",request.amin_user_id).maybeSingle(),
+          root.from("user_profiles").select("*").eq("id",request.created_by).maybeSingle()
+        ]);
+        if(aErr||cErr)return reply({error:(aErr||cErr)?.message||"Related lookup failed"},400);
+        detail={payment_request:request,amin_profile:amin,created_by_account:creator};
+      } else if (table === "bookings") {
+        const {data:booking,error}=await root.from("bookings").select("*").eq("id",recordId).maybeSingle();
+        if(error)return reply({error:error.message},400);if(!booking)return reply({error:"Booking not found"},404);
+        const [{data:customer,error:cErr},{data:amin,error:aErr},{data:payments,error:pErr},{data:messages,error:mErr}] = await Promise.all([
+          root.from("user_profiles").select("*").eq("id",booking.customer_user_id).maybeSingle(),
+          root.from("amin_profiles").select("*").eq("user_id",booking.amin_user_id).maybeSingle(),
+          root.from("payment_records").select("*").eq("booking_id",recordId).order("created_at",{ascending:false}),
+          root.from("booking_messages").select("id,sender_user_id,message,attachment_path,read_at,created_at").eq("booking_id",recordId).order("created_at",{ascending:false}).limit(50)
+        ]);
+        const error2=cErr||aErr||pErr||mErr;if(error2)return reply({error:error2.message},400);
+        detail={booking,customer,amin_profile:amin,payment_records:payments||[],booking_messages:messages||[]};
+      } else {
+        const {data:ticket,error}=await root.from("support_tickets").select("*").eq("id",recordId).maybeSingle();
+        if(error)return reply({error:error.message},400);if(!ticket)return reply({error:"Support ticket not found"},404);
+        const [{data:user,error:uErr},{data:messages,error:mErr}] = await Promise.all([
+          root.from("user_profiles").select("*").eq("id",ticket.user_id).maybeSingle(),
+          root.from("support_ticket_messages").select("id,sender_user_id,message,created_at").eq("ticket_id",recordId).order("created_at",{ascending:false}).limit(50)
+        ]);
+        if(uErr||mErr)return reply({error:(uErr||mErr)?.message||"Related lookup failed"},400);
+        detail={support_ticket:ticket,customer:user,messages:messages||[]};
+      }
+      await audit("owner_record_detail_viewed",table,recordId,{});
+      return reply({success:true,detail});
+    }
 
     if (action === "list_table") {
       const TABLE_COLUMNS: Record<string, string[]> = {
