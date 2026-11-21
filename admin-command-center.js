@@ -220,21 +220,37 @@
       box.innerHTML='<table style="min-width:900px"><thead><tr>'+currentTableColumns.map(c=>'<th>'+esc(c)+'</th>').join("")+'</tr></thead><tbody>'+currentTableRows.map(r=>'<tr>'+currentTableColumns.map(c=>'<td style="max-width:260px;overflow-wrap:anywhere;white-space:pre-wrap">'+cell(r[c])+'</td>').join("")+'</tr>').join("")+'</tbody></table>';
     } catch(e){status.textContent="Data could not be loaded: "+(e.message||"Unknown error");}
   }
+  async function fetchAllRows(table,onProgress=()=>{}){const rows=[];let offset=0,total=null;while(total===null||offset<total){const {data,error}=await ownerAction({action:"list_table",table,limit:1000,offset});if(error)throw error;if(!data?.success)throw new Error(data?.error||("Could not export "+table));total=Number(data.total||0);rows.push(...(data.rows||[]));offset+=data.rows?.length||0;onProgress(rows.length,total);if(!data.rows?.length||offset>=total)break;}return rows;}
   function exportTableCsv() {
     if(!currentTableRows.length){notify("Load records before exporting.");return;}
     const quote=v=>'"'+String(v===null||v===undefined?"":typeof v==="object"?JSON.stringify(v):v).replace(/"/g,'""')+'"';
-    const csv=[currentTableColumns.map(quote).join(","),...currentTableRows.map(r=>currentTableColumns.map(c=>quote(r[c])).join(","))].join("\r\n");
-    const blob=new Blob(["\ufeff",csv],{type:"text/csv;charset=utf-8"});
-    const url=URL.createObjectURL(blob),a=document.createElement("a");
-    a.href=url;a.download="myamin-"+$("ccTableSelect").value+"-page-"+(Math.floor(tableOffset/50)+1)+".csv";
-    document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+    const csv=[currentTableColumns.map(quote).join(","),...currentTableRows.map(r=>currentTableColumns.map(c=>quote(r[c])).join(","))].join("\\r\\n");
+    const blob=new Blob(["\\ufeff",csv],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");
+    a.href=url;a.download="myamin-"+$("ccTableSelect").value+"-page-"+(Math.floor(tableOffset/50)+1)+".csv";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+  }
+  async function exportAllSelectedTable(){
+    const b=$("ccExportAllTable"),table=$("ccTableSelect").value;if(b)b.disabled=true;
+    try{const rows=await fetchAllRows(table,(n,total)=>{if(b)b.textContent="Exporting "+number(n)+" / "+number(total);});
+      if(!rows.length)throw new Error("No records to export.");
+      const keys=[...new Set(rows.flatMap(r=>Object.keys(r)))],quote=v=>'"'+String(v==null?"":typeof v==="object"?JSON.stringify(v):v).replace(/"/g,'""')+'"';
+      const csv=[keys.map(quote).join(","),...rows.map(r=>keys.map(k=>quote(r[k])).join(","))].join("\\r\\n");
+      const blob=new Blob(["\\ufeff",csv],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");
+      a.href=url;a.download="myamin-"+table+"-ALL-"+rows.length+"-records.csv";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);notify(number(rows.length)+" records exported. CSV opens in Excel.");
+    }catch(e){notify("Full export failed: "+(e.message||"Unknown error"));}finally{if(b){b.disabled=false;b.textContent="Export ALL rows · Excel CSV";}}
+  }
+  async function printAllSelectedTable(){
+    const b=$("ccPrintAllTable"),table=$("ccTableSelect").value,popup=window.open("","_blank");if(!popup){notify("Allow pop-ups to print the full report.");return;}if(b)b.disabled=true;
+    try{const rows=await fetchAllRows(table,(n,total)=>{if(b)b.textContent="Preparing print "+number(n)+" / "+number(total);});
+      const cols=[...new Set(rows.flatMap(r=>Object.keys(r)))],safe=v=>String(v==null?"":typeof v==="object"?JSON.stringify(v):v).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+      popup.document.open();popup.document.write('<!doctype html><html><head><meta charset="utf-8"><title>MyAmin '+safe(table)+' report</title><style>body{font:11px Arial,sans-serif;color:#17243a;margin:16px}h1{font-size:18px}p{color:#53647c}table{border-collapse:collapse;width:100%;font-size:9px}th,td{border:1px solid #ccd5e2;padding:5px;text-align:left;vertical-align:top;overflow-wrap:anywhere}th{background:#eef2f8}thead{display:table-header-group}tr{break-inside:avoid}@page{size:auto;margin:10mm}</style></head><body><h1>MyAmin · '+safe(table)+' — Complete Report</h1><p>'+number(rows.length)+' records · Generated '+new Date().toLocaleString()+'</p><table><thead><tr>'+cols.map(c=>'<th>'+safe(c)+'</th>').join("")+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+cols.map(c=>'<td>'+safe(r[c])+'</td>').join("")+'</tr>').join("")+'</tbody></table><script>window.onload=()=>window.print()<\\/script></body></html>');popup.document.close();
+    }catch(e){popup.close();notify("Print preparation failed: "+(e.message||"Unknown error"));}finally{if(b){b.disabled=false;b.textContent="Print ALL rows";}}
   }
   function bindAccountControls() {
     $("ccLoadAccounts")?.addEventListener("click",loadAccounts);
     $("ccLoadTable")?.addEventListener("click",()=>{tableOffset=0;loadTable();});
     $("ccPrevPage")?.addEventListener("click",()=>{tableOffset=Math.max(0,tableOffset-50);loadTable();});
     $("ccNextPage")?.addEventListener("click",()=>{if(tableOffset+50<currentTableTotal){tableOffset+=50;loadTable();}});
-    $("ccExportTable")?.addEventListener("click",exportTableCsv);
+    $("ccExportTable")?.addEventListener("click",exportTableCsv);\n    $("ccExportAllTable")?.addEventListener("click",exportAllSelectedTable);\n    $("ccPrintAllTable")?.addEventListener("click",printAllSelectedTable);\n    $("ccExportAllTable")?.addEventListener("click",exportAllSelectedTable);\n    $("ccPrintAllTable")?.addEventListener("click",printAllSelectedTable);
     $("ccAccountSearch")?.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();loadAccounts();}});
     $("ccNoticeCancel")?.addEventListener("click",()=>{$("ccNoticeForm").style.display="none";});
     $("ccNoticeForm")?.addEventListener("submit",async e=>{
