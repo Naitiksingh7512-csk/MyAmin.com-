@@ -1239,7 +1239,7 @@ header{
     <div class="dialog-head"><div><span class="search-kicker" data-en="QUICK NAVIGATION" data-hi="त्वरित खोज">QUICK NAVIGATION</span><h3 data-en="Search My Amin" data-hi="My Amin खोजें">Search My Amin</h3></div><button class="closebtn" type="button" onclick="closeSearch()" aria-label="Close search">✕</button></div>
     <p class="search-description" data-en="Find services, profiles and pages in one place." data-hi="सेवाएँ, प्रोफ़ाइल और पेज आसानी से खोजें।">Find services, profiles and pages in one place.</p>
     <div class="search-input-wrap"><span class="search-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4.2 4.2"></path></svg></span><input id="siteSearch" placeholder="Search services, Amin name or UID…" autocomplete="off"></div>
-    <div class="search-section-label" data-en="LIVE SUGGESTIONS" data-hi="मिलते-जुलते परिणाम">LIVE SUGGESTIONS</div>
+    <div class="search-section-label" data-en="QUICK LINKS" data-hi="मिलते-जुलते परिणाम">LIVE SUGGESTIONS</div>
     <div id="searchSuggestions" class="list search-suggestions" aria-live="polite"></div>
   </div>
 </div>
@@ -1813,32 +1813,25 @@ function getAllSearchItems(){
    items.push({label:name+" · "+uid,hiLabel:name+" · "+uid,hint:[a.place,a.district,a.state].filter(Boolean).join(", ")+" · Approved Amin profile",hiHint:[a.place,a.district,a.state].filter(Boolean).join(", ")+" · स्वीकृत अमीन प्रोफ़ाइल",terms:[name,uid,a.phone,a.place,a.district,a.state,a.description,"amin profile","अमीन प्रोफ़ाइल"],route:"find",icon:"👷",aminProfile:uid});
  });
  // Add all state and UT portal entries; users can search by state or portal name.
- if(Array.isArray(portals)) portals.forEach(p=>items.push({label:p[1]+" — "+p[0],hiLabel:p[1]+" — "+p[0],hint:"Official land-record portal / directory",hiHint:"सरकारी भूमि रिकॉर्ड पोर्टल / निर्देशिका",terms:[p[0],p[1],"land records","bhulekh","भूमि रिकॉर्ड"],route:"portals",icon:"🌐",portalQuery:p[0]}));
+ if(Array.isArray(portals)) portals.forEach(p=>{
+ [[p[1],p[2],"Land records / RoR","भूमि रिकॉर्ड / जमाबंदी"],[p[3],p[4],"BhuNaksha / maps","भू-नक्शा / जमीन का नक्शा"],[p[5],p[6],"Property registration","संपत्ति पंजीकरण"]].forEach(v=>{
+  if(!v[0]||!v[1])return;
+  items.push({label:v[0]+" — "+p[0],hiLabel:v[0]+" — "+p[0],hint:v[2],hiHint:v[3],terms:[p[0],v[0],"land records","bhulekh","bhu naksha","registration","भूमि रिकॉर्ड","भू नक्शा","रजिस्ट्री"],route:"portals",icon:"🌐",portalQuery:p[0],url:v[1]});
+ });
+});
  return items;
 }
 function renderSmartSearch(){
- const box=$("searchSuggestions"); if(!box)return;
- const q=$("siteSearch").value.trim(),hi=currentLang==="hi";
- const all=getAllSearchItems();
- const list=q?rankSearchItems(q,all):[];
- const examples=hi?["अमीन खोजें","भुआ / BHU","अमीन बुकिंग","अभी / ABHI","आस-पास के अमीन","भूमि कैलकुलेटर"]:["Find an Amin","BHU / भुआ","Amin Booking","ABHI / अभी","Nearby Amin","Land Calculator"];
- const chips=!q?'<div class="search-example-wrap"><span class="search-example-title">'+(hi?"लोकप्रिय खोजें":"POPULAR SEARCHES")+'</span><div class="search-example-chips">'+examples.map(v=>'<button type="button" class="search-example-chip" data-search-example="'+safe(v)+'">'+safe(v)+'</button>').join("")+'</div></div>':"";
- const results=q?list.slice(0,12).map((x,i)=>'<button type="button" class="search-result search-live-result" data-smart-index="'+i+'"><span class="search-result-icon">'+(x.icon||"⌕")+'</span><span class="search-result-copy"><strong>'+(hi?x.hiLabel:x.label)+'</strong><small>'+(hi?x.hiHint:x.hint)+'</small></span><span class="search-result-arrow">›</span></button>').join(""):'<p class="search-empty search-prompt">'+(hi?"ऊपर लिखना शुरू करें — मिलते-जुलते परिणाम यहीं दिखेंगे।":"Start typing — matching results will appear here.")+'</p>';
- const empty=q&&!list.length?'<p class="search-empty">'+(hi?"कोई मिलता-जुलता परिणाम नहीं मिला। दूसरा शब्द या spelling आज़माएँ।":"No matching results yet. Try another word or spelling.")+'</p>':"";
- box.innerHTML=chips+results+empty;
- box.querySelectorAll("[data-search-example]").forEach(b=>b.addEventListener("click",()=>{
-   const value=b.dataset.searchExample||"";
-   const cleaned=value.replace(/^BHU \/ /,"").replace(/^भुआ \/ BHU$/,"भुआ").replace(/^अमीन खोजें$/,"Amin").replace(/^Find an Amin$/,"Amin").replace(/^अमीन बुकिंग$/,"Amin Booking").replace(/^Amin Booking$/,"Amin Booking").replace(/^अभी \/ ABHI$/,"ABHI").replace(/^ABHI \/ अभी$/,"ABHI").replace(/^आस-पास के अमीन$/,"Nearby Amin").replace(/^Nearby Amin$/,"Nearby Amin").replace(/^भूमि कैलकुलेटर$/,"Land Calculator");
-   $("siteSearch").value=cleaned;$("siteSearch").focus();renderSmartSearch();
- }));
+ const box=$("searchSuggestions");if(!box)return;
+ const q=$("siteSearch").value.trim(),hi=currentLang==="hi",all=getAllSearchItems();
+ const list=q?rankSearchItems(q,all):all.slice(0,10);
+ box.innerHTML=list.slice(0,18).map((x,i)=>'<button type="button" class="search-result" data-smart-index="'+i+'"><span class="search-result-icon">'+(x.icon||"⌕")+'</span><span class="search-result-copy"><strong>'+(hi?x.hiLabel:x.label)+'</strong><small>'+(hi?x.hiHint:x.hint)+'</small></span><span class="search-result-arrow">›</span></button>').join("")||'<p class="search-empty">'+(hi?'कोई सुझाव नहीं मिला। दूसरा शब्द लिखें।':'No results found. Try another search.')+'</p>';
  box.querySelectorAll("[data-smart-index]").forEach(b=>b.addEventListener("click",()=>{
-   const item=list[Number(b.dataset.smartIndex)];
-   if(!item)return;
-   closeSearch();
-   if(item.url){window.open(item.url,"_blank","noopener");return;}
-   go(item.route);
-   if(item.aminProfile){$("aminSearch").value=item.aminProfile;$("aminState").value="";searchAmins();return;}
-   if(item.portalQuery&&$("portalSearch")){$("portalSearch").value=item.portalQuery;renderPortals();}
+  const item=list[Number(b.dataset.smartIndex)];if(!item)return;
+  closeSearch();if(item.url){window.open(item.url,"_blank","noopener");return;}
+  go(item.route);
+  if(item.aminProfile){$("aminSearch").value=item.aminProfile;$("aminState").value="";searchAmins();return;}
+  if(item.portalQuery&&$("portalSearch")){$("portalSearch").value=item.portalQuery;renderPortals();}
  }));
 }
 $("siteSearch").addEventListener("input",renderSmartSearch);
@@ -2370,57 +2363,55 @@ $("reportForm").addEventListener("submit",async e=>{
   }catch(err){message.textContent=(currentLang==="hi"?"रिपोर्ट नहीं भेजी जा सकी: ":"Report submission failed: ")+(err.message||"Unknown error");}
 });
 
-/* State / UT portal directory */
+/* State / UT portal directory — links grouped by service */
+const LAND_DIRECTORY_URL="https://dilrmp.gov.in/dilrmpold/State-RoR-Web";
+const REG_DIRECTORY_URL="https://ngdrs.gov.in/NGDRS_Website/state_ut_links.php?lang=en";
 const portals=[
-["Andhra Pradesh","Mee Bhoomi","https://meebhoomi.ap.gov.in/"],
-["Arunachal Pradesh","Official directory","https://dilrmp.gov.in/dilrmpold/State-RoR-Web"],
-["Assam","Dharitree / Revenue","https://revenueassam.nic.in/"],
-["Bihar","Bihar Bhumi","https://biharbhumi.bihar.gov.in/"],
-["Chhattisgarh","Bhuiyan","https://bhuiyan.cg.nic.in/"],
-["Goa","Directorate of Settlement and Land Records","https://dslr.goa.gov.in/"],
-["Gujarat","AnyRoR","https://anyror.gujarat.gov.in/"],
-["Haryana","Jamabandi","https://jamabandi.nic.in/"],
-["Himachal Pradesh","Himbhoomi","https://himbhoomilmk.nic.in/viewlandrecords.aspx"],
-["Jharkhand","Jharbhoomi","https://jharbhoomi.jharkhand.gov.in/"],
-["Karnataka","Land Records","https://landrecords.karnataka.gov.in/"],
-["Kerala","Official directory","https://dilrmp.gov.in/dilrmpold/State-RoR-Web"],
-["Madhya Pradesh","MP Bhulekh","https://mpbhulekh.gov.in/"],
-["Maharashtra","Mahabhumi","https://mahabhumi.gov.in/mahabhumilink"],
-["Manipur","Loucha Pathap","https://louchapathap.nic.in/"],
-["Meghalaya","Official directory","https://dilrmp.gov.in/dilrmpold/State-RoR-Web"],
-["Mizoram","Official directory","https://dilrmp.gov.in/dilrmpold/State-RoR-Web"],
-["Nagaland","Official directory","https://dilrmp.gov.in/dilrmpold/State-RoR-Web"],
-["Odisha","Bhulekh","https://bhulekh.ori.nic.in/"],
-["Punjab","Jamabandi","https://jamabandi.punjab.gov.in/"],
-["Rajasthan","Apna Khata","https://apnakhata.rajasthan.gov.in/"],
-["Sikkim","Official directory","https://dilrmp.gov.in/dilrmpold/State-RoR-Web"],
-["Tamil Nadu","e-Services","https://eservices.tn.gov.in/"],
-["Telangana","Official directory (verify current portal)","https://dilrmp.gov.in/dilrmpold/State-RoR-Web"],
-["Tripura","Official directory","https://dilrmp.gov.in/dilrmpold/State-RoR-Web"],
-["Uttar Pradesh","UP Bhulekh","https://upbhulekh.gov.in/"],
-["Uttarakhand","Bhulekh","https://bhulekh.uk.gov.in/"],
-["West Bengal","Banglarbhumi","https://banglarbhumi.gov.in/"],
-["Andaman and Nicobar Islands","Official directory","https://dilrmp.gov.in/dilrmpold/State-RoR-Web"],
-["Chandigarh","Revenue Department","https://revenue.chd.gov.in/"],
-["Dadra and Nagar Haveli and Daman and Diu","Official directory","https://dilrmp.gov.in/dilrmpold/State-RoR-Web"],
-["Delhi","Official directory","https://dilrmp.gov.in/dilrmpold/State-RoR-Web"],
-["Jammu and Kashmir","Land Records","https://landrecords.jk.gov.in/Dashboard/Home"],
-["Ladakh","Official directory","https://dilrmp.gov.in/dilrmpold/State-RoR-Web"],
-["Lakshadweep","Official directory","https://dilrmp.gov.in/dilrmpold/State-RoR-Web"],
-["Puducherry","Official directory","https://dilrmp.gov.in/dilrmpold/State-RoR-Web"]
+["Andhra Pradesh","Mee Bhoomi","https://meebhoomi.ap.gov.in/","BhuNaksha","https://bhunaksha.ap.gov.in/bhunakshaplp/28/index.jsp","Registration & Stamps","https://registration.ap.gov.in/igrs","Adangal, 1-B and survey maps"],
+["Arunachal Pradesh","Official land-record directory",LAND_DIRECTORY_URL,"","","Registration (NGDRS)","https://ngdrs.arunachal.gov.in/NGDRS_AR","DoLR does not list a separate RoR portal"],
+["Assam","Dharitree / Revenue","https://revenueassam.nic.in/","","","Registration (NGDRS)","https://ngdrs.assam.gov.in/","Jamabandi / Chitha"],
+["Bihar","Bihar Bhumi","https://biharbhumi.bihar.gov.in/","BhuNaksha Bihar","https://bhunaksha.bihar.gov.in/","Nibandhan Registration","https://nibandhan.bihar.gov.in/","Jamabandi, mutation and cadastral maps"],
+["Chhattisgarh","Bhuiyan","https://bhuiyan.cg.nic.in/","BhuNaksha","https://bhunaksha.cg.nic.in/","Registration (NGDRS)","https://www.ngdrs.cg.gov.in/NGDRS_CG/","Khasra, B-1 and map"],
+["Goa","Directorate of Settlement & Land Records","https://dslr.goa.gov.in/","BhuNaksha","https://bhunaksha.goa.gov.in/bhunaksha/","Registration (NGDRS)","https://ngdrsgoa.gov.in/NGDRS_GA/","Land records and property services"],
+["Gujarat","AnyRoR / E-Dhara","https://anyror.gujarat.gov.in/","BhuNaksha","https://bhunaksha.gujarat.gov.in/","GARVI Registration","https://garvi.gujarat.gov.in/","7/12, 8A and property records"],
+["Haryana","Jamabandi","https://jamabandi.nic.in/","Revenue map directory",LAND_DIRECTORY_URL,"Jamabandi / Registration","https://jamabandi.nic.in/","Jamabandi and mutation"],
+["Himachal Pradesh","Himbhoomi","https://himbhoomilmk.nic.in/viewlandrecords.aspx","BhuNaksha","https://bhunakshahp.nic.in/","Registration (NGDRS)","https://ngdrshp.gov.in/NGDRS_HP_LIVE/","Jamabandi and land maps"],
+["Jharkhand","Jharbhoomi","https://jharbhoomi.jharkhand.gov.in/","JharBhuNaksha","https://jharbhunaksha.jharkhand.gov.in/","JharNibandhan","https://jharnibandhan.gov.in/","Register-II, Khatiyan and plot maps"],
+["Karnataka","Bhoomi / Land Records","https://landrecords.karnataka.gov.in/","Map / survey directory",LAND_DIRECTORY_URL,"Kaveri / Registration","https://igr.karnataka.gov.in/","RTC / Pahani"],
+["Kerala","Official land-record directory",LAND_DIRECTORY_URL,"Map directory",LAND_DIRECTORY_URL,"Registration","https://keralaregistration.gov.in/","Use DoLR directory for current RoR portal"],
+["Madhya Pradesh","MP Bhulekh","https://mpbhulekh.gov.in/","Map / WebGIS directory",LAND_DIRECTORY_URL,"MP Registration","https://www.mpigr.gov.in/","Khasra, B-1 and land records"],
+["Maharashtra","Mahabhumi / Mahabhulekh","https://mahabhumi.gov.in/mahabhumilink","Mahabhunakasha","https://mahabhunakasha.mahabhumi.gov.in/27/index.jsp","IGR Maharashtra","https://isarita.igrmaharashtra.gov.in/PDE_2_0/","7/12, 8A and property maps"],
+["Manipur","Loucha Pathap","https://louchapathap.nic.in/","Map directory",LAND_DIRECTORY_URL,"Registration (NGDRS)","https://ngdrsmanipur.nic.in/NGDRS_MN/","Land records and mutation"],
+["Meghalaya","Official land-record directory",LAND_DIRECTORY_URL,"Map directory",LAND_DIRECTORY_URL,"Registration (NGDRS)","https://ngdrs.meghalaya.gov.in/","DoLR does not list a separate public RoR portal"],
+["Mizoram","Official land-record directory",LAND_DIRECTORY_URL,"Map directory",LAND_DIRECTORY_URL,"Registration","https://igr.mizoram.gov.in/","DoLR does not list a separate public RoR portal"],
+["Nagaland","Official land-record directory",LAND_DIRECTORY_URL,"Map directory",LAND_DIRECTORY_URL,"Registration directory",REG_DIRECTORY_URL,"No separate public RoR portal listed"],
+["Odisha","Bhulekh Odisha","https://bhulekh.ori.nic.in/","BhuNaksha Odisha","https://bhunakshaodisha.nic.in/","IGR Odisha","https://igrodisha.gov.in/","RoR, Khata and plot map"],
+["Punjab","Jamabandi / PLRS","https://jamabandi.punjab.gov.in/","BhuNaksha / GIS","https://gisbhunaksha.punjab.gov.in/","Easy Registry","https://easyregistry.punjab.gov.in/","Jamabandi, mutation and GIS maps"],
+["Rajasthan","Apna Khata","https://apnakhata.rajasthan.gov.in/","BhuNaksha Rajasthan","https://bhunaksha.rajasthan.gov.in/","e-Panjiyan","https://epanjiyan.rajasthan.gov.in/","Jamabandi and mutation"],
+["Sikkim","Official land-record directory",LAND_DIRECTORY_URL,"Map directory",LAND_DIRECTORY_URL,"Registration directory",REG_DIRECTORY_URL,"Check official directory for availability"],
+["Tamil Nadu","TN e-Services / Patta Chitta","https://eservices.tn.gov.in/","FMB / map services","https://eservices.tn.gov.in/","TNREGINET","https://tnreginet.gov.in/","Patta, Chitta, A-Register and FMB"],
+["Telangana","Bhu Bharati","https://bhubharati.telangana.gov.in/","Map / survey directory",LAND_DIRECTORY_URL,"Registration","https://registration.telangana.gov.in/","Current land records portal; replaces Dharani"],
+["Tripura","Jami Tripura / e-Jami","https://jami.tripura.gov.in/","BhuNaksha Tripura","https://bhunaksha.tripura.gov.in/bhunaksha/","Registration (NGDRS)","https://ngdrs.tripura.gov.in/NGDRS_TR/","RoR, plot history and mutation"],
+["Uttar Pradesh","UP Bhulekh","https://upbhulekh.gov.in/","UP BhuNaksha","https://upbhunaksha.gov.in/","IGRS UP","https://igrsup.gov.in/","Khatauni, Khasra and plot maps"],
+["Uttarakhand","Bhulekh Uttarakhand","https://bhulekh.uk.gov.in/","BhuNaksha Uttarakhand","https://bhunaksha.uk.gov.in/","e-Registration","https://eregistrationukgov.in/","RoR and land maps"],
+["West Bengal","Banglarbhumi","https://banglarbhumi.gov.in/","Map directory",LAND_DIRECTORY_URL,"WB Registration","https://wbregistration.gov.in/","Khatian, plot information and mutation"],
+["Andaman and Nicobar Islands","Dweep Bhoomi / official directory",LAND_DIRECTORY_URL,"Map directory",LAND_DIRECTORY_URL,"Online Registration","https://onlineregistrationani.gov.in/","Use DoLR directory for current land-record entry"],
+["Chandigarh","Online Jamabandi","https://revenue.chd.gov.in/","Map directory",LAND_DIRECTORY_URL,"Registration (NGDRS)","https://ngdrs.chd.gov.in/NGDRS_CH/","Jamabandi and revenue services"],
+["Dadra and Nagar Haveli and Daman and Diu","SUGAM / official directory","https://sugam.ddd.gov.in/","Map directory",LAND_DIRECTORY_URL,"Dadra Registration","https://ngdrs.dnh.gov.in/","Merged UT services"],
+["Delhi","Indraprastha Bhulekh","https://dlrc.delhigovt.nic.in/","Map directory",LAND_DIRECTORY_URL,"Registration (NGDRS)","https://ngdrs.delhi.gov.in/NGDRS_DL/","Delhi village land records"],
+["Jammu and Kashmir","Land Records Information System","https://landrecords.jk.gov.in/Dashboard/Home","BhuNaksha J&K","https://bhunaksha.jk.gov.in/","Registration (NGDRS)","https://ngdrs.jk.gov.in/","Jamabandi and land records"],
+["Ladakh","Official land-record directory",LAND_DIRECTORY_URL,"Map directory",LAND_DIRECTORY_URL,"Registration (NGDRS)","https://ngdrs.ladakh.gov.in/","Check official directory for current RoR portal"],
+["Lakshadweep","Lakshadweep Land Records","http://land.utl.gov.in/","BhuNaksha","http://bhunaksha.utl.gov.in/","","","Official links listed in DoLR records"],
+["Puducherry","Nilamagal","https://nilamagal.py.gov.in/","","","Registration","https://regnec.py.gov.in/","Patta and land-record services"]
 ];
-function renderPortals() {
-  const query=($("portalSearch").value||"").trim().toLowerCase();
-  const filtered=portals.filter(p=>(p[0]+" "+p[1]).toLowerCase().includes(query));
-  $("statePortals").innerHTML=filtered.map(p=>`
-    <div class="portal">
-      <strong>${safe(p[0])}</strong>
-      <small>${safe(p[1])}</small>
-      <a target="_blank" rel="noopener" href="${safe(p[2])}">Open official portal / directory ↗</a>
-    </div>`).join("")||"<p>कोई राज्य नहीं मिला।</p>";
-  translateDynamic($("statePortals"));
+function renderPortals(){
+ const query=($("portalSearch")?.value||"").trim().toLocaleLowerCase();
+ const filtered=portals.filter(p=>p.join(" ").toLocaleLowerCase().includes(query));
+ const link=(label,url)=>url?'<a target="_blank" rel="noopener" href="'+safe(url)+'">'+safe(label)+' ↗</a>':"";
+ $("statePortals").innerHTML=filtered.map(p=>'<article class="portal state-service-card"><strong>'+safe(p[0])+'</strong><small>'+safe(p[7]||"Official state land and property services")+'</small><div class="state-service-links">'+[link(p[1],p[2]),link(p[3],p[4]),link(p[5],p[6])].filter(Boolean).join("")+'</div></article>').join("")||'<p class="search-empty">कोई राज्य या सेवा नहीं मिली।</p>';
+ translateDynamic($("statePortals"));
 }
-$("portalSearch").addEventListener("input",renderPortals);
+if($("portalSearch"))$("portalSearch").addEventListener("input",renderPortals);
 
 /* Initial setup */
 updateBookingUser();
