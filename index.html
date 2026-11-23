@@ -1847,6 +1847,7 @@ function runSearch() {
     searchAmins();
     return;
   }
+  if((q.includes("booking")||q.includes("बुकिंग")||q.includes("appointment")||q.includes("अपॉइंटमेंट"))&&(q.includes("amin")||q.includes("अमीन"))){closeSearch();go("booking");return;}
   const routes=[
     [["nearby amin","find nearby","near me","nearby map","gps map","आसपास के अमीन","नजदीकी अमीन","पास के अमीन","मेरे पास अमीन"],"nearby"],
     [["id card","idcard","id-card","आईडी","पहचान कार्ड","card maker"],"idmaker"],
