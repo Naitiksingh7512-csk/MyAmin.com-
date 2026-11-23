@@ -1238,7 +1238,7 @@ header{
   <div class="dialog-box">
     <div class="dialog-head"><div><span class="search-kicker" data-en="QUICK NAVIGATION" data-hi="त्वरित खोज">QUICK NAVIGATION</span><h3 data-en="Search My Amin" data-hi="My Amin खोजें">Search My Amin</h3></div><button class="closebtn" type="button" onclick="closeSearch()" aria-label="Close search">✕</button></div>
     <p class="search-description" data-en="Find services, profiles and pages in one place." data-hi="सेवाएँ, प्रोफ़ाइल और पेज आसानी से खोजें।">Find services, profiles and pages in one place.</p>
-    <div class="search-input-wrap"><span aria-hidden="true">⌕</span><input id="siteSearch" placeholder="Search services, Amin name or UID…" autocomplete="off"></div>
+    <div class="search-input-wrap"><span class="search-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4.2 4.2"></path></svg></span><input id="siteSearch" placeholder="Search services, Amin name or UID…" autocomplete="off"></div>
     <div class="search-section-label" data-en="QUICK LINKS" data-hi="त्वरित लिंक">QUICK LINKS</div>
     <div id="searchSuggestions" class="list search-suggestions" aria-live="polite"></div>
     <div class="form-actions"><button class="btn btn-green search-submit" onclick="runSearch()" data-en="Open result" data-hi="खोलें">Open result</button></div>
@@ -1719,7 +1719,7 @@ $("siteSearch").addEventListener("keydown",e=>{
   if(e.key==="Enter") {e.preventDefault();runSearch();}
 });
 const smartSearchItems=[
-  {label:"Find an Amin",hiLabel:"अमीन खोजें",hint:"नाम, गाँव या जिला",hiHint:"नाम, गाँव या जिला खोजें",terms:["amin","अमीन","nearby","पास में"],route:"find",icon:"👷"},
+  {label:"Find an Amin",hiLabel:"अमीन खोजें",hint:"नाम, गाँव या जिला",hiHint:"नाम, गाँव या जिला खोजें",terms:["amin","अमीन","भुआ","bhu","bhua","अभी","abhi","nearby","पास में"],route:"find",icon:"👷"},
   {label:"Search by Profile UID",hiLabel:"प्रोफ़ाइल UID से खोजें",hint:"UID जैसे kumar@12345678",hiHint:"अमीन की प्रोफ़ाइल ID डालें",terms:["uid","profile id","आईडी"],route:"find",icon:"🪪"},
   {label:"Find Nearby Amin",hiLabel:"आस-पास के अमीन",hint:"Live GPS map with nearby approved Amin profiles",hiHint:"लाइव GPS मैप पर आसपास के स्वीकृत अमीन देखें",terms:["nearby amin","near me","नजदीक","आसपास","gps","location"],route:"nearby",icon:"📍"},
   {label:"New Booking",hiLabel:"नई बुकिंग",hint:"अपॉइंटमेंट अनुरोध भेजें",hiHint:"अपॉइंटमेंट का अनुरोध करें",terms:["booking","appointment","बुकिंग"],route:"booking",icon:"📅"},
@@ -1730,11 +1730,16 @@ const smartSearchItems=[
   {label:"My Account / Login",hiLabel:"मेरा अकाउंट / लॉगिन",hint:"अपने account विकल्प खोलें",hiHint:"अपना अकाउंट खोलें",terms:["account","login","लॉगिन"],route:"login",icon:"👤"},
   {label:"Help & Report",hiLabel:"सहायता और शिकायत",hint:"सहायता या समस्या बताएँ",hiHint:"सहायता लें या समस्या बताएँ",terms:["help","support","report","सहायता"],route:"help",icon:"💬"}
 ];
+const SEARCH_PHONETIC_ALIASES={am:["amin","अमीन"],amin:["अमीन","am"],bhu:["भुआ","bhua"],bhua:["भुआ","bhu"],abhi:["अभी"],abhee:["अभी"],abhe:["अभी"],bhumi:["भूमि"],book:["booking","बुकिंग"],booking:["बुकिंग"]};
 function normalizeSearchText(value){
  return String(value||"").toLocaleLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^\p{L}\p{N}]+/gu,"");
 }
 function searchTokens(value){
  return String(value||"").toLocaleLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").match(/[\p{L}\p{N}]+/gu)||[];
+}
+function expandSearchToken(token){
+ const base=normalizeSearchText(token);
+ return [...new Set([base,...(SEARCH_PHONETIC_ALIASES[base]||[]).map(normalizeSearchText)])].filter(Boolean);
 }
 function editDistance(a,b){
  const A=Array.from(a),B=Array.from(b);
@@ -1759,26 +1764,29 @@ function rankSearchItems(query,items){
    let score=0,matched=0;
    for(const token of qTokens){
      let best=Infinity;
+     const queryForms=expandSearchToken(token);
      for(const candidate of candidates){
-       if(candidate===token){best=0;break;}
-       if(candidate.startsWith(token)||token.startsWith(candidate)){
-         best=Math.min(best,Math.abs(candidate.length-token.length)+0.15);
-         continue;
+       const candidateForms=expandSearchToken(candidate);
+       for(const qForm of queryForms){
+         for(const cForm of candidateForms){
+           if(cForm===qForm){best=0;break;}
+           if(cForm.startsWith(qForm)||qForm.startsWith(cForm)){best=Math.min(best,Math.abs(cForm.length-qForm.length)+0.12);continue;}
+           const distance=editDistance(qForm,cForm);
+           const allowed=qForm.length<=3?1:Math.max(1,Math.ceil(qForm.length*.45));
+           if(distance<=allowed)best=Math.min(best,distance+0.35);
+         }
+         if(best===0)break;
        }
-       const distance=editDistance(token,candidate);
-       const allowed=token.length<=3?1:Math.max(1,Math.ceil(token.length*.45));
-       if(distance<=allowed)best=Math.min(best,distance+0.35);
+       if(best===0)break;
      }
      if(best!==Infinity){matched++;score+=best;}
    }
-   // Permit one imperfect token in a multi-word query, while ranking exact matches first.
    const required=qTokens.length===1?1:qTokens.length-1;
    if(matched<required)return {item,score:Infinity};
    const coverage=matched/qTokens.length;
    const exactPhrase=fields.some(v=>normalizeSearchText(String(v)).includes(qFlat));
    return {item,score:score+(1-coverage)*2+(exactPhrase?-2:0)};
- }).filter(x=>Number.isFinite(x.score))
-   .sort((a,b)=>a.score-b.score).map(x=>x.item);
+ }).filter(x=>Number.isFinite(x.score)).sort((a,b)=>a.score-b.score).map(x=>x.item);
 }
 function getAllSearchItems(){
  const items=[...smartSearchItems];
@@ -1801,12 +1809,18 @@ function getAllSearchItems(){
 }
 function renderSmartSearch(){
  const box=$("searchSuggestions"); if(!box)return;
- const q=$("siteSearch").value.trim();
- const hi=currentLang==="hi";
- const all=getAllSearchItems();
- const needle=normalizeSearchText(q);
+ const q=$("siteSearch").value.trim(),hi=currentLang==="hi";
+ const all=getAllSearchItems(),needle=normalizeSearchText(q);
  const list=needle?rankSearchItems(q,all):all.slice(0,10);
- box.innerHTML=list.slice(0,18).map((x,i)=>'<button type="button" class="search-result" data-smart-index="'+i+'"><span class="search-result-icon">'+x.icon+'</span><span class="search-result-copy"><strong>'+(hi?x.hiLabel:x.label)+'</strong><small>'+(hi?x.hiHint:x.hint)+'</small></span><span class="search-result-arrow">›</span></button>').join("")||'<p class="search-empty">'+(hi?'कोई सुझाव नहीं मिला। दूसरा शब्द लिखें।':'No results found. Try another search.')+'</p>';
+ const examples=hi?["भुआ भी लिखें","अमीन बुकिंग","अभी / ABHI","आस-पास के अमीन","भूमि कैलकुलेटर"]:["BHU / भुआ","Amin Booking","ABHI / अभी","Find Nearby Amin","Land Calculator"];
+ const chips='<div class="search-example-wrap"><span class="search-example-title">'+(hi?"ऐसे भी खोज सकते हैं":"TRY SEARCHING")+'</span><div class="search-example-chips">'+examples.map(v=>'<button type="button" class="search-example-chip" data-search-example="'+safe(v)+'">'+safe(v)+'</button>').join("")+'</div></div>';
+ const results=list.slice(0,18).map((x,i)=>'<button type="button" class="search-result" data-smart-index="'+i+'"><span class="search-result-icon">'+x.icon+'</span><span class="search-result-copy"><strong>'+(hi?x.hiLabel:x.label)+'</strong><small>'+(hi?x.hiHint:x.hint)+'</small></span><span class="search-result-arrow">›</span></button>').join("")||'<p class="search-empty">'+(hi?'कोई सुझाव नहीं मिला। दूसरा शब्द लिखें।':'No results found. Try another search.')+'</p>';
+ box.innerHTML=chips+results;
+ box.querySelectorAll("[data-search-example]").forEach(b=>b.addEventListener("click",()=>{
+   const value=b.dataset.searchExample||"";
+   const cleaned=value.replace(/^BHU \/ /,"").replace(/^भुआ भी लिखें$/,"भुआ").replace(/^अभी \/ ABHI$/,"ABHI").replace(/^ABHI \/ अभी$/,"ABHI");
+   $("siteSearch").value=cleaned;$("siteSearch").focus();renderSmartSearch();
+ }));
  box.querySelectorAll("[data-smart-index]").forEach(b=>b.addEventListener("click",()=>{
    const item=list[Number(b.dataset.smartIndex)];
    closeSearch();if(item.url){window.open(item.url,"_blank","noopener");return;}
@@ -3313,5 +3327,20 @@ input,select,textarea{min-width:0;max-width:100%}
 }
 </style>
 
+<style id="myamin-search-discovery-refresh">
+#searchDialog .search-input-icon{display:grid;place-items:center;width:34px;height:34px;flex:0 0 34px;border-radius:12px;color:#236b55;background:linear-gradient(145deg,#e2f3e8,#dcecf8);box-shadow:inset 0 1px 0 #fff,0 3px 9px rgba(28,82,63,.1)}
+#searchDialog .search-input-wrap{gap:10px;padding:7px 12px}
+#searchDialog .search-example-wrap{margin:2px 0 13px}
+#searchDialog .search-example-title{display:block;margin:0 0 9px;color:#9a7839;font-size:10px;font-weight:900;letter-spacing:1.5px}
+#searchDialog .search-example-chips{display:flex;flex-wrap:wrap;gap:8px}
+#searchDialog .search-example-chip{border:1px solid rgba(255,255,255,.9);border-radius:999px;padding:8px 12px;color:#214b3b;font-size:12px;font-weight:750;background:linear-gradient(120deg,#e5f3e8,#e2eff8 55%,#fbf0d9);box-shadow:0 4px 11px rgba(29,72,53,.08);transition:transform .18s ease,box-shadow .18s ease}
+#searchDialog .search-example-chip:nth-child(3n+2){background:linear-gradient(120deg,#f8edda,#f3e4d4)}
+#searchDialog .search-example-chip:nth-child(3n){background:linear-gradient(120deg,#e9e8f8,#e2f0ed)}
+#searchDialog .search-example-chip:hover,#searchDialog .search-example-chip:focus-visible{transform:translateY(-2px);box-shadow:0 8px 16px rgba(29,72,53,.14);outline:2px solid rgba(70,139,107,.22)}
+#searchDialog .search-suggestions{max-height:min(48vh,430px);overflow-y:auto;padding:2px 3px 7px}
+#searchDialog .search-result{min-height:62px}
+@media(max-width:480px){#searchDialog .search-example-chip{font-size:11px;padding:8px 10px}#searchDialog .search-suggestions{max-height:43vh}}
+@media(prefers-reduced-motion:reduce){#searchDialog .search-example-chip{transition:none}}
+</style>
 </body>
 </html>
