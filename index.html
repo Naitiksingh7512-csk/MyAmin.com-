@@ -1761,11 +1761,11 @@ function rankSearchItems(query,items){
    qFlat,
    qTokens.join(""),
    qTokens.filter(t=>t.length>1).join("")
- ].filter(Boolean))];
+ ].filter(Boolean).flatMap(expandSearchToken))];
  return items.map(item=>{
    const fields=[item.label,item.hiLabel,item.hint,item.hiHint,...(item.terms||[])].filter(Boolean).map(String);
-   const candidates=[...new Set(fields.flatMap(v=>searchTokens(v).map(normalizeSearchText)).filter(Boolean))];
-   const joinedCandidates=fields.map(normalizeSearchText).filter(Boolean);
+   const candidates=[...new Set(fields.flatMap(v=>searchTokens(v).map(normalizeSearchText)).filter(Boolean).flatMap(expandSearchToken))];
+   const joinedCandidates=fields.map(normalizeSearchText).filter(Boolean).flatMap(expandSearchToken);
    let score=Infinity;
    // Strongly prefer exact, prefix and contained matches like a shopping-site autocomplete.
    for(const q of queryForms){
