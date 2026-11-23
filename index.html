@@ -249,6 +249,13 @@ textarea {min-height:100px;resize:vertical}
 .portal strong {color:var(--dark)}
 .portal small {color:var(--muted);line-height:1.5}
 .portal a {font-size:12px;font-weight:800;color:var(--green);overflow-wrap:anywhere}
+.state-service-card {gap:10px}
+.state-service-links {display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
+.state-service-links a {display:inline-flex;align-items:center;min-height:34px;padding:7px 10px;border:1px solid #dcebe2;border-radius:9px;background:#f2f8f4;text-decoration:none}
+.state-service-links a:hover {background:#e5f2e9;border-color:#a9cdb6}
+@media(max-width:760px){.portal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.state-service-links{flex-direction:column;align-items:stretch}.state-service-links a{width:100%}}
+@media(max-width:480px){.portal-grid{grid-template-columns:1fr}}
+
 .state-label {margin:26px 0 12px;color:var(--dark)}
 footer {background:#103a30;color:white;padding:35px 20px}
 .footer-inner {
@@ -1239,7 +1246,7 @@ header{
     <div class="dialog-head"><div><span class="search-kicker" data-en="QUICK NAVIGATION" data-hi="त्वरित खोज">QUICK NAVIGATION</span><h3 data-en="Search My Amin" data-hi="My Amin खोजें">Search My Amin</h3></div><button class="closebtn" type="button" onclick="closeSearch()" aria-label="Close search">✕</button></div>
     <p class="search-description" data-en="Find services, profiles and pages in one place." data-hi="सेवाएँ, प्रोफ़ाइल और पेज आसानी से खोजें।">Find services, profiles and pages in one place.</p>
     <div class="search-input-wrap"><span class="search-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4.2 4.2"></path></svg></span><input id="siteSearch" placeholder="Search services, Amin name or UID…" autocomplete="off"></div>
-    <div class="search-section-label" data-en="QUICK LINKS" data-hi="मिलते-जुलते परिणाम">LIVE SUGGESTIONS</div>
+    <div class="search-section-label" data-en="QUICK LINKS" data-hi="त्वरित लिंक">QUICK LINKS</div>
     <div id="searchSuggestions" class="list search-suggestions" aria-live="polite"></div>
   </div>
 </div>
