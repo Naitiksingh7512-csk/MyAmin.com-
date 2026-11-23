@@ -1318,7 +1318,18 @@ header{
     <p class="search-description" data-en="Find services, profiles and pages in one place." data-hi="सेवाएँ, प्रोफ़ाइल और पेज आसानी से खोजें।">Find services, profiles and pages in one place.</p>
     <div class="search-input-wrap"><span class="search-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4.2 4.2"></path></svg></span><input id="siteSearch" placeholder="Search services, Amin name or UID…" autocomplete="off"></div>
     <div class="search-section-label" data-en="QUICK LINKS" data-hi="त्वरित लिंक">QUICK LINKS</div>
-    <div id="searchSuggestions" class="list search-suggestions" aria-live="polite"></div>
+    <div id="searchSuggestions" class="list search-suggestions" aria-live="polite">
+      <button type="button" class="search-result" onclick="go('find')"><span class="search-result-icon">👷</span><span class="search-result-copy"><strong data-en="Find an Amin" data-hi="अमीन खोजें">Find an Amin</strong><small data-en="Search by name, village or district" data-hi="नाम, गाँव या जिला खोजें">Search by name, village or district</small></span><span class="search-result-arrow">›</span></button>
+      <button type="button" class="search-result" onclick="go('nearby')"><span class="search-result-icon">📍</span><span class="search-result-copy"><strong data-en="Find Nearby Amin" data-hi="आस-पास के अमीन">Find Nearby Amin</strong><small data-en="See nearby approved Amin profiles" data-hi="आसपास के स्वीकृत अमीन देखें">See nearby approved Amin profiles</small></span><span class="search-result-arrow">›</span></button>
+      <button type="button" class="search-result" onclick="go('booking')"><span class="search-result-icon">📅</span><span class="search-result-copy"><strong data-en="New Booking" data-hi="नई बुकिंग">New Booking</strong><small data-en="Request an Amin appointment" data-hi="अमीन अपॉइंटमेंट का अनुरोध करें">Request an Amin appointment</small></span><span class="search-result-arrow">›</span></button>
+      <button type="button" class="search-result" onclick="go('registerAmin')"><span class="search-result-icon">📝</span><span class="search-result-copy"><strong data-en="Amin Registration" data-hi="अमीन पंजीकरण">Amin Registration</strong><small data-en="Apply to join MyAmin" data-hi="MyAmin से जुड़ने के लिए आवेदन करें">Apply to join MyAmin</small></span><span class="search-result-arrow">›</span></button>
+      <button type="button" class="search-result" onclick="go('idmaker')"><span class="search-result-icon">🪪</span><span class="search-result-copy"><strong data-en="Amin ID Card Maker" data-hi="अमीन आईडी कार्ड निर्माता">Amin ID Card Maker</strong><small data-en="Create or download an ID card" data-hi="आईडी कार्ड बनाएँ या डाउनलोड करें">Create or download an ID card</small></span><span class="search-result-arrow">›</span></button>
+      <button type="button" class="search-result" onclick="go('calculator')"><span class="search-result-icon">📐</span><span class="search-result-copy"><strong data-en="Land Unit Calculator" data-hi="भूमि इकाई कैलकुलेटर">Land Unit Calculator</strong><small data-en="Convert land measurement units" data-hi="भूमि माप की इकाइयाँ बदलें">Convert land measurement units</small></span><span class="search-result-arrow">›</span></button>
+      <button type="button" class="search-result" onclick="go('portals')"><span class="search-result-icon">🏛️</span><span class="search-result-copy"><strong data-en="Bihar Bhumi Services" data-hi="बिहार भूमि सेवाएँ">Bihar Bhumi Services</strong><small data-en="Open Bihar government land services" data-hi="बिहार सरकारी भूमि सेवाएँ खोलें">Open Bihar government land services</small></span><span class="search-result-arrow">›</span></button>
+      <button type="button" class="search-result" onclick="go('portals')"><span class="search-result-icon">🌐</span><span class="search-result-copy"><strong data-en="Other States Land Portals" data-hi="अन्य राज्यों के भूमि पोर्टल">Other States Land Portals</strong><small data-en="Browse state and UT land-record portals" data-hi="राज्यों और केंद्रशासित प्रदेशों के भूमि रिकॉर्ड पोर्टल देखें">Browse state and UT land-record portals</small></span><span class="search-result-arrow">›</span></button>
+      <button type="button" class="search-result" onclick="go('help')"><span class="search-result-icon">💬</span><span class="search-result-copy"><strong data-en="Help & Support" data-hi="मदद और सहायता">Help & Support</strong><small data-en="Get help using MyAmin" data-hi="MyAmin इस्तेमाल करने में मदद पाएँ">Get help using MyAmin</small></span><span class="search-result-arrow">›</span></button>
+      <button type="button" class="search-result" onclick="go('report')"><span class="search-result-icon">🛠️</span><span class="search-result-copy"><strong data-en="Report a Problem" data-hi="समस्या बताएँ">Report a Problem</strong><small data-en="Send feedback or report an issue" data-hi="सुझाव दें या समस्या की रिपोर्ट करें">Send feedback or report an issue</small></span><span class="search-result-arrow">›</span></button>
+    </div>
   </div>
 </div>
 
@@ -3302,6 +3313,12 @@ footer .logo-image{filter:drop-shadow(0 4px 9px rgba(0,0,0,.18))}
 </style>
 
 
+<style id="quick-links-visibility-fix">
+#searchDialog .search-section-label{display:block!important;visibility:visible!important;margin:20px 0 10px!important;color:#9a7839!important;font-weight:850!important;letter-spacing:1.8px!important}
+#searchDialog #searchSuggestions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;visibility:visible!important;opacity:1!important;min-height:70px!important}
+#searchDialog #searchSuggestions .search-result{display:flex!important;visibility:visible!important;opacity:1!important;min-height:64px!important}
+@media(max-width:520px){#searchDialog #searchSuggestions{grid-template-columns:1fr!important}}
+</style>
 <style id="quick-links-colour-refresh">
 /* Rich, coordinated colour treatment for every Search My Amin quick-link tile */
 #searchDialog .search-suggestions{gap:10px}
