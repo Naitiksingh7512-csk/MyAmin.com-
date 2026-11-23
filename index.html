@@ -1317,7 +1317,7 @@ header{
     <div class="dialog-head"><div><span class="search-kicker" data-en="QUICK NAVIGATION" data-hi="त्वरित खोज">QUICK NAVIGATION</span><h3 data-en="Search My Amin" data-hi="My Amin खोजें">Search My Amin</h3></div><button class="closebtn" type="button" onclick="closeSearch()" aria-label="Close search">✕</button></div>
     <p class="search-description" data-en="Find services, profiles and pages in one place." data-hi="सेवाएँ, प्रोफ़ाइल और पेज आसानी से खोजें।">Find services, profiles and pages in one place.</p>
     <div class="search-input-wrap"><span class="search-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4.2 4.2"></path></svg></span><input id="siteSearch" placeholder="Search services, Amin name or UID…" autocomplete="off"></div>
-    <div class="search-section-label" data-en="QUICK LINKS" data-hi="त्वरित लिंक">QUICK LINKS</div>
+    <div id="searchQuickLinksLabel" class="search-section-label" data-en="QUICK LINKS" data-hi="त्वरित लिंक">QUICK LINKS</div>
     <div id="searchSuggestions" class="list search-suggestions" aria-live="polite">
       <button type="button" class="search-result" onclick="go('find')"><span class="search-result-icon">👷</span><span class="search-result-copy"><strong data-en="Find an Amin" data-hi="अमीन खोजें">Find an Amin</strong><small data-en="Search by name, village or district" data-hi="नाम, गाँव या जिला खोजें">Search by name, village or district</small></span><span class="search-result-arrow">›</span></button>
       <button type="button" class="search-result" onclick="go('nearby')"><span class="search-result-icon">📍</span><span class="search-result-copy"><strong data-en="Find Nearby Amin" data-hi="आस-पास के अमीन">Find Nearby Amin</strong><small data-en="See nearby approved Amin profiles" data-hi="आसपास के स्वीकृत अमीन देखें">See nearby approved Amin profiles</small></span><span class="search-result-arrow">›</span></button>
@@ -1913,7 +1913,25 @@ function getAllSearchItems(){
 function renderSmartSearch(){
  const box=$("searchSuggestions");if(!box)return;
  const q=$("siteSearch").value.trim(),hi=currentLang==="hi",all=getAllSearchItems();
- const list=q?rankSearchItems(q,all):all.slice(0,10);
+ const label=$("searchQuickLinksLabel");
+ if(label){label.textContent=q?(hi?"मिलते-जुलते परिणाम":"SEARCH RESULTS"):(hi?"त्वरित लिंक":"QUICK LINKS");}
+ let list;
+ if(!q) list=all.slice(0,10);
+ else {
+  const ranked=rankSearchItems(q,all);
+  // State-name matches get a clear, direct result at the top of the same Quick Links area.
+  const queryKey=normalizeSearchText(q);
+  const stateHits=queryKey.length>=2&&Array.isArray(portals)?portals.filter(p=>normalizeSearchText(p[0]).includes(queryKey)): [];
+  const directStateHits=stateHits.map(p=>({
+   label:p[0]+" — Land Services",hiLabel:p[0]+" — भूमि सेवाएँ",
+   hint:[p[1],p[7]].filter(Boolean).join(" · ")||"Official state land-record services",
+   hiHint:[p[1],p[7]].filter(Boolean).join(" · ")||"राज्य की आधिकारिक भूमि रिकॉर्ड सेवाएँ",
+   terms:[p[0],p[1],p[3],p[5],"land records","भूमि रिकॉर्ड"],
+   route:"portals",portalQuery:p[0],url:p[2]||LAND_DIRECTORY_URL,icon:"🌐"
+  }));
+  const directNames=new Set(directStateHits.map(x=>x.portalQuery));
+  list=[...directStateHits,...ranked.filter(x=>!directNames.has(x.portalQuery))];
+ }
  box.innerHTML=list.slice(0,18).map((x,i)=>'<button type="button" class="search-result" data-smart-index="'+i+'"><span class="search-result-icon">'+(x.icon||"⌕")+'</span><span class="search-result-copy"><strong>'+(hi?x.hiLabel:x.label)+'</strong><small>'+(hi?x.hiHint:x.hint)+'</small></span><span class="search-result-arrow">›</span></button>').join("")||'<p class="search-empty">'+(hi?'कोई सुझाव नहीं मिला। दूसरा शब्द लिखें।':'No results found. Try another search.')+'</p>';
  box.querySelectorAll("[data-smart-index]").forEach(b=>b.addEventListener("click",()=>{
   const item=list[Number(b.dataset.smartIndex)];if(!item)return;
