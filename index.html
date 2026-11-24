@@ -1894,37 +1894,58 @@ function rankSearchItems(query,items){
 }
 function getAllSearchItems(){
  const items=[...smartSearchItems];
- // Add every Bihar government portal card (including e-Mapi) to site-wide search.
- document.querySelectorAll("#portals .portal").forEach(card=>{
+ const seen=new Set(items.map(x=>[x.label,x.route,x.url||""].join("|")));
+ const add=item=>{
+   const key=[item.label,item.route,item.url||""].join("|");
+   if(!item.label||seen.has(key))return;
+   seen.add(key);items.push(item);
+ };
+ // Index every visible Bihar portal card independently; one bad local data source must not stop search.
+ try{
+  document.querySelectorAll("#portals .portal").forEach(card=>{
    const title=card.querySelector("strong")?.textContent?.trim();
-   const desc=card.querySelector("small")?.textContent?.trim()||"";
    if(!title)return;
+   const desc=card.querySelector("small")?.textContent?.trim()||"";
    const link=card.querySelector("a")?.getAttribute("href")||"";
-   items.push({label:title,hiLabel:title,hint:desc,hiHint:desc,terms:[title,desc,link,"government portal","सरकारी पोर्टल"],route:"portals",icon:"🏛️",portalQuery:title,url:link});
- });
- // Add approved Amin profiles to live local search. Only public profile fields are indexed.
- read(DB.amins,[]).filter(a=>a&&a.approved&&a.workAllowed!==false).forEach(a=>{
+   add({label:title,hiLabel:title,hint:desc,hiHint:desc,terms:[title,desc,link,"government portal","सरकारी पोर्टल"],route:"portals",icon:"🏛️",portalQuery:title,url:link});
+  });
+ }catch(e){console.warn("Portal-card search indexing skipped",e);}
+ // Add approved public Amin profiles without allowing profile storage errors to break general search.
+ try{
+  const profiles=read(DB.amins,[]);
+  (Array.isArray(profiles)?profiles:[]).filter(a=>a&&a.approved&&a.workAllowed!==false).forEach(a=>{
    const name=String(a.name||"Amin"),uid=String(a.profileId||a.id||"");
-   items.push({label:name+" · "+uid,hiLabel:name+" · "+uid,hint:[a.place,a.district,a.state].filter(Boolean).join(", ")+" · Approved Amin profile",hiHint:[a.place,a.district,a.state].filter(Boolean).join(", ")+" · स्वीकृत अमीन प्रोफ़ाइल",terms:[name,uid,a.phone,a.place,a.district,a.state,a.description,"amin profile","अमीन प्रोफ़ाइल"],route:"find",icon:"👷",aminProfile:uid});
- });
- // Add all state and UT portal entries; users can search by state or portal name.
- if(Array.isArray(portals)) portals.forEach(p=>{
- [[p[1],p[2],"Land records / RoR","भूमि रिकॉर्ड / जमाबंदी"],[p[3],p[4],"BhuNaksha / maps","भू-नक्शा / जमीन का नक्शा"],[p[5],p[6],"Property registration","संपत्ति पंजीकरण"]].forEach(v=>{
-  if(!v[0]||!v[1])return;
-  items.push({label:v[0]+" — "+p[0],hiLabel:v[0]+" — "+p[0],hint:v[2],hiHint:v[3],terms:[p[0],v[0],"land records","bhulekh","bhu naksha","registration","भूमि रिकॉर्ड","भू नक्शा","रजिस्ट्री"],route:"portals",icon:"🌐",portalQuery:p[0],url:v[1]});
- });
-});
- // Index remaining site panels too, so search can discover any named section or feature.
- const knownRoutes=new Set(items.map(x=>x.route));
- document.querySelectorAll(".panel[id]").forEach(panel=>{
+   add({label:name+" · "+uid,hiLabel:name+" · "+uid,hint:[a.place,a.district,a.state].filter(Boolean).join(", ")+" · Approved Amin profile",hiHint:[a.place,a.district,a.state].filter(Boolean).join(", ")+" · स्वीकृत अमीन प्रोफ़ाइल",terms:[name,uid,a.phone,a.place,a.district,a.state,a.description,"amin profile","अमीन प्रोफ़ाइल"],route:"find",icon:"👷",aminProfile:uid});
+  });
+ }catch(e){console.warn("Amin profile search indexing skipped",e);}
+ // Add every state/UT and its individual land-record, map and registration destinations.
+ try{
+  if(Array.isArray(portals))portals.forEach(p=>{
+   const state=String(p[0]||"").trim();if(!state)return;
+   const services=[
+    [p[1],p[2],"Land records / RoR","भूमि रिकॉर्ड / जमाबंदी",["land records","bhulekh","jamabandi","khasra","khata","भूमि रिकॉर्ड","जमाबंदी"]],
+    [p[3],p[4],"BhuNaksha / cadastral maps","भू-नक्शा / जमीन का नक्शा",["bhu naksha","map","cadastral","नक्शा","भू नक्शा"]],
+    [p[5],p[6],"Property registration","संपत्ति पंजीकरण",["registration","property registration","registry","रजिस्ट्री","पंजीकरण"]]
+   ];
+   services.forEach(v=>{
+    if(!v[0]||!v[1])return;
+    add({label:String(v[0])+" — "+state,hiLabel:String(v[0])+" — "+state,hint:v[2]+" · "+state,hiHint:v[3]+" · "+state,terms:[state,v[0],...v[4],"state portal","राज्य पोर्टल"],route:"portals",icon:"🌐",portalQuery:state,url:v[1]});
+   });
+   add({label:state+" — All land services",hiLabel:state+" — सभी भूमि सेवाएँ",hint:"Open land records, maps and registration links",hiHint:"भूमि रिकॉर्ड, नक्शा और रजिस्ट्रेशन लिंक खोलें",terms:[state,state+" land",state+" bhumi",state+" land records",state+" portal",state+" जमीन",state+" भूमि"],route:"portals",icon:"🏛️",portalQuery:state});
+  });
+ }catch(e){console.warn("State portal search indexing skipped",e);}
+ // Add every in-page section and its visible action labels, without depending on any single feature module.
+ try{
+  document.querySelectorAll(".panel[id]").forEach(panel=>{
    const heading=panel.querySelector("h1,h2,h3,[data-en][data-hi]");
    const title=(heading?.getAttribute("data-en")||heading?.textContent||panel.id).trim();
-   if(!title||items.some(x=>x.route===panel.id&&String(x.label||"").toLowerCase()===title.toLowerCase()))return;
-   const description=(panel.querySelector("p")?.textContent||"").trim().slice(0,180);
-   const labels=[...panel.querySelectorAll("label,button,a")].slice(0,18).map(el=>(el.getAttribute("data-en")||el.textContent||"").trim()).filter(Boolean);
+   if(!title)return;
    const hiTitle=(heading?.getAttribute("data-hi")||heading?.textContent||title).trim();
-   items.push({label:title,hiLabel:hiTitle,hint:description||"Open "+title,hiHint:description||title,terms:[panel.id,panel.id.replace(/([A-Z])/g," $1"),...labels],route:panel.id,icon:"🔎"});
- });
+   const labels=[...panel.querySelectorAll("label,button,a,input[placeholder],select")].slice(0,40).map(el=>(el.getAttribute("data-en")||el.getAttribute("placeholder")||el.textContent||el.getAttribute("aria-label")||"").trim()).filter(Boolean);
+   const description=(panel.querySelector("p")?.textContent||"").trim().slice(0,180);
+   add({label:title,hiLabel:hiTitle,hint:description||"Open "+title,hiHint:description||hiTitle,terms:[panel.id,panel.id.replace(/([A-Z])/g," $1"),...labels],route:panel.id,icon:"🔎"});
+  });
+ }catch(e){console.warn("Page-section search indexing skipped",e);}
  return items;
 }
 function renderSmartSearch(){
