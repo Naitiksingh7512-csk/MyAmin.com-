@@ -1815,7 +1815,7 @@ const smartSearchItems=[
   {label:"Amin ID Card",hiLabel:"अमीन पहचान पत्र",hint:"अपना ID card बनाएँ",hiHint:"अपना ID कार्ड बनाएँ या डाउनलोड करें",terms:["id card","idcard","कार्ड"],route:"idmaker",icon:"🎫"},
   {label:"Land Unit Calculator",hiLabel:"भूमि इकाई कैलकुलेटर",hint:"कट्ठा, धुर और अन्य इकाइयाँ",hiHint:"कट्ठा, धुर और अन्य इकाइयाँ बदलें",terms:["calculator","कट्ठा","धुर","unit"],route:"calculator",icon:"📐"},
   {label:"Bihar Bhumi Portal",hiLabel:"बिहार भूमि पोर्टल",hint:"सरकारी भूमि सेवा",hiHint:"सरकारी भूमि सेवाएँ खोलें",terms:["bihar bhumi","bhumi","भूमि पोर्टल"],route:"portals",icon:"🏛️"},
-  {label:"My Account / Login",hiLabel:"मेरा अकाउंट / लॉगिन",hint:"अपने account विकल्प खोलें",hiHint:"अपना अकाउंट खोलें",terms:["account","login","लॉगिन"],route:"login",icon:"👤"},
+  {label:"Download MyAmin APK",hiLabel:"MyAmin APK डाउनलोड करें",hint:"Android app download and installation information",hiHint:"Android ऐप डाउनलोड और इंस्टॉल करने की जानकारी",terms:["apk","android app","download app","ऐप डाउनलोड","एपीके"],route:"apk",url:"./apk/",icon:"⬇️"},  {label:"My Account / Login",hiLabel:"मेरा अकाउंट / लॉगिन",hint:"अपने account विकल्प खोलें",hiHint:"अपना अकाउंट खोलें",terms:["account","login","लॉगिन"],route:"login",icon:"👤"},
   {label:"Help & Report",hiLabel:"सहायता और शिकायत",hint:"सहायता या समस्या बताएँ",hiHint:"सहायता लें या समस्या बताएँ",terms:["help","support","report","सहायता"],route:"help",icon:"💬"}
 ];
 const SEARCH_PHONETIC_ALIASES={am:["amin","अमीन"],amin:["अमीन","am"],bhu:["भुआ","bhua"],bhua:["भुआ","bhu"],abhi:["अभी"],abhee:["अभी"],abhe:["अभी"],bhumi:["भूमि"],book:["booking","बुकिंग"],booking:["बुकिंग"]};
@@ -2512,10 +2512,19 @@ const portals=[
 ["Puducherry","Nilamagal","https://nilamagal.py.gov.in/","","","Registration","https://regnec.py.gov.in/","Patta and land-record services"]
 ];
 function renderPortals(){
- const query=($("portalSearch")?.value||"").trim().toLocaleLowerCase();
- const filtered=portals.filter(p=>p.join(" ").toLocaleLowerCase().includes(query));
+ const query=($("portalSearch")?.value||"").trim();
+ const portalItems=portals.map(p=>({
+  state:p[0],records:p[1],recordsUrl:p[2],maps:p[3],mapsUrl:p[4],registration:p[5],registrationUrl:p[6],description:p[7],
+  label:p[0]+" — "+[p[1],p[3],p[5]].filter(Boolean).join(" · "),
+  hiLabel:p[0]+" — "+[p[1],p[3],p[5]].filter(Boolean).join(" · "),
+  hint:p[7]||"Official state land and property services",
+  hiHint:p[7]||"राज्य की आधिकारिक भूमि एवं संपत्ति सेवाएँ",
+  terms:[p[0],p[1],p[3],p[5],"land records","bhulekh","bhulekh","bhu naksha","registration","भूमि रिकॉर्ड","नक्शा","रजिस्ट्री"],
+  route:"portals",portalQuery:p[0],icon:"🌐"
+ }));
+ const filtered=query?rankSearchItems(query,portalItems).map(item=>portals.find(p=>p[0]===item.portalQuery)).filter(Boolean):portals;
  const link=(label,url)=>url?'<a target="_blank" rel="noopener" href="'+safe(url)+'">'+safe(label)+' ↗</a>':"";
- $("statePortals").innerHTML=filtered.map(p=>'<article class="portal state-service-card"><strong>'+safe(p[0])+'</strong><small>'+safe(p[7]||"Official state land and property services")+'</small><div class="state-service-links">'+[link(p[1],p[2]),link(p[3],p[4]),link(p[5],p[6])].filter(Boolean).join("")+'</div></article>').join("")||'<p class="search-empty">कोई राज्य या सेवा नहीं मिली।</p>';
+ $("statePortals").innerHTML=filtered.map(p=>'<article class="portal state-service-card"><strong>'+safe(p[0])+'</strong><small>'+safe(p[7]||"Official state land and property services")+'</small><div class="state-service-links">'+[link(p[1],p[2]),link(p[3],p[4]),link(p[5],p[6])].filter(Boolean).join("")+'</div></article>').join("")||'<p class="search-empty">कोई मिलता-जुलता राज्य या पोर्टल नहीं मिला। स्पेलिंग जाँचें या दूसरा शब्द लिखें।</p>';
  translateDynamic($("statePortals"));
 }
 if($("portalSearch"))$("portalSearch").addEventListener("input",renderPortals);
