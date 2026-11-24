@@ -1,0 +1,40 @@
+name: MyAmin Notifications and PWA Checks
+
+on:
+  push:
+    branches: [admin-control-center-staging]
+    paths:
+      - "myamin-notifications.js"
+      - "service-worker.js"
+      - "site.webmanifest"
+      - "index.html"
+      - "supabase/migrations/*booking_activity_notifications.sql"
+      - ".github/workflows/myamin-notifications-check.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "myamin-notifications.js"
+      - "service-worker.js"
+      - "site.webmanifest"
+      - "index.html"
+      - "supabase/migrations/*booking_activity_notifications.sql"
+      - ".github/workflows/myamin-notifications-check.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check notification module syntax
+        run: node --check myamin-notifications.js
+      - name: Check service worker syntax
+        run: node --check service-worker.js
+      - name: Validate web app manifest JSON
+        run: node -e "JSON.parse(require('fs').readFileSync('site.webmanifest', 'utf8')); console.log('Manifest JSON valid')"
+      - name: Confirm migration contains secure triggers
+        run: |
+          grep -q "notify_myamin_booking_activity" supabase/migrations/20261124110000_booking_activity_notifications.sql
+          grep -q "notify_myamin_booking_message" supabase/migrations/20261124110000_booking_activity_notifications.sql
