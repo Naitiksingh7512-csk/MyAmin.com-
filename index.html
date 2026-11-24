@@ -1917,34 +1917,64 @@ function getAllSearchItems(){
  return items;
 }
 function renderSmartSearch(){
- const box=$("searchSuggestions");if(!box)return;
- const q=$("siteSearch").value.trim(),hi=currentLang==="hi",all=getAllSearchItems();
+ const box=$("searchSuggestions");
+ if(!box)return;
+ const input=$("siteSearch");
+ const q=String(input?.value||"").trim();
+ const hi=currentLang==="hi";
  const label=$("searchQuickLinksLabel");
- if(label){label.textContent=q?(hi?"मिलते-जुलते परिणाम":"SEARCH RESULTS"):(hi?"त्वरित लिंक":"QUICK LINKS");}
- let list;
- if(!q) list=all.slice(0,10);
- else {
-  const ranked=rankSearchItems(q,all);
-  // State-name matches get a clear, direct result at the top of the same Quick Links area.
-  const queryKey=normalizeSearchText(q);
-  const stateHits=queryKey.length>=2&&Array.isArray(portals)?portals.filter(p=>normalizeSearchText(p[0]).includes(queryKey)): [];
-  const directStateHits=stateHits.map(p=>({
-   label:p[0]+" — Land Services",hiLabel:p[0]+" — भूमि सेवाएँ",
-   hint:[p[1],p[7]].filter(Boolean).join(" · ")||"Official state land-record services",
-   hiHint:[p[1],p[7]].filter(Boolean).join(" · ")||"राज्य की आधिकारिक भूमि रिकॉर्ड सेवाएँ",
-   terms:[p[0],p[1],p[3],p[5],"land records","भूमि रिकॉर्ड"],
-   route:"portals",portalQuery:p[0],url:p[2]||LAND_DIRECTORY_URL,icon:"🌐"
-  }));
-  const directNames=new Set(directStateHits.map(x=>x.portalQuery));
-  list=[...directStateHits,...ranked.filter(x=>!directNames.has(x.portalQuery))];
+ if(label)label.textContent=q?(hi?"मिलते-जुलते परिणाम":"SIMILAR RESULTS"):(hi?"त्वरित लिंक":"QUICK LINKS");
+ if(!q){
+   box.innerHTML=getAllSearchItems().slice(0,10).map((x,i)=>'<button type="button" class="search-result" data-smart-index="'+i+'"><span class="search-result-icon">'+(x.icon||"⌕")+'</span><span class="search-result-copy"><strong>'+(hi?x.hiLabel:x.label)+'</strong><small>'+(hi?x.hiHint:x.hint)+'</small></span><span class="search-result-arrow">›</span></button>').join("");
+   return;
  }
- box.innerHTML=list.slice(0,18).map((x,i)=>'<button type="button" class="search-result" data-smart-index="'+i+'"><span class="search-result-icon">'+(x.icon||"⌕")+'</span><span class="search-result-copy"><strong>'+(hi?x.hiLabel:x.label)+'</strong><small>'+(hi?x.hiHint:x.hint)+'</small></span><span class="search-result-arrow">›</span></button>').join("")||'<p class="search-empty">'+(hi?'कोई सुझाव नहीं मिला। दूसरा शब्द लिखें।':'No results found. Try another search.')+'</p>';
+ const norm=v=>String(v||"").toLocaleLowerCase().normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").replace(/[^\\p{L}\\p{N}]+/gu,"");
+ const qn=norm(q);
+ const apkTerms=["ap","apk","apke","ap kee","apki","app","apps","android","download","download app","apk download","एपीके","ऐप","ऐप डाउनलोड"];
+ const apkHit=apkTerms.some(t=>norm(t)===qn||norm(t).startsWith(qn)||qn.startsWith(norm(t))) || qn==="apke" || qn==="apkee";
+ let all=[];
+ try{all=getAllSearchItems();}catch(err){console.error("MyAmin search index error",err);}
+ const scored=all.map(item=>{
+   const fields=[item.label,item.hiLabel,item.hint,item.hiHint,...(item.terms||[])].filter(Boolean);
+   let score=Infinity;
+   for(const field of fields){
+     const value=norm(field);
+     if(!value)continue;
+     if(value===qn)score=Math.min(score,0);
+     else if(value.startsWith(qn))score=Math.min(score,0.2);
+     else if(value.includes(qn))score=Math.min(score,0.4);
+     for(const token of String(field).toLocaleLowerCase().split(/[^\\p{L}\\p{N}]+/u).filter(Boolean)){
+       const tn=norm(token);
+       if(tn.startsWith(qn))score=Math.min(score,0.3);
+       else if(qn.length>=2&&tn.length>=2&&Math.abs(tn.length-qn.length)<=2){
+         let prev=Array.from({length:tn.length+1},(_,i)=>i);
+         const aa=Array.from(qn),bb=Array.from(tn);
+         for(let i=1;i<=aa.length;i++){const row=[i];for(let j=1;j<=bb.length;j++)row[j]=Math.min(row[j-1]+1,prev[j]+1,prev[j-1]+(aa[i-1]===bb[j-1]?0:1));prev=row;}
+         if(prev[bb.length]<=Math.max(1,Math.floor(qn.length*.35)))score=Math.min(score,.7+prev[bb.length]*.2);
+       }
+     }
+   }
+   return {item,score};
+ }).filter(x=>Number.isFinite(x.score)).sort((a,b)=>a.score-b.score).map(x=>x.item);
+ let list=scored;
+ if(apkHit){
+   const apkItem=all.find(x=>x.route==="apk")||{label:"Download MyAmin APK",hiLabel:"MyAmin APK डाउनलोड करें",hint:"Open the MyAmin Android app page",hiHint:"MyAmin Android ऐप का पेज खोलें",route:"apk",url:"./apk/",icon:"⬇️"};
+   list=[apkItem,...list.filter(x=>x.route!=="apk")];
+ }
+ if(!list.length && qn.length>=2 && Array.isArray(portals)){
+   const states=portals.filter(p=>norm(p[0]).includes(qn)||norm(qn).includes(norm(p[0])));
+   list=states.map(p=>({label:p[0]+" — Land Services",hiLabel:p[0]+" — भूमि सेवाएँ",hint:"Official state land services",hiHint:"राज्य की आधिकारिक भूमि सेवाएँ",route:"portals",portalQuery:p[0],url:p[2]||LAND_DIRECTORY_URL,icon:"🌐"}));
+ }
+ const visible=list.slice(0,18);
+ box.innerHTML=visible.map((x,i)=>'<button type="button" class="search-result" data-smart-index="'+i+'"><span class="search-result-icon">'+(x.icon||"⌕")+'</span><span class="search-result-copy"><strong>'+(hi?x.hiLabel:x.label)+'</strong><small>'+(hi?x.hiHint:x.hint)+'</small></span><span class="search-result-arrow">›</span></button>').join("")||'<p class="search-empty">'+(hi?'कोई मिलता-जुलता परिणाम नहीं मिला।':'No similar results found. Try another word.')+'</p>';
  box.querySelectorAll("[data-smart-index]").forEach(b=>b.addEventListener("click",()=>{
-  const item=list[Number(b.dataset.smartIndex)];if(!item)return;
-  closeSearch();if(item.url){window.open(item.url,"_blank","noopener");return;}
-  go(item.route);
-  if(item.aminProfile){$("aminSearch").value=item.aminProfile;$("aminState").value="";searchAmins();return;}
-  if(item.portalQuery&&$("portalSearch")){$("portalSearch").value=item.portalQuery;renderPortals();}
+   const item=visible[Number(b.dataset.smartIndex)];if(!item)return;
+   closeSearch();
+   if(item.url){window.location.href=new URL(item.url,document.baseURI).href;return;}
+   if(item.route==="apk"){window.location.href="./apk/";return;}
+   go(item.route);
+   if(item.aminProfile){$("aminSearch").value=item.aminProfile;$("aminState").value="";searchAmins();return;}
+   if(item.portalQuery&&$("portalSearch")){$("portalSearch").value=item.portalQuery;renderPortals();}
  }));
 }
 $("siteSearch").addEventListener("input",renderSmartSearch);
