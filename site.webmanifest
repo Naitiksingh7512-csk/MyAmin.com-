@@ -9,10 +9,16 @@
   "theme_color": "#123b32",
   "icons": [
     {
-      "src": "/MyAmin.com-/favicon.png?v=20261124-black4",
-      "sizes": "32x32",
-      "type": "image/png",
+      "src": "./assets/myamin-black-logo.svg?v=20261124-black6",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
       "purpose": "any"
+    },
+    {
+      "src": "./assets/myamin-black-logo.svg?v=20261124-black6",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ]
 }
