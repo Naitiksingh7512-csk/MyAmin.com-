@@ -4,10 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#123b32">
-<link rel="icon" type="image/jpeg" sizes="192x192" href="assets/myamin-black-logo.jpg?v=20261124-2">
-<link rel="icon" type="image/svg+xml" href="assets/myamin-black-logo.svg?v=20261124-2">
-<link rel="manifest" href="site.webmanifest?v=20261111-2">
-<link rel="apple-touch-icon" href="assets/myamin-black-logo.jpg?v=20261124-2">
+<link rel="manifest" href="site.webmanifest?v=20261124-3">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="My Amin">
 <title>My Amin | आपकी जमीन, आपकी जानकारी</title>
@@ -861,6 +858,9 @@ header{
 <style id="hide-customer-menu-login-label">
 #customerMenuProfileEmail{display:none!important}
 </style>
+
+<link rel="icon" type="image/svg+xml" href="assets/myamin-favicon.svg?v=20261124-3">
+<link rel="apple-touch-icon" href="assets/myamin-launcher.jpg?v=20261124-3">
 </head>
 
 <body>
@@ -2746,16 +2746,29 @@ async function downloadAminIdCard(){
  const preview=$("idPreview");if(!preview||preview.style.display==="none")return;
  if(typeof html2canvas!=="function"){toast("Card image tool is still loading. Please try again.");return;}
  const button=$("downloadAminCard");button.disabled=true;
+ preview.classList.add("id-card-export-mode");
  try{
   const cards=Array.from(preview.querySelectorAll(".id-card-front,.id-card-back"));
-  const canvas=document.createElement("canvas");const scale=2;const gap=24;const width=760;const cardCanvases=[];
-  for(const card of cards){const shot=await html2canvas(card,{scale:2,backgroundColor:null,useCORS:true});cardCanvases.push(shot);}
-  canvas.width=width*scale;canvas.height=(Math.max(...cardCanvases.map(c=>c.height/scale))+gap+Math.max(...cardCanvases.map(c=>c.height/scale)))*scale;
+  if(cards.length!==2)throw new Error("Both card sides are required");
+  await Promise.all(Array.from(preview.querySelectorAll("img")).map(img=>img.decode?img.decode().catch(()=>{}):Promise.resolve()));
+  if(document.fonts?.ready)await document.fonts.ready;
+  const scale=300/96;
+  const shots=[];
+  for(const card of cards){
+   shots.push(await html2canvas(card,{scale,backgroundColor:"#ffffff",useCORS:true,allowTaint:false,logging:false}));
+  }
+  const cardW=Math.round(85.6/25.4*300),cardH=Math.round(54/25.4*300),gap=Math.round(3/25.4*300);
+  const canvas=document.createElement("canvas");canvas.width=cardW*2+gap;canvas.height=cardH;
   const ctx=canvas.getContext("2d");ctx.fillStyle="#ffffff";ctx.fillRect(0,0,canvas.width,canvas.height);
-  let y=0;for(const shot of cardCanvases){ctx.drawImage(shot,0,y,canvas.width,shot.height);y+=shot.height+gap*scale;}
-  const link=document.createElement("a");link.download="My-Amin-ID-"+(window.generatedAminCard?.id||"Card")+".png";link.href=canvas.toDataURL("image/png");link.click();toast("ID Card PNG downloaded.");
- }catch(err){toast("Could not download the card. Try Print / Save PDF.");}
- finally{button.disabled=false;}
+  ctx.drawImage(shots[0],0,0,cardW,cardH);
+  ctx.drawImage(shots[1],cardW+gap,0,cardW,cardH);
+  const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error("PNG export failed")),"image/png"));
+  const url=URL.createObjectURL(blob);const link=document.createElement("a");
+  link.download="My-Amin-ID-"+(window.generatedAminCard?.id||"Card")+".png";link.href=url;link.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+  toast("CR80 landscape ID card downloaded at 300 DPI. Print at 100% / Actual Size.");
+ }catch(err){console.error("ID card export failed",err);toast("Could not download the card. Try Print / Save PDF.");}
+ finally{preview.classList.remove("id-card-export-mode");button.disabled=false;}
 }
 $("downloadAminCard").addEventListener("click",downloadAminIdCard);
 
@@ -3542,5 +3555,62 @@ input,select,textarea{min-width:0;max-width:100%}
  input.addEventListener("input",filter);
 })();
 </script>
+
+<style id="myamin-cr80-card-print-fix">
+/* Standard CR80 landscape ID card: 85.6 mm × 54 mm, front and back on one foldable strip. */
+#idPreview.id-card-export-mode{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:stretch!important;justify-content:flex-start!important;gap:3mm!important;width:174.2mm!important;max-width:none!important;padding:0!important;margin:0!important;position:relative!important}
+#idPreview.id-card-export-mode .id-card-front,#idPreview.id-card-export-mode .id-card-back{
+ width:85.6mm!important;min-width:85.6mm!important;max-width:85.6mm!important;height:54mm!important;min-height:54mm!important;max-height:54mm!important;aspect-ratio:auto!important;box-sizing:border-box!important;overflow:hidden!important;border-radius:2mm!important;padding:2.8mm!important;box-shadow:none!important
+}
+#idPreview.id-card-export-mode .id-card-top{gap:2mm!important;padding-bottom:1.5mm!important}
+#idPreview.id-card-export-mode .id-brand-mark{width:24mm!important;height:7mm!important;flex:0 0 24mm!important}
+#idPreview.id-card-export-mode .id-brand-caption small{font-size:5pt!important;letter-spacing:.3pt!important}
+#idPreview.id-card-export-mode .id-profile-tag{font-size:5pt!important;padding:1mm 2mm!important}
+#idPreview.id-card-export-mode .id-card-main{gap:3mm!important;padding:3mm 0 2mm!important}
+#idPreview.id-card-export-mode .id-photo-wrap{width:16mm!important;height:16mm!important;flex:0 0 16mm!important}
+#idPreview.id-card-export-mode .id-person h3{font-size:10pt!important;margin:1mm 0!important}
+#idPreview.id-card-export-mode .id-kicker,#idPreview.id-card-export-mode .id-profile-id,#idPreview.id-card-export-mode .id-role{font-size:6pt!important}
+#idPreview.id-card-export-mode .id-card-bottom{font-size:6pt!important;padding-top:1.5mm!important}
+#idPreview.id-card-export-mode .id-card-disclaimer{font-size:4.5pt!important;margin-top:1.5mm!important}
+#idPreview.id-card-export-mode .id-card-back{padding:2.5mm!important}
+#idPreview.id-card-export-mode .id-back-brand{font-size:10pt!important}
+#idPreview.id-card-export-mode .id-back-brand span{font-size:4.5pt!important}
+#idPreview.id-card-export-mode .id-qr-frame{width:20mm!important;height:20mm!important;padding:1mm!important;margin:1.5mm auto 1mm!important}
+#idPreview.id-card-export-mode .id-qr-unit strong{font-size:6pt!important}
+#idPreview.id-card-export-mode .id-qr-unit small,#idPreview.id-card-export-mode .id-site-url,#idPreview.id-card-export-mode .id-card-back p,#idPreview.id-card-export-mode .id-back-footer{font-size:5pt!important;line-height:1.25!important}
+@media print{
+ @page{size:A4 portrait;margin:0}
+ html,body{width:210mm!important;min-height:297mm!important;margin:0!important;padding:0!important;background:#fff!important}
+ body *{visibility:hidden!important}
+ #idPreview,#idPreview *{visibility:visible!important}
+ #idPreview{
+  display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:stretch!important;justify-content:flex-start!important;
+  position:fixed!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;
+  width:174.2mm!important;max-width:none!important;gap:3mm!important;margin:0!important;padding:0!important;background:#fff!important
+ }
+ #idPreview:after{content:"";position:absolute;left:calc(85.6mm + 1.5mm);top:0;height:54mm;border-left:.25mm dashed #888;pointer-events:none}
+ #idPreview .id-card-front,#idPreview .id-card-back{
+  width:85.6mm!important;min-width:85.6mm!important;max-width:85.6mm!important;height:54mm!important;min-height:54mm!important;max-height:54mm!important;
+  aspect-ratio:auto!important;box-sizing:border-box!important;overflow:hidden!important;border-radius:2mm!important;padding:2.8mm!important;
+  box-shadow:none!important;break-inside:avoid!important;page-break-inside:avoid!important;print-color-adjust:exact!important;-webkit-print-color-adjust:exact!important
+ }
+ #idPreview .id-card-top{gap:2mm!important;padding-bottom:1.5mm!important}
+ #idPreview .id-brand-mark{width:24mm!important;height:7mm!important;flex:0 0 24mm!important}
+ #idPreview .id-brand-caption small{font-size:5pt!important;letter-spacing:.3pt!important}
+ #idPreview .id-profile-tag{font-size:5pt!important;padding:1mm 2mm!important}
+ #idPreview .id-card-main{gap:3mm!important;padding:3mm 0 2mm!important}
+ #idPreview .id-photo-wrap{width:16mm!important;height:16mm!important;flex:0 0 16mm!important}
+ #idPreview .id-person h3{font-size:10pt!important;margin:1mm 0!important}
+ #idPreview .id-kicker,#idPreview .id-profile-id,#idPreview .id-role{font-size:6pt!important}
+ #idPreview .id-card-bottom{font-size:6pt!important;padding-top:1.5mm!important}
+ #idPreview .id-card-disclaimer{font-size:4.5pt!important;margin-top:1.5mm!important}
+ #idPreview .id-card-back{padding:2.5mm!important}
+ #idPreview .id-back-brand{font-size:10pt!important}
+ #idPreview .id-back-brand span{font-size:4.5pt!important}
+ #idPreview .id-qr-frame{width:20mm!important;height:20mm!important;padding:1mm!important;margin:1.5mm auto 1mm!important}
+ #idPreview .id-qr-unit strong{font-size:6pt!important}
+ #idPreview .id-qr-unit small,#idPreview .id-site-url,#idPreview .id-card-back p,#idPreview .id-back-footer{font-size:5pt!important;line-height:1.25!important}
+}
+</style>
 </body>
 </html>

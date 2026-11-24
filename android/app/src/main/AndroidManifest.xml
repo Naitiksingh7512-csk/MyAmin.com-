@@ -9,8 +9,8 @@
     <application
         android:allowBackup="false"
         android:label="MyAmin"
-        android:icon="@drawable/myamin_logo_black"
-        android:roundIcon="@drawable/myamin_logo_black"
+        android:icon="@drawable/myamin_launcher_black"
+        android:roundIcon="@drawable/myamin_launcher_black"
         android:theme="@android:style/Theme.Material.Light.NoActionBar"
         android:usesCleartextTraffic="false">
         <activity
