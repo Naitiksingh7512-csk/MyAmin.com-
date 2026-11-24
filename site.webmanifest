@@ -9,9 +9,9 @@
   "theme_color": "#123b32",
   "icons": [
     {
-      "src": "assets/myamin-black-logo.svg?v=20261124-1",
+      "src": "assets/myamin-black-logo.jpg?v=20261124-2",
       "sizes": "192x192",
-      "type": "image/svg+xml",
+      "type": "image/jpeg",
       "purpose": "any"
     }
   ]
