@@ -9,8 +9,8 @@ android {
         applicationId = "com.myamin.app"
         minSdk = 23
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = 3
+        versionName = "1.0.2"
     }
     buildTypes {
         debug { applicationIdSuffix = ".debug"; versionNameSuffix = "-debug" }
