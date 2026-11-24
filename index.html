@@ -1281,29 +1281,30 @@ header{
 <div class="overlay" id="menuOverlay" aria-hidden="true">
   <aside class="drawer" id="drawer" aria-label="Main menu">
     <div class="drawer-head">
-      <div class="drawer-title">☰ My Amin Menu</div>
+      <div class="drawer-title" data-en="☰ My Amin Menu" data-hi="☰ My Amin मेन्यू">☰ My Amin Menu</div>
       <button class="closebtn" id="closeMenu" aria-label="Close menu">✕</button>
     </div>
 
-    <div class="drawer-group">Main Menu</div>
-    <button class="menu-link" data-go="home"><span>⌂</span>Home / होम</button>
-    <button class="menu-link" data-go="find"><span>🔎</span>Find an Amin / अमीन खोजें</button>
-    <button class="menu-link" data-go="booking"><span>📅</span>Booking & Appointments</button>
-    <button class="menu-link" data-go="login"><span>👤</span>Customer Login / ग्राहक लॉगिन</button>
-    <button class="menu-link" data-go="registerAmin"><span>👷</span>Amin Registration</button>
+    <div class="drawer-group" data-en="Main Menu" data-hi="मुख्य मेन्यू">Main Menu</div>
+    <button class="menu-link" data-go="home"><span>⌂</span><span data-en="Home / होम" data-hi="होम">Home / होम</span></button>
+    <button class="menu-link" data-go="find"><span>🔎</span><span data-en="Find an Amin / अमीन खोजें" data-hi="अमीन खोजें">Find an Amin / अमीन खोजें</span></button>
+    <button class="menu-link" data-go="booking"><span>📅</span><span data-en="Booking & Appointments" data-hi="बुकिंग और अपॉइंटमेंट">Booking & Appointments</span></button>
+    <button class="menu-link" data-go="login"><span>👤</span><span data-en="Customer Login / ग्राहक लॉगिन" data-hi="ग्राहक लॉगिन">Customer Login / ग्राहक लॉगिन</span></button>
+    <button class="menu-link" data-go="registerAmin"><span>👷</span><span data-en="Amin Registration" data-hi="अमीन रजिस्ट्रेशन">Amin Registration</span></button>
 
-    <div class="drawer-group">Tools & Features</div>
-    <button class="menu-link" data-go="idmaker"><span>🪪</span>ID Card Maker</button>
-    <button class="menu-link" data-go="calculator"><span>📐</span>Land Unit Calculator</button>
-    <button class="menu-link" data-go="portals"><span>🏛️</span>Bihar Bhumi Service Portal</button>
-    <button class="menu-link" data-go="portals"><span>🌐</span>Services for Other States</button>
-    <button class="menu-link" data-go="report"><span>🛠️</span>Report a Bug / Issue</button>
-    <button class="menu-link" data-go="help"><span>💬</span>Help & Support</button>
+    <div class="drawer-group" data-en="Tools & Features" data-hi="टूल्स और सुविधाएँ">Tools & Features</div>
+    <button class="menu-link" data-go="idmaker"><span>🪪</span><span data-en="ID Card Maker" data-hi="आईडी कार्ड मेकर">ID Card Maker</span></button>
+    <button class="menu-link" data-go="calculator"><span>📐</span><span data-en="Land Unit Calculator" data-hi="भूमि इकाई कैलकुलेटर">Land Unit Calculator</span></button>
+    <button class="menu-link" data-go="portals"><span>🏛️</span><span data-en="Bihar Bhumi Service Portal" data-hi="बिहार भूमि सेवा पोर्टल">Bihar Bhumi Service Portal</span></button>
+    <button class="menu-link" data-go="portals"><span>🌐</span><span data-en="Services for Other States" data-hi="अन्य राज्यों की सेवाएँ">Services for Other States</span></button>
+    <button class="menu-link" data-go="report"><span>🛠️</span><span data-en="Report a Bug / Issue" data-hi="समस्या की रिपोर्ट करें">Report a Bug / Issue</span></button>
+    <button class="menu-link" data-go="help"><span>💬</span><span data-en="Help & Support" data-hi="मदद और सहायता">Help & Support</span></button>
+    <a class="menu-link" href="https://apkpure.com/" target="_blank" rel="noopener noreferrer"><span>📦</span><span data-en="APKPure" data-hi="APKPure">APKPure</span></a>
 
-    <div class="drawer-group">Account</div>
+    <div class="drawer-group" data-en="Account" data-hi="अकाउंट">Account</div>
     <section class="account-menu-card" id="aminMenuProfile" style="display:none"><div class="account-avatar"><img id="aminMenuAvatar" alt="" hidden><span id="aminMenuAvatarFallback">👤</span></div><strong id="aminMenuProfileName">My Profile</strong><small id="aminMenuProfileId"></small><button type="button" class="account-open-btn" id="openAminAccount">Account / खाता खोलें</button></section>
     <section class="account-menu-card customer-menu-card" id="customerMenuProfile" style="display:none"><div class="account-avatar"><img id="customerMenuAvatar" alt="Customer profile photo" hidden><span id="customerMenuAvatarFallback">👤</span></div><strong id="customerMenuProfileName">Customer Account</strong><small id="customerMenuProfileEmail"></small><button type="button" class="account-open-btn" id="openCustomerAccount">My Profile / मेरी प्रोफ़ाइल खोलें</button></section>
-    <button class="menu-link" data-action="logout"><span>↪</span>Logout</button>
+    <button class="menu-link" data-action="logout"><span>↪</span><span data-en="Logout" data-hi="लॉगआउट">Logout</span></button>
     <p style="font-size:11px;color:#859189;line-height:1.6;padding:10px">
     </p>
   </aside>
@@ -1942,6 +1943,8 @@ function renderSmartSearch(){
  }));
 }
 $("siteSearch").addEventListener("input",renderSmartSearch);
+$("siteSearch").addEventListener("compositionend",renderSmartSearch);
+$("siteSearch").addEventListener("search",renderSmartSearch);
 function runSearch() {
   const query=$("siteSearch").value.trim();
   if(!query) {toast("पहले कुछ लिखें।");return;}
