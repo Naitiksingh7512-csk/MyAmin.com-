@@ -295,7 +295,11 @@ footer a {text-decoration:underline}
   background:white;color:var(--text);font-weight:700;font-size:14px;
 }
 .menu-link:hover,.menu-link:focus {background:#edf7ef}
-.menu-link span {width:25px;font-size:19px;text-align:center}
+.menu-link > span:first-child {flex:0 0 25px;width:25px;font-size:19px;text-align:center}
+.menu-link > span:not(:first-child) {flex:1 1 auto;width:auto;min-width:0;font-size:14px;line-height:1.45;text-align:left;white-space:normal;overflow-wrap:break-word}
+.menu-link {min-width:0;min-height:48px;justify-content:flex-start}
+.menu-link > span:first-child + span {display:block}
+.menu-link[href] {text-decoration:none}
 .dialog {
   display:none;position:fixed;inset:0;z-index:300;
   background:#10251fbb;align-items:center;justify-content:center;padding:16px;
@@ -1208,19 +1212,19 @@ header{
 
   <!-- REPORT -->
   <section id="report" class="panel">
-    <h2>🛠️ Report a Bug / Issue / Suggestion</h2>
-    <p>वेबसाइट में समस्या हो, गलत सरकारी लिंक मिले या कोई नया फीचर चाहिए, तो यहाँ लिखें।</p>
+    <h2 data-en="🛠️ Report a Bug / Issue / Suggestion" data-hi="🛠️ बग / समस्या / सुझाव भेजें">🛠️ Report a Bug / Issue / Suggestion</h2>
+    <p data-en="If you find a website problem, an incorrect government link, or want a new feature, tell us here." data-hi="वेबसाइट में समस्या हो, गलत सरकारी लिंक मिले या कोई नया फीचर चाहिए, तो यहाँ लिखें।">वेबसाइट में समस्या हो, गलत सरकारी लिंक मिले या कोई नया फीचर चाहिए, तो यहाँ लिखें।</p>
     <form id="reportForm">
       <div class="form-grid">
-        <div class="field"><label for="reportType">रिपोर्ट का प्रकार *</label><select id="reportType" required><option>Website Bug</option><option>Wrong Government Link</option><option>Booking Problem</option><option>Amin Profile Issue</option><option>Security Concern</option><option>Feature Suggestion</option><option>Other</option></select></div>
-        <div class="field"><label for="reportContact">संपर्क (वैकल्पिक)</label><input id="reportContact" placeholder="मोबाइल या ईमेल"></div>
-        <div class="field full"><label for="reportTitle">शीर्षक *</label><input id="reportTitle" required placeholder="समस्या कहाँ है?"></div>
-        <div class="field full"><label for="reportDetails">पूरी जानकारी *</label><textarea id="reportDetails" required placeholder="क्या हुआ, किस पेज पर हुआ, और क्या करने पर समस्या आई?"></textarea></div>
+        <div class="field"><label for="reportType" data-en="Report type *" data-hi="रिपोर्ट का प्रकार *">रिपोर्ट का प्रकार *</label><select id="reportType" required><option data-en="Website Bug" data-hi="वेबसाइट की खराबी">Website Bug</option><option data-en="Wrong Government Link" data-hi="गलत सरकारी लिंक">Wrong Government Link</option><option data-en="Booking Problem" data-hi="बुकिंग की समस्या">Booking Problem</option><option data-en="Amin Profile Issue" data-hi="अमीन प्रोफ़ाइल की समस्या">Amin Profile Issue</option><option data-en="Security Concern" data-hi="सुरक्षा संबंधी समस्या">Security Concern</option><option data-en="Feature Suggestion" data-hi="नए फीचर का सुझाव">Feature Suggestion</option><option data-en="Other" data-hi="अन्य">Other</option></select></div>
+        <div class="field"><label for="reportContact" data-en="Contact (optional)" data-hi="संपर्क (वैकल्पिक)">संपर्क (वैकल्पिक)</label><input id="reportContact" placeholder="मोबाइल या ईमेल" data-en-placeholder="Mobile or email" data-hi-placeholder="मोबाइल या ईमेल"></div>
+        <div class="field full"><label for="reportTitle" data-en="Title *" data-hi="शीर्षक *">शीर्षक *</label><input id="reportTitle" required placeholder="समस्या कहाँ है?" data-en-placeholder="Where is the problem?" data-hi-placeholder="समस्या कहाँ है?"></div>
+        <div class="field full"><label for="reportDetails" data-en="Full details *" data-hi="पूरी जानकारी *">पूरी जानकारी *</label><textarea id="reportDetails" required placeholder="क्या हुआ, किस पेज पर हुआ, और क्या करने पर समस्या आई?" data-en-placeholder="What happened, on which page, and what steps caused it?" data-hi-placeholder="क्या हुआ, किस पेज पर हुआ, और क्या करने पर समस्या आई?"></textarea></div>
       </div>
-      <div class="form-actions"><button class="btn btn-green" type="submit">रिपोर्ट सेव करें</button></div>
+      <div class="form-actions"><button class="btn btn-green" type="submit" data-en="Submit Report" data-hi="रिपोर्ट सेव करें">रिपोर्ट सेव करें</button></div>
     </form>
     <div id="reportMessage" class="success"></div>
-    <div class="panel" style="margin-top:16px"><div class="panel-head"><h3>My Support Conversations / मेरी सहायता बातचीत</h3><button class="btn btn-outline" type="button" onclick="window.loadMySupportTickets?.()">Refresh</button></div><div id="mySupportTickets" class="list"><p>Login to view your support replies.</p></div></div>
+    <div class="panel" style="margin-top:16px"><div class="panel-head"><h3 data-en="My Support Conversations" data-hi="मेरी सहायता बातचीत">My Support Conversations / मेरी सहायता बातचीत</h3><button class="btn btn-outline" type="button" onclick="window.loadMySupportTickets?.()" data-en="Refresh" data-hi="रीफ्रेश">Refresh</button></div><div id="mySupportTickets" class="list"><p>Login to view your support replies.</p></div></div>
     <div class="notice" data-en="Reports are stored securely in Supabase and visible to the Admin team. You must be logged in to submit a report." data-hi="रिपोर्ट Supabase में सुरक्षित सेव होती है और Admin टीम उसे देख सकती है। रिपोर्ट भेजने के लिए लॉगिन जरूरी है।">रिपोर्ट Supabase में सुरक्षित सेव होती है और Admin टीम उसे देख सकती है। रिपोर्ट भेजने के लिए लॉगिन जरूरी है।</div>
   </section>
 
@@ -1299,12 +1303,13 @@ header{
     <button class="menu-link" data-go="portals"><span>🌐</span><span data-en="Services for Other States" data-hi="अन्य राज्यों की सेवाएँ">Services for Other States</span></button>
     <button class="menu-link" data-go="report"><span>🛠️</span><span data-en="Report a Bug / Issue" data-hi="समस्या की रिपोर्ट करें">Report a Bug / Issue</span></button>
     <button class="menu-link" data-go="help"><span>💬</span><span data-en="Help & Support" data-hi="मदद और सहायता">Help & Support</span></button>
-    <a class="menu-link" href="https://apkpure.com/" target="_blank" rel="noopener noreferrer"><span>📦</span><span data-en="APKPure" data-hi="APKPure">APKPure</span></a>
+    
 
     <div class="drawer-group" data-en="Account" data-hi="अकाउंट">Account</div>
     <section class="account-menu-card" id="aminMenuProfile" style="display:none"><div class="account-avatar"><img id="aminMenuAvatar" alt="" hidden><span id="aminMenuAvatarFallback">👤</span></div><strong id="aminMenuProfileName">My Profile</strong><small id="aminMenuProfileId"></small><button type="button" class="account-open-btn" id="openAminAccount">Account / खाता खोलें</button></section>
     <section class="account-menu-card customer-menu-card" id="customerMenuProfile" style="display:none"><div class="account-avatar"><img id="customerMenuAvatar" alt="Customer profile photo" hidden><span id="customerMenuAvatarFallback">👤</span></div><strong id="customerMenuProfileName">Customer Account</strong><small id="customerMenuProfileEmail"></small><button type="button" class="account-open-btn" id="openCustomerAccount">My Profile / मेरी प्रोफ़ाइल खोलें</button></section>
     <button class="menu-link" data-action="logout"><span>↪</span><span data-en="Logout" data-hi="लॉगआउट">Logout</span></button>
+    <a class="menu-link" href="./apk/"><span>⬇️</span><span data-en="Download APK App" data-hi="APK ऐप डाउनलोड करें">Download APK App</span></a>
     <p style="font-size:11px;color:#859189;line-height:1.6;padding:10px">
     </p>
   </aside>
@@ -2107,6 +2112,7 @@ function applyLanguage(lang){
     const translated=phraseMap[lang][item.original];
     if(translated)item.el.setAttribute(item.attr,translated);
   });
+  document.querySelectorAll("[data-en-placeholder][data-hi-placeholder]").forEach(el=>{el.placeholder=el.getAttribute("data-"+lang+"-placeholder")||"";});
   document.querySelectorAll("[data-en][data-hi]").forEach(el=>{
     if(el.tagName==="H1") {
       el.innerHTML=lang==="en"?'Find the Right <span>Amin</span> for Your Land.':'अपनी जमीन के लिए सही <span>Amin</span> खोजें।';
