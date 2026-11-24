@@ -1945,6 +1945,9 @@ function renderSmartSearch(){
 $("siteSearch").addEventListener("input",renderSmartSearch);
 $("siteSearch").addEventListener("compositionend",renderSmartSearch);
 $("siteSearch").addEventListener("search",renderSmartSearch);
+// Capture-phase fallback ensures live suggestions refresh even if another UI handler stops bubbling.
+document.addEventListener("input",event=>{if(event.target&&event.target.id==="siteSearch")renderSmartSearch();},true);
+$("siteSearch").oninput=renderSmartSearch;
 function runSearch() {
   const query=$("siteSearch").value.trim();
   if(!query) {toast("पहले कुछ लिखें।");return;}
